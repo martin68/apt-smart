@@ -1,0 +1,22 @@
+.. include:: ../README.rst
+
+API documentation
+=================
+
+The following documentation is based on the source code of version |release| of
+the `apt-mirror-updater` package.
+
+.. contents::
+   :local:
+
+:mod:`apt_mirror_updater`
+-------------------------
+
+.. automodule:: apt_mirror_updater
+   :members:
+
+:mod:`apt_mirror_updater.cli`
+-----------------------------
+
+.. automodule:: apt_mirror_updater.cli
+   :members:
