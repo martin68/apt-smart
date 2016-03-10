@@ -38,7 +38,7 @@ from humanfriendly import Timer, format_size, format_timespan, pluralize
 from property_manager import PropertyManager, cached_property, lazy_property, required_property
 
 # Semi-standard module versioning.
-__version__ = '0.1'
+__version__ = '0.1.1'
 
 MAIN_SOURCES_LIST = '/etc/apt/sources.list'
 """The absolute pathname of the list of configured APT data sources (a string)."""
