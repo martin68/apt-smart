@@ -34,11 +34,11 @@ except ImportError:
 from bs4 import BeautifulSoup, UnicodeDammit
 from stopit import SignalTimeout
 from capturer import CaptureOutput
-from humanfriendly import Timer, format_size, format_timespan, pluralize
+from humanfriendly import Timer, compact, format_size, format_timespan, pluralize
 from property_manager import PropertyManager, cached_property, lazy_property, required_property
 
 # Semi-standard module versioning.
-__version__ = '0.2'
+__version__ = '0.3'
 
 MAIN_SOURCES_LIST = '/etc/apt/sources.list'
 """The absolute pathname of the list of configured APT data sources (a string)."""
@@ -314,6 +314,33 @@ class AptMirrorUpdater(PropertyManager):
                 except Exception:
                     if i < max_attempts:
                         output = session.get_text()
+                        # Check for EOL suites. This somewhat peculiar way of
+                        # checking is meant to ignore 404 responses from
+                        # `secondary package mirrors' like PPAs.
+                        maybe_end_of_life = any(
+                            self.current_mirror in line and u'404' in line.split()
+                            for line in output.splitlines()
+                        )
+                        # If the output of `apt-get update' implies that the
+                        # suite is EOL we need to verify our assumption.
+                        if maybe_end_of_life:
+                            logger.warning("It looks like the current suite (%s) is EOL, verifying ..",
+                                           self.distribution_codename)
+                            if not self.validate_mirror(self.current_mirror):
+                                if switch_mirrors:
+                                    logger.warning("Switching to old releases mirror because current suite is EOL ..")
+                                    self.change_mirror(UBUNTU_OLD_RELEASES_URL)
+                                    continue
+                                else:
+                                    # When asked to do the impossible we abort
+                                    # with a clear error message :-).
+                                    raise Exception(compact("""
+                                        Failed to update package lists because the
+                                        current suite ({suite}) is end of life but
+                                        I'm not allowed to switch mirrors! (there's
+                                        no point in retrying so I'm not going to)
+                                    """, suite=self.distribution_codename))
+                        # Check for `hash sum mismatch' errors.
                         if switch_mirrors and u'hash sum mismatch' in output.lower():
                             logger.warning("Detected 'hash sum mismatch' failure, switching to other mirror ..")
                             self.ignore_mirror(self.current_mirror)
