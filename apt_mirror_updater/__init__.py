@@ -38,7 +38,7 @@ from humanfriendly import Timer, compact, format_size, format_timespan, pluraliz
 from property_manager import PropertyManager, cached_property, lazy_property, required_property
 
 # Semi-standard module versioning.
-__version__ = '0.3'
+__version__ = '0.3.1'
 
 MAIN_SOURCES_LIST = '/etc/apt/sources.list'
 """The absolute pathname of the list of configured APT data sources (a string)."""
@@ -204,12 +204,15 @@ class AptMirrorUpdater(PropertyManager):
         del self.available_mirrors
         del self.best_mirror
 
-    def change_mirror(self, new_mirror=None):
+    def change_mirror(self, new_mirror=None, update=True):
         """
         Change the main mirror in use in :data:`MAIN_SOURCES_LIST`.
 
         :param new_mirror: The URL of the new mirror (a string, defaults to
                            :attr:`best_mirror`).
+        :param update: Whether an ``apt-get update`` should be run after
+                       changing the mirror (a boolean, defaults to
+                       :data:`True`).
         """
         timer = Timer()
         # Default to the best available mirror.
@@ -265,7 +268,8 @@ class AptMirrorUpdater(PropertyManager):
         # Make sure previous package lists are removed.
         self.clear_package_lists()
         # Make sure the package lists are up to date.
-        self.smart_update(switch_mirrors=False)
+        if update:
+            self.smart_update(switch_mirrors=False)
         logger.info("Finished changing mirror of %s in %s.", self.context, timer)
 
     def clear_package_lists(self):
@@ -329,7 +333,7 @@ class AptMirrorUpdater(PropertyManager):
                             if not self.validate_mirror(self.current_mirror):
                                 if switch_mirrors:
                                     logger.warning("Switching to old releases mirror because current suite is EOL ..")
-                                    self.change_mirror(UBUNTU_OLD_RELEASES_URL)
+                                    self.change_mirror(UBUNTU_OLD_RELEASES_URL, update=False)
                                     continue
                                 else:
                                     # When asked to do the impossible we abort
@@ -344,7 +348,7 @@ class AptMirrorUpdater(PropertyManager):
                         if switch_mirrors and u'hash sum mismatch' in output.lower():
                             logger.warning("Detected 'hash sum mismatch' failure, switching to other mirror ..")
                             self.ignore_mirror(self.current_mirror)
-                            self.change_mirror()
+                            self.change_mirror(update=False)
                         else:
                             logger.warning("Retrying after `apt-get update' failed (%i/%i) ..", i, max_attempts)
                             # Deal with unidentified (but hopefully transient) failures by retrying but backing off
