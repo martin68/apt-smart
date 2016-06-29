@@ -1,7 +1,7 @@
 # Automated, robust apt-get mirror selection for Debian and Ubuntu.
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: March 10, 2016
+# Last Change: June 29, 2016
 # URL: https://apt-mirror-updater.readthedocs.org
 
 """
@@ -38,7 +38,7 @@ from humanfriendly import Timer, format_size, format_timespan, pluralize
 from property_manager import PropertyManager, cached_property, lazy_property, required_property
 
 # Semi-standard module versioning.
-__version__ = '0.1.1'
+__version__ = '0.1.2'
 
 MAIN_SOURCES_LIST = '/etc/apt/sources.list'
 """The absolute pathname of the list of configured APT data sources (a string)."""
@@ -541,13 +541,16 @@ def prioritize_mirrors(mirror_urls, concurrency=4):
     num_mirrors = pluralize(len(mirror_urls), "mirror")
     logger.info("Checking %s for speed and update status ..", num_mirrors)
     pool = multiprocessing.Pool(concurrency)
-    candidates = pool.map(CandidateMirror, mirror_urls, chunksize=1)
-    logger.info("Finished checking speed and update status of %s (in %s).", num_mirrors, timer)
-    if not any(mirror.is_available for mirror in candidates):
-        raise Exception("It looks like all %s are unavailable!" % num_mirrors)
-    if all(mirror.is_updating for mirror in candidates):
-        logger.warning("It looks like all %s are being updated?!", num_mirrors)
-    return sorted(candidates, key=lambda mirror: mirror.priority, reverse=True)
+    try:
+        candidates = pool.map(CandidateMirror, mirror_urls, chunksize=1)
+        logger.info("Finished checking speed and update status of %s (in %s).", num_mirrors, timer)
+        if not any(mirror.is_available for mirror in candidates):
+            raise Exception("It looks like all %s are unavailable!" % num_mirrors)
+        if all(mirror.is_updating for mirror in candidates):
+            logger.warning("It looks like all %s are being updated?!", num_mirrors)
+        return sorted(candidates, key=lambda mirror: mirror.priority, reverse=True)
+    finally:
+        pool.terminate()
 
 
 def find_current_mirror(sources_list):
