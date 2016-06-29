@@ -38,7 +38,7 @@ from humanfriendly import Timer, format_size, format_timespan, pluralize
 from property_manager import PropertyManager, cached_property, lazy_property, required_property
 
 # Semi-standard module versioning.
-__version__ = '0.1.2'
+__version__ = '0.2'
 
 MAIN_SOURCES_LIST = '/etc/apt/sources.list'
 """The absolute pathname of the list of configured APT data sources (a string)."""
@@ -48,6 +48,9 @@ DEBIAN_MIRRORS_URL = 'https://www.debian.org/mirror/list'
 
 UBUNTU_MIRRORS_URL = 'http://mirrors.ubuntu.com/mirrors.txt'
 """The URL of a text file that lists geographically close Ubuntu mirrors (a string)."""
+
+UBUNTU_SECURITY_URL = 'http://security.ubuntu.com/ubuntu'
+"""The URL where Ubuntu security updates are hosted (a string)."""
 
 UBUNTU_OLD_RELEASES_URL = 'http://old-releases.ubuntu.com/ubuntu/'
 """The URL where EOL (end of life) Ubuntu suites are hosted (a string)."""
@@ -72,6 +75,7 @@ class AptMirrorUpdater(PropertyManager):
         """
         self.context = context
         self.blacklist = set()
+        self.mirror_validity = dict()
 
     @lazy_property
     def distributor_id(self):
@@ -136,7 +140,7 @@ class AptMirrorUpdater(PropertyManager):
 
         This is a shortcut for using :func:`prioritize_mirrors()` to select the
         best mirror from :attr:`available_mirrors` and validating the current
-        suite's availability using :func:`check_suite_available()`. If
+        suite's availability using :func:`validate_mirror()`. If
         :attr:`available_mirrors` is empty an exception is raised.
 
         :raises: If the current suite is EOL (end of life) but there's no fall
@@ -144,7 +148,7 @@ class AptMirrorUpdater(PropertyManager):
         """
         logger.debug("Selecting best mirror for %s ..", self.context)
         mirror_url = self.prioritized_mirrors[0].mirror_url
-        if check_suite_available(mirror_url, self.distribution_codename):
+        if self.validate_mirror(mirror_url):
             return mirror_url
         elif self.distributor_id == 'ubuntu':
             logger.info("Falling back to Ubuntu's old releases mirror (%s).", UBUNTU_OLD_RELEASES_URL)
@@ -163,6 +167,23 @@ class AptMirrorUpdater(PropertyManager):
         """
         logger.debug("Parsing %s to find current mirror of %s ..", MAIN_SOURCES_LIST, self.context)
         return find_current_mirror(self.context.capture('cat', MAIN_SOURCES_LIST))
+
+    def validate_mirror(self, mirror_url):
+        """
+        Make sure a mirror serves the given suite.
+
+        :param mirror_url: The base URL of the mirror (a string).
+        :returns: :data:`True` if the mirror hosts the relevant suite,
+                  :data:`False` otherwise.
+
+        The :func:`validate_mirror()` method is a trivial wrapper for
+        :func:`check_suite_available()` that avoids validating a mirror more
+        than once.
+        """
+        key = (mirror_url, self.distribution_codename)
+        if key not in self.mirror_validity:
+            self.mirror_validity[key] = check_suite_available(mirror_url, self.distribution_codename)
+        return self.mirror_validity[key]
 
     def ignore_mirror(self, pattern):
         """
@@ -201,6 +222,14 @@ class AptMirrorUpdater(PropertyManager):
         # Parse /etc/apt/sources.list to replace the old mirror with the new one.
         sources_list = self.context.capture('cat', MAIN_SOURCES_LIST)
         current_mirror = find_current_mirror(sources_list)
+        mirrors_to_replace = [current_mirror]
+        if new_mirror == UBUNTU_OLD_RELEASES_URL or not self.validate_mirror(new_mirror):
+            # When a suite goes EOL the Ubuntu security updates mirror
+            # stops serving that suite as well, so we need to remove it.
+            logger.debug("Replacing %s URLs as well ..", UBUNTU_SECURITY_URL)
+            mirrors_to_replace.append(UBUNTU_SECURITY_URL)
+        else:
+            logger.debug("Not touching %s URLs.", UBUNTU_SECURITY_URL)
         lines = sources_list.splitlines()
         for i, line in enumerate(lines):
             # The first token should be `deb' or `deb-src', the second token is
@@ -209,7 +238,7 @@ class AptMirrorUpdater(PropertyManager):
             tokens = line.split()
             if (len(tokens) >= 4 and
                     tokens[0] in ('deb', 'deb-src') and
-                    tokens[1] == current_mirror):
+                    tokens[1] in mirrors_to_replace):
                 tokens[1] = new_mirror
                 lines[i] = u' '.join(tokens)
         # Install the modified package resource list.
