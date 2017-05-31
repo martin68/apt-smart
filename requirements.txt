@@ -6,4 +6,5 @@ coloredlogs >= 5.0
 executor >= 9.0
 humanfriendly >= 3.2
 property-manager >= 1.3
+six >= 1.10.0
 stopit >= 1.1.1

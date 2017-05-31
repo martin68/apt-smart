@@ -1,7 +1,7 @@
 # Automated, robust apt-get mirror selection for Debian and Ubuntu.
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: May 31, 2017
+# Last Change: June 1, 2017
 # URL: https://apt-mirror-updater.readthedocs.io
 
 """
@@ -20,22 +20,14 @@ import multiprocessing
 import os
 import time
 
-# Compatibility between Python 2 and 3.
-try:
-    # Python 2.
-    from urllib2 import urlopen
-    from urlparse import urljoin, urlparse
-except ImportError:
-    # Python 3.
-    from urllib.request import urlopen
-    from urllib.parse import urljoin, urlparse
-
 # External dependencies.
 from bs4 import BeautifulSoup, UnicodeDammit
-from stopit import SignalTimeout
 from capturer import CaptureOutput
 from humanfriendly import Timer, compact, format_size, format_timespan, pluralize
 from property_manager import PropertyManager, cached_property, lazy_property, required_property
+from six.moves.urllib.parse import urljoin, urlparse
+from six.moves.urllib.request import urlopen
+from stopit import SignalTimeout
 
 # Semi-standard module versioning.
 __version__ = '0.3.1'
