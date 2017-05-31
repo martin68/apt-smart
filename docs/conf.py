@@ -33,7 +33,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'apt-mirror-updater'
-copyright = u'2016, Peter Odding'
+copyright = u'2017, Peter Odding'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
