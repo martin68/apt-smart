@@ -73,7 +73,7 @@ import sys
 import coloredlogs
 from executor.contexts import LocalContext, RemoteContext
 from humanfriendly import format_size, format_table
-from humanfriendly.terminal import connected_to_terminal, usage, warning
+from humanfriendly.terminal import connected_to_terminal, output, usage, warning
 
 # Modules included in our package.
 from apt_mirror_updater import AptMirrorUpdater
@@ -142,13 +142,13 @@ def main():
 
 def report_current_mirror(updater):
     """Print the URL of the currently configured ``apt-get`` mirror."""
-    print(updater.current_mirror)
+    output(updater.current_mirror)
 
 
 def report_available_mirrors(updater):
     """Print the available mirrors to the terminal (in a human friendly format)."""
     if connected_to_terminal():
-        print(format_table(
+        output(format_table(
             data=[
                 (i, candidate.mirror_url,
                  "Yes" if candidate.is_available else "No",
@@ -159,7 +159,7 @@ def report_available_mirrors(updater):
             column_names=["Position", "Mirror URL", "Is available?", "Is being updated?", "Bandwidth (p/s)"],
         ))
     else:
-        print("\n".join(
+        output(u"\n".join(
             candidate.mirror_url for candidate in updater.prioritized_mirrors
             if candidate.is_available and not candidate.is_updating
         ))
