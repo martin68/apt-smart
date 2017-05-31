@@ -198,12 +198,12 @@ This software is licensed under the `MIT license`_.
 .. _Debian bug #110837: https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=110837
 .. _Debian bug #624122: https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=624122
 .. _Debian: https://en.wikipedia.org/wiki/Debian
-.. _documentation: https://apt-mirror-updater.readthedocs.org
+.. _documentation: https://apt-mirror-updater.readthedocs.io
 .. _GitHub: https://github.com/xolox/python-apt-mirror-updater
 .. _MIT license: http://en.wikipedia.org/wiki/MIT_License
 .. _per user site-packages directory: https://www.python.org/dev/peps/pep-0370/
 .. _peter@peterodding.com: peter@peterodding.com
 .. _PyPI: https://pypi.python.org/pypi/apt-mirror-updater
-.. _Read the Docs: https://apt-mirror-updater.readthedocs.org
+.. _Read the Docs: https://apt-mirror-updater.readthedocs.io
 .. _Ubuntu: https://en.wikipedia.org/wiki/Ubuntu_(operating_system)
 .. _virtual environments: http://docs.python-guide.org/en/latest/dev/virtualenvs/

@@ -1,8 +1,8 @@
 # Automated, robust apt-get mirror selection for Debian and Ubuntu.
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: June 29, 2016
-# URL: https://apt-mirror-updater.readthedocs.org
+# Last Change: May 31, 2017
+# URL: https://apt-mirror-updater.readthedocs.io
 
 """
 Automated, robust ``apt-get`` mirror selection for Debian and Ubuntu.

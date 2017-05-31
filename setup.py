@@ -3,8 +3,8 @@
 """Setup script for the `apt-mirror-updater` package."""
 
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: March 10, 2016
-# URL: https://apt-mirror-updater.readthedocs.org
+# Last Change: May 31, 2017
+# URL: https://apt-mirror-updater.readthedocs.io
 
 # Standard library modules.
 import codecs
@@ -51,7 +51,7 @@ setup(
     version=get_version('apt_mirror_updater/__init__.py'),
     description="Automated, robust apt-get mirror selection for Debian and Ubuntu",
     long_description=get_contents('README.rst'),
-    url='https://apt-mirror-updater.readthedocs.org',
+    url='https://apt-mirror-updater.readthedocs.io',
     author='Peter Odding',
     author_email='peter@peterodding.com',
     packages=find_packages(),

@@ -2,7 +2,7 @@
 #
 # Author: Peter Odding <peter@peterodding.com>
 # Last Change: June 29, 2016
-# URL: https://apt-mirror-updater.readthedocs.org
+# URL: https://apt-mirror-updater.readthedocs.io
 
 WORKON_HOME ?= $(HOME)/.virtualenvs
 VIRTUAL_ENV ?= $(WORKON_HOME)/apt-mirror-updater
