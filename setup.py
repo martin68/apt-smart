@@ -15,15 +15,15 @@ import re
 from setuptools import find_packages, setup
 
 
-def get_contents(filename):
+def get_contents(*args):
     """Get the contents of a file relative to the source distribution directory."""
-    with codecs.open(get_absolute_path(filename), 'r', 'utf-8') as handle:
+    with codecs.open(get_absolute_path(*args), 'r', 'UTF-8') as handle:
         return handle.read()
 
 
-def get_version(filename):
+def get_version(*args):
     """Extract the version number from a Python module."""
-    contents = get_contents(filename)
+    contents = get_contents(*args)
     metadata = dict(re.findall('__([a-z]+)__ = [\'"]([^\'"]+)', contents))
     return metadata['version']
 
@@ -48,7 +48,7 @@ def get_absolute_path(*args):
 
 setup(
     name='apt-mirror-updater',
-    version=get_version('apt_mirror_updater/__init__.py'),
+    version=get_version('apt_mirror_updater', '__init__.py'),
     description="Automated, robust apt-get mirror selection for Debian and Ubuntu",
     long_description=get_contents('README.rst'),
     url='https://apt-mirror-updater.readthedocs.io',
