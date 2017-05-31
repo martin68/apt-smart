@@ -1,25 +1,28 @@
-# -*- coding: utf-8 -*-
+# Automated, robust apt-get mirror selection for Debian and Ubuntu.
+#
+# Author: Peter Odding <peter@peterodding.com>
+# Last Change: May 31, 2017
+# URL: https://apt-mirror-updater.readthedocs.io
 
-"""Documentation build configuration file for the `apt-mirror-updater` package."""
+"""Sphinx documentation configuration for the `apt-mirror-updater` package."""
 
 import os
 import sys
 
 # Add the 'apt-mirror-updater' source distribution's root directory to the module path.
-sys.path.insert(0, os.path.abspath('..'))
+sys.path.insert(0, os.path.abspath(os.pardir))
 
 # -- General configuration -----------------------------------------------------
 
 # Sphinx extension module names.
 extensions = [
     'sphinx.ext.autodoc',
-    'sphinx.ext.doctest',
     'sphinx.ext.intersphinx',
     'sphinx.ext.viewcode',
     'humanfriendly.sphinx',
 ]
 
-# Configuration for the `autodoc' extension.
+# Sort members by the source order instead of alphabetically.
 autodoc_member_order = 'bysource'
 
 # Paths that contain templates, relative to this directory.
@@ -65,17 +68,17 @@ pygments_style = 'sphinx'
 # Refer to the Python standard library.
 # From: http://twistedmatrix.com/trac/ticket/4582.
 intersphinx_mapping = dict(
-    python2=('http://docs.python.org', None),
-    python3=('http://docs.python.org/3', None),
-    executor=('https://executor.readthedocs.org/en/latest/', None),
-    propertymanager=('https://property-manager.readthedocs.org/en/latest/', None),
+    python2=('https://docs.python.org/2', None),
+    python3=('https://docs.python.org/3', None),
+    executor=('https://executor.readthedocs.io/en/latest/', None),
+    propertymanager=('https://property-manager.readthedocs.io/en/latest/', None),
 )
 
 # -- Options for HTML output ---------------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-html_theme = 'default'
+html_theme = 'nature'
 
 # Output file base name for HTML help builder.
 htmlhelp_basename = 'aptmirrorupdaterdoc'
