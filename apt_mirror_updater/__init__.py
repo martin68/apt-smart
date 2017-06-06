@@ -1,7 +1,7 @@
 # Automated, robust apt-get mirror selection for Debian and Ubuntu.
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: June 1, 2017
+# Last Change: June 6, 2017
 # URL: https://apt-mirror-updater.readthedocs.io
 
 """
@@ -16,18 +16,18 @@ an example that uses the :class:`AptMirrorUpdater` class.
 # Standard library modules.
 import fnmatch
 import logging
-import multiprocessing
 import os
 import time
 
 # External dependencies.
 from bs4 import BeautifulSoup, UnicodeDammit
 from capturer import CaptureOutput
-from humanfriendly import Timer, compact, format_size, format_timespan, pluralize
-from property_manager import PropertyManager, cached_property, lazy_property, required_property
+from humanfriendly import Timer, compact, format_timespan, pluralize
+from property_manager import PropertyManager, cached_property, key_property, lazy_property, required_property
 from six.moves.urllib.parse import urljoin, urlparse
-from six.moves.urllib.request import urlopen
-from stopit import SignalTimeout
+
+# Modules included in our package.
+from apt_mirror_updater.http import fetch_concurrent, fetch_url
 
 # Semi-standard module versioning.
 __version__ = '0.3.1'
@@ -370,31 +370,17 @@ class CandidateMirror(PropertyManager):
                     priority=55254.51)
     """
 
-    def __init__(self, mirror_url):
-        """
-        Initialize a :class:`CandidateMirror` object.
-
-        :param mirror_url: The base URL of the mirror (a string).
-        """
-        # Initialize the superclass.
-        super(CandidateMirror, self).__init__(mirror_url=mirror_url)
-        # Initialize internal state.
-        self.timer = Timer(resumable=True)
-        # Try to download the mirror's index page.
-        with self.timer:
-            logger.debug("Checking mirror %s ..", self.mirror_url)
-            try:
-                response = fetch_url(self.mirror_url, retry=False)
-            except Exception as e:
-                logger.debug("Encountered error while checking mirror %s! (%s)", self.mirror_url, e)
-                self.index_page = None
-            else:
-                self.index_page = response.read()
-                logger.debug("Downloaded %s at %s per second.", self.mirror_url, format_size(self.bandwidth))
-
-    @required_property
+    @key_property
     def mirror_url(self):
         """The base URL of the mirror (a string)."""
+
+    @required_property
+    def index_page(self):
+        """The HTML of the mirror's index page (a string or :data:`None`)."""
+
+    @required_property
+    def index_latency(self):
+        """The time it took to download the mirror's index page (a floating point number or :data:`None`)."""
 
     @lazy_property
     def is_available(self):
@@ -424,8 +410,8 @@ class CandidateMirror(PropertyManager):
 
     @lazy_property
     def bandwidth(self):
-        """The bytes per second achieved while fetching the mirror's index page (an integer)."""
-        return round(len(self.index_page) / self.timer.elapsed_time if self.is_available else 0, 2)
+        """The bytes per second achieved while fetching the mirror's index page (a number)."""
+        return len(self.index_page) / self.index_latency if self.is_available else 0
 
     @lazy_property
     def priority(self):
@@ -592,17 +578,16 @@ def prioritize_mirrors(mirror_urls, concurrency=4):
     timer = Timer()
     num_mirrors = pluralize(len(mirror_urls), "mirror")
     logger.info("Checking %s for speed and update status ..", num_mirrors)
-    pool = multiprocessing.Pool(concurrency)
-    try:
-        candidates = pool.map(CandidateMirror, mirror_urls, chunksize=1)
-        logger.info("Finished checking speed and update status of %s (in %s).", num_mirrors, timer)
-        if not any(mirror.is_available for mirror in candidates):
-            raise Exception("It looks like all %s are unavailable!" % num_mirrors)
-        if all(mirror.is_updating for mirror in candidates):
-            logger.warning("It looks like all %s are being updated?!", num_mirrors)
-        return sorted(candidates, key=lambda mirror: mirror.priority, reverse=True)
-    finally:
-        pool.terminate()
+    candidates = set(
+        CandidateMirror(mirror_url=url, index_page=data, index_latency=elapsed_time)
+        for url, data, elapsed_time in fetch_concurrent(mirror_urls)
+    )
+    logger.info("Finished checking speed and update status of %s (in %s).", num_mirrors, timer)
+    if not any(mirror.is_available for mirror in candidates):
+        raise Exception("It looks like all %s are unavailable!" % num_mirrors)
+    if all(mirror.is_updating for mirror in candidates):
+        logger.warning("It looks like all %s are being updated?!", num_mirrors)
+    return sorted(candidates, key=lambda mirror: mirror.priority, reverse=True)
 
 
 def find_current_mirror(sources_list):
@@ -630,36 +615,3 @@ def find_current_mirror(sources_list):
                 'main' in tokens[3:]):
             return tokens[1]
     raise EnvironmentError("Failed to determine current mirror in apt's package resource list!")
-
-
-def fetch_url(url, timeout=10, retry=False, max_attempts=3):
-    """
-    Fetch a URL, optionally retrying on failure.
-
-    :param url: The URL to fetch (a string).
-    :param timeout: The maximum time in seconds that's allowed to pass before
-                    the request is aborted (a number, defaults to 10 seconds).
-    :param retry: Whether retry on failure is enabled (defaults to
-                  :data:`False`).
-    :param max_attempts: The maximum number of attempts when retrying is
-                         enabled (an integer, defaults to three).
-    :returns: The response object.
-    :raises: Any exception raised by Python's standard library in the last
-             attempt (assuming all attempts raise an exception).
-    """
-    timer = Timer()
-    logger.debug("Fetching %s ..", url)
-    for i in range(1, max_attempts + 1):
-        try:
-            with SignalTimeout(timeout, swallow_exc=False):
-                response = urlopen(url)
-                if response.getcode() != 200:
-                    raise Exception("Got HTTP %i response when fetching %s!" % (response.getcode(), url))
-        except Exception as e:
-            if retry and i < max_attempts:
-                logger.warning("Failed to fetch %s, retrying (%i/%i, error was: %s)", url, i, max_attempts, e)
-            else:
-                raise
-        else:
-            logger.debug("Took %s to fetch %s.", timer, url)
-            return response
