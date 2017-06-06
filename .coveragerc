@@ -1,0 +1,3 @@
+[run]
+source = apt_mirror_updater
+omit = apt_mirror_updater/tests.py

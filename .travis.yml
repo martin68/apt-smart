@@ -1,0 +1,19 @@
+sudo: true
+language: python
+python:
+  - "2.6"
+  - "2.7"
+  - "3.4"
+  - "3.5"
+  - "3.6"
+  - "pypy"
+install:
+  - scripts/install-on-travis.sh
+script:
+  - make check
+  - make full-coverage
+after_success:
+  - coveralls
+branches:
+  except:
+    - /^[0-9]/

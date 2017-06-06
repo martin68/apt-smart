@@ -1,6 +1,12 @@
 apt-mirror-updater: Automated Debian/Ubuntu mirror selection
 ============================================================
 
+.. image:: https://travis-ci.org/xolox/python-apt-mirror-updater.svg?branch=master
+   :target: https://travis-ci.org/xolox/python-apt-mirror-updater
+
+.. image:: https://coveralls.io/repos/xolox/python-apt-mirror-updater/badge.svg?branch=master
+   :target: https://coveralls.io/r/xolox/python-apt-mirror-updater?branch=master
+
 The `apt-mirror-updater` package automates robust apt-get_ mirror selection for
 Debian_ and Ubuntu_ by enabling discovery of available mirrors, ranking of
 available mirrors, automatic switching between mirrors and robust package list
