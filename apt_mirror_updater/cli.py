@@ -1,7 +1,7 @@
 # Automated, robust apt-get mirror selection for Debian and Ubuntu.
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: May 31, 2017
+# Last Change: June 6, 2017
 # URL: https://apt-mirror-updater.readthedocs.io
 
 """
@@ -52,11 +52,11 @@ Supported options:
 
   -v, --verbose
 
-    Make more noise.
+    Increase logging verbosity (can be repeated).
 
   -q, --quiet
 
-    Make less noise.
+    Decrease logging verbosity (can be repeated).
 
   -h, --help
 

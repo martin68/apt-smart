@@ -108,7 +108,10 @@ The command line interface is described below.
 
 **Usage:** `apt-mirror-updater [OPTIONS]`
 
-The apt-mirror-updater program automates robust apt-get mirror selection for Debian and Ubuntu by enabling discovery of available mirrors, ranking of available mirrors, automatic switching between mirrors and robust package list updating.
+The apt-mirror-updater program automates robust apt-get mirror selection for
+Debian and Ubuntu by enabling discovery of available mirrors, ranking of
+available mirrors, automatic switching between mirrors and robust package list
+updating.
 
 **Supported options:**
 
@@ -119,32 +122,22 @@ The apt-mirror-updater program automates robust apt-get mirror selection for Deb
 
    "``-r``, ``--remote-host=SSH_ALIAS``","Operate on a remote system instead of the local system. The ``SSH_ALIAS``
    argument gives the SSH alias of the remote host. It is assumed that the
-   remote account has root privileges or password-less sudo access.
-   "
+   remote account has root privileges or password-less sudo access."
    "``-f``, ``--find-current-mirror``","Determine the URL of the main mirror that is currently configured in
-   /etc/apt/sources.list.
-   "
-   "``-l``, ``--list-mirrors``","List available (ranked) mirrors on the terminal in a human readable format.
-   "
-   "``-c``, ``--change-mirror=MIRROR_URL``","Update /etc/apt/sources.list to use the given ``MIRROR_URL``.
-   "
+   /etc/apt/sources.list."
+   "``-l``, ``--list-mirrors``",List available (ranked) mirrors on the terminal in a human readable format.
+   "``-c``, ``--change-mirror=MIRROR_URL``",Update /etc/apt/sources.list to use the given ``MIRROR_URL``.
    "``-a``, ``--auto-change-mirror``","Discover available mirrors, rank the mirrors by connection speed and update
-   status and update /etc/apt/sources.list to use the best available mirror.
-   "
+   status and update /etc/apt/sources.list to use the best available mirror."
    "``-u``, ``--update``, ``--update-package-lists``","Update the package lists using ""apt-get update"", retrying on failure and
    automatically switching to a different mirror when it looks like the
-   current mirror is being updated.
-   "
+   current mirror is being updated."
    "``-x``, ``--exclude=PATTERN``","Add a pattern to the mirror selection blacklist. ``PATTERN`` is expected to be
    a shell pattern (containing wild cards like ""?"" and ""\*"") that is matched
-   against the full URL of each mirror.
-   "
-   "``-v``, ``--verbose``","Make more noise.
-   "
-   "``-q``, ``--quiet``","Make less noise.
-   "
-   "``-h``, ``--help``","Show this message and exit.
-   "
+   against the full URL of each mirror."
+   "``-v``, ``--verbose``",Increase logging verbosity (can be repeated).
+   "``-q``, ``--quiet``",Decrease logging verbosity (can be repeated).
+   "``-h``, ``--help``",Show this message and exit.
 
 .. [[[end]]]
 
