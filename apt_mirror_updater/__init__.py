@@ -1,7 +1,7 @@
 # Automated, robust apt-get mirror selection for Debian and Ubuntu.
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: June 7, 2017
+# Last Change: June 8, 2017
 # URL: https://apt-mirror-updater.readthedocs.io
 
 """
@@ -24,7 +24,14 @@ import time
 from bs4 import UnicodeDammit
 from capturer import CaptureOutput
 from humanfriendly import Timer, compact, format_timespan, pluralize
-from property_manager import PropertyManager, cached_property, key_property, lazy_property, required_property
+from property_manager import (
+    PropertyManager,
+    cached_property,
+    key_property,
+    lazy_property,
+    mutable_property,
+    set_property,
+)
 from six.moves.urllib.parse import urljoin, urlparse
 
 # Modules included in our package.
@@ -355,38 +362,26 @@ class AptMirrorUpdater(PropertyManager):
 
 class CandidateMirror(PropertyManager):
 
-    """
-    A candidate mirror that exposes availability and performance metrics.
-
-    Here's an example:
-
-    >>> from apt_mirror_updater import CandidateMirror
-    >>> CandidateMirror('http://ftp.snt.utwente.nl/pub/os/linux/ubuntu/')
-    CandidateMirror(bandwidth=55254.51,
-                    is_available=True,
-                    is_updating=False,
-                    mirror_url='http://ftp.snt.utwente.nl/pub/os/linux/ubuntu/',
-                    priority=55254.51)
-    """
+    """A candidate mirror groups a mirror URL with its availability and performance metrics."""
 
     @key_property
     def mirror_url(self):
         """The base URL of the mirror (a string)."""
 
-    @required_property
+    @mutable_property
     def index_page(self):
         """The HTML of the mirror's index page (a string or :data:`None`)."""
 
-    @required_property
+    @mutable_property
     def index_latency(self):
         """The time it took to download the mirror's index page (a floating point number or :data:`None`)."""
 
-    @lazy_property
+    @mutable_property
     def is_available(self):
         """:data:`True` if an HTTP connection to the mirror was successfully established, :data:`False` otherwise."""
         return self.index_page is not None
 
-    @lazy_property
+    @mutable_property
     def is_updating(self):
         """:data:`True` if it looks like the mirror is being updated, :data:`False` otherwise."""
         # Determine the name of the file which signals that this mirror is in the
@@ -403,28 +398,41 @@ class CandidateMirror(PropertyManager):
             filename = u'Archive-Update-in-Progress-%s' % components.netloc
             dammit = UnicodeDammit(self.index_page)
             tokens = dammit.unicode_markup.split()
-            return filename in tokens
+            value = filename in tokens
+            # Cache the computed value (only when `index_page' is available).
+            set_property(self, 'is_updating', value)
+            return value
         else:
             return False
 
-    @lazy_property
+    @mutable_property
     def bandwidth(self):
-        """The bytes per second achieved while fetching the mirror's index page (a number)."""
-        return len(self.index_page) / self.index_latency if self.is_available else 0
+        """The bytes per second achieved while fetching the mirror's index page (a number or :data:`None`)."""
+        if self.index_page and self.index_latency:
+            return len(self.index_page) / self.index_latency
 
-    @lazy_property
-    def priority(self):
+    @mutable_property
+    def sort_key(self):
         """
-        A number that indicates the preference for this mirror (where higher is better).
+        A tuple that can be used to sort the mirror by its availability/performance metrics.
 
-        The :attr:`priority` value is based on the :attr:`bandwidth` value but
-        penalized when :data:`is_available` is :data:`False` or
-        :attr:`is_updating` is :data:`True`.
+        The tuple created by this property contains three numbers in the following order:
+
+        1. The number 1 when :attr:`is_available` is :data:`True` or
+           the number 0 when :attr:`is_available` is :data:`False`
+           (because most importantly a mirror must be available).
+        2. The number 0 when :attr:`is_updating` is :data:`True` or
+           the number 1 when :attr:`is_updating` is :data:`False`
+           (because being updated at this very moment is _bad_).
+        3. The value of :attr:`bandwidth`.
+
+        By sorting :class:`CandidateMirror` objects on these tuples in
+        ascending order, the last mirror in the sorted results will be the
+        "most suitable mirror" (given the available information).
         """
-        if self.is_available:
-            return -1000 if self.is_updating else self.bandwidth
-        else:
-            return 0
+        return (int(self.is_available),
+                int(not self.is_updating),
+                self.bandwidth or 0)
 
 
 def check_suite_available(mirror_url, suite_name):
@@ -470,7 +478,7 @@ def prioritize_mirrors(mirror_urls, concurrency=4):
         raise Exception("It looks like all %s are unavailable!" % num_mirrors)
     if all(mirror.is_updating for mirror in candidates):
         logger.warning("It looks like all %s are being updated?!", num_mirrors)
-    return sorted(candidates, key=lambda mirror: mirror.priority, reverse=True)
+    return sorted(candidates, key=lambda mirror: mirror.sort_key, reverse=True)
 
 
 def find_current_mirror(sources_list):
