@@ -89,7 +89,7 @@ class AptMirrorUpdater(PropertyManager):
     @cached_property
     def available_mirrors(self):
         """
-        A set of strings (URLs) with available mirrors for the current platform.
+        A set of :class:`CandidateMirror` objects with available mirrors for the current platform.
 
         Currently only Debian (see :mod:`apt_mirror_updater.backends.debian`)
         and Ubuntu (see :mod:`apt_mirror_updater.backends.ubuntu`) are
@@ -110,15 +110,17 @@ class AptMirrorUpdater(PropertyManager):
             raise EnvironmentError(msg % (self.context, self.distributor_id))
         else:
             mirrors = set()
+            for candidate in discover_mirrors():
+                if any(fnmatch.fnmatch(candidate.mirror_url, pattern) for pattern in self.blacklist):
+                    logger.warning("Ignoring mirror %s because it matches the blacklist.", candidate.mirror_url)
+                else:
+                    mirrors.add(candidate)
+            # We make an attempt to incorporate the system's current mirror in
+            # the candidates but we don't propagate failures while doing so.
             try:
-                mirrors.add(self.current_mirror)
+                mirrors.add(CandidateMirror(mirror_url=self.current_mirror))
             except Exception as e:
                 logger.warning("Failed to add current mirror to set of available mirrors! (%s)", e)
-            for mirror_url in discover_mirrors():
-                if any(fnmatch.fnmatch(mirror_url, pattern) for pattern in self.blacklist):
-                    logger.warning("Ignoring mirror %s because it matches the blacklist.", mirror_url)
-                else:
-                    mirrors.add(mirror_url)
             return mirrors
 
     @cached_property
@@ -454,31 +456,31 @@ def check_suite_available(mirror_url, suite_name):
         return False
 
 
-def prioritize_mirrors(mirror_urls, concurrency=4):
+def prioritize_mirrors(mirrors, concurrency=None):
     """
-    Rank the given mirror URL(s) by connection speed and update status.
+    Rank the given mirrors by connection speed and update status.
 
-    :param mirror_urls: A list of strings with mirror URL(s).
-    :param concurrency: The number of URLs to query concurrently (an integer,
-                        defaults to four).
+    :param mirrors: An iterable of :class:`CandidateMirror` objects.
     :returns: A list of :class:`CandidateMirror` objects where the first object
               is the highest ranking mirror (the best mirror) and the last
               object is the lowest ranking mirror (the worst mirror).
     :raises: If none of the given mirrors are available an exception is raised.
     """
     timer = Timer()
-    num_mirrors = pluralize(len(mirror_urls), "mirror")
+    mapping = dict((c.mirror_url, c) for c in mirrors)
+    num_mirrors = pluralize(len(mapping), "mirror")
     logger.info("Checking %s for speed and update status ..", num_mirrors)
-    candidates = set(
-        CandidateMirror(mirror_url=url, index_page=data, index_latency=elapsed_time)
-        for url, data, elapsed_time in fetch_concurrent(mirror_urls)
-    )
+    for url, data, elapsed_time in fetch_concurrent(mapping.keys()):
+        candidate = mapping[url]
+        candidate.index_page = data
+        candidate.index_latency = elapsed_time
+    mirrors = list(mapping.values())
     logger.info("Finished checking speed and update status of %s (in %s).", num_mirrors, timer)
-    if not any(mirror.is_available for mirror in candidates):
+    if not any(c.is_available for c in mirrors):
         raise Exception("It looks like all %s are unavailable!" % num_mirrors)
-    if all(mirror.is_updating for mirror in candidates):
+    if all(c.is_updating for c in mirrors):
         logger.warning("It looks like all %s are being updated?!", num_mirrors)
-    return sorted(candidates, key=lambda mirror: mirror.sort_key, reverse=True)
+    return sorted(mirrors, key=lambda c: c.sort_key, reverse=True)
 
 
 def find_current_mirror(sources_list):

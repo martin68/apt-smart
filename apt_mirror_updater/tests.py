@@ -1,7 +1,7 @@
 # Automated, robust apt-get mirror selection for Debian and Ubuntu.
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: June 7, 2017
+# Last Change: June 8, 2017
 # URL: https://apt-mirror-updater.readthedocs.io
 
 """Test suite for the ``apt-mirror-updater`` package."""
@@ -54,22 +54,22 @@ class AptMirrorUpdaterTestCase(unittest.TestCase):
     def test_debian_mirror_discovery(self):
         """Test the discovery of Debian mirror URLs."""
         from apt_mirror_updater.backends.debian import discover_mirrors
-        mirror_urls = discover_mirrors()
-        assert len(mirror_urls) > 0
-        assert all(map(is_debian_mirror, mirror_urls))
+        mirrors = discover_mirrors()
+        assert len(mirrors) > 0
+        assert all(is_debian_mirror(c.mirror_url) for c in mirrors)
 
     def test_ubuntu_mirror_discovery(self):
         """Test the discovery of Ubuntu mirror URLs."""
         from apt_mirror_updater.backends.ubuntu import discover_mirrors
-        mirror_urls = discover_mirrors()
-        assert len(mirror_urls) > 0
-        assert all(map(is_ubuntu_mirror, mirror_urls))
+        mirrors = discover_mirrors()
+        assert len(mirrors) > 0
+        assert all(is_ubuntu_mirror(c.mirror_url) for c in mirrors)
 
     def test_adaptive_mirror_discovery(self):
         """Test the discovery of mirrors for the current type of system."""
         updater = AptMirrorUpdater(LocalContext())
         assert len(updater.available_mirrors) > 0
-        assert all(map(is_mirror_url, updater.available_mirrors))
+        assert all(is_mirror_url(c.mirror_url) for c in updater.available_mirrors)
 
     def test_mirror_prioritization(self):
         """Test the ranking of discovered mirrors."""
