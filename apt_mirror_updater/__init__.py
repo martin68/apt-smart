@@ -1,7 +1,7 @@
 # Automated, robust apt-get mirror selection for Debian and Ubuntu.
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: June 6, 2017
+# Last Change: June 7, 2017
 # URL: https://apt-mirror-updater.readthedocs.io
 
 """
@@ -17,10 +17,11 @@ an example that uses the :class:`AptMirrorUpdater` class.
 import fnmatch
 import logging
 import os
+import sys
 import time
 
 # External dependencies.
-from bs4 import BeautifulSoup, UnicodeDammit
+from bs4 import UnicodeDammit
 from capturer import CaptureOutput
 from humanfriendly import Timer, compact, format_timespan, pluralize
 from property_manager import PropertyManager, cached_property, key_property, lazy_property, required_property
@@ -35,12 +36,6 @@ __version__ = '0.3.1'
 MAIN_SOURCES_LIST = '/etc/apt/sources.list'
 """The absolute pathname of the list of configured APT data sources (a string)."""
 
-DEBIAN_MIRRORS_URL = 'https://www.debian.org/mirror/list'
-"""The URL of the HTML page listing all primary Debian mirrors (a string)."""
-
-UBUNTU_MIRRORS_URL = 'http://mirrors.ubuntu.com/mirrors.txt'
-"""The URL of a text file that lists geographically close Ubuntu mirrors (a string)."""
-
 UBUNTU_SECURITY_URL = 'http://security.ubuntu.com/ubuntu'
 """The URL where Ubuntu security updates are hosted (a string)."""
 
@@ -49,9 +44,6 @@ UBUNTU_OLD_RELEASES_URL = 'http://old-releases.ubuntu.com/ubuntu/'
 
 # Initialize a logger for this program.
 logger = logging.getLogger(__name__)
-
-# Stop the `stopit' logger from logging tracebacks.
-logging.getLogger('stopit').setLevel(logging.ERROR)
 
 
 class AptMirrorUpdater(PropertyManager):
@@ -92,28 +84,35 @@ class AptMirrorUpdater(PropertyManager):
         """
         A set of strings (URLs) with available mirrors for the current platform.
 
-        Currently only Debian (see :func:`discover_debian_mirrors()`) and
-        Ubuntu (see :func:`discover_ubuntu_mirrors()`) are supported. On other
-        platforms :exc:`~exceptions.EnvironmentError` is raised.
+        Currently only Debian (see :mod:`apt_mirror_updater.backends.debian`)
+        and Ubuntu (see :mod:`apt_mirror_updater.backends.ubuntu`) are
+        supported. On other platforms :exc:`~exceptions.EnvironmentError` is
+        raised.
         """
         logger.debug("Checking whether platform of %s is supported ..", self.context)
-        available_handlers = dict(debian=discover_debian_mirrors, ubuntu=discover_ubuntu_mirrors)
-        handler = available_handlers.get(self.distributor_id)
-        if handler:
+        module_path = "%s.backends.%s" % (__name__, self.distributor_id)
+        try:
+            # Import the backend module.
+            __import__(module_path)
+            # Get the module object.
+            module = sys.modules[module_path]
+            # Get the mirror discovery function.
+            discover_mirrors = getattr(module, 'discover_mirrors')
+        except (ImportError, KeyError, AttributeError):
+            msg = "Platform of %s (%s) is unsupported! (only Debian and Ubuntu are supported)"
+            raise EnvironmentError(msg % (self.context, self.distributor_id))
+        else:
             mirrors = set()
             try:
                 mirrors.add(self.current_mirror)
             except Exception as e:
                 logger.warning("Failed to add current mirror to set of available mirrors! (%s)", e)
-            for mirror_url in handler():
+            for mirror_url in discover_mirrors():
                 if any(fnmatch.fnmatch(mirror_url, pattern) for pattern in self.blacklist):
                     logger.warning("Ignoring mirror %s because it matches the blacklist.", mirror_url)
                 else:
                     mirrors.add(mirror_url)
             return mirrors
-        else:
-            msg = "Platform of %s (%s) is unsupported! (only Debian and Ubuntu are supported)"
-            raise EnvironmentError(msg % (self.context, self.distributor_id))
 
     @cached_property
     def prioritized_mirrors(self):
@@ -426,122 +425,6 @@ class CandidateMirror(PropertyManager):
             return -1000 if self.is_updating else self.bandwidth
         else:
             return 0
-
-
-def discover_ubuntu_mirrors():
-    """
-    Discover available Ubuntu mirrors by querying :data:`UBUNTU_MIRRORS_URL`.
-
-    :returns: A set of strings with URLs of available mirrors.
-    :raises: If no mirrors are discovered an exception is raised.
-
-    An example run:
-
-    >>> from apt_mirror_updater import discover_ubuntu_mirrors
-    >>> from pprint import pprint
-    >>> pprint(discover_ubuntu_mirrors())
-    set(['http://archive.ubuntu.com/ubuntu/',
-         'http://ftp.nluug.nl/os/Linux/distr/ubuntu/',
-         'http://ftp.snt.utwente.nl/pub/os/linux/ubuntu/',
-         'http://ftp.tudelft.nl/archive.ubuntu.com/',
-         'http://mirror.1000mbps.com/ubuntu/',
-         'http://mirror.amsiohosting.net/archive.ubuntu.com/',
-         'http://mirror.i3d.net/pub/ubuntu/',
-         'http://mirror.nforce.com/pub/linux/ubuntu/',
-         'http://mirror.nl.leaseweb.net/ubuntu/',
-         'http://mirror.transip.net/ubuntu/ubuntu/',
-         'http://mirrors.nl.eu.kernel.org/ubuntu/',
-         'http://mirrors.noction.com/ubuntu/archive/',
-         'http://nl.archive.ubuntu.com/ubuntu/',
-         'http://nl3.archive.ubuntu.com/ubuntu/',
-         'http://osmirror.rug.nl/ubuntu/',
-         'http://ubuntu.mirror.cambrium.nl/ubuntu/'])
-    """
-    timer = Timer()
-    logger.info("Discovering available Ubuntu mirrors (using %s) ..", UBUNTU_MIRRORS_URL)
-    response = fetch_url(UBUNTU_MIRRORS_URL, retry=True)
-    dammit = UnicodeDammit(response.read())
-    lines = dammit.unicode_markup.splitlines()
-    mirrors = set(l.strip() for l in lines if l and not l.isspace())
-    if not mirrors:
-        raise Exception("Failed to discover any Ubuntu mirrors! (using %s)" % UBUNTU_MIRRORS_URL)
-    logger.info("Discovered %s in %s.", pluralize(len(mirrors), "Ubuntu mirror"), timer)
-    return mirrors
-
-
-def discover_debian_mirrors():
-    """
-    Discover available Debian mirrors by querying :data:`DEBIAN_MIRRORS_URL`.
-
-    :returns: A set of strings with URLs of available mirrors.
-    :raises: If no mirrors are discovered an exception is raised.
-
-    An example run:
-
-    >>> from apt_mirror_updater import discover_debian_mirrors
-    >>> from pprint import pprint
-    >>> pprint(discover_debian_mirrors())
-    set(['http://ftp.at.debian.org/debian/',
-         'http://ftp.au.debian.org/debian/',
-         'http://ftp.be.debian.org/debian/',
-         'http://ftp.bg.debian.org/debian/',
-         'http://ftp.br.debian.org/debian/',
-         'http://ftp.by.debian.org/debian/',
-         'http://ftp.ca.debian.org/debian/',
-         'http://ftp.ch.debian.org/debian/',
-         'http://ftp.cn.debian.org/debian/',
-         'http://ftp.cz.debian.org/debian/',
-         'http://ftp.de.debian.org/debian/',
-         'http://ftp.dk.debian.org/debian/',
-         'http://ftp.ee.debian.org/debian/',
-         'http://ftp.es.debian.org/debian/',
-         'http://ftp.fi.debian.org/debian/',
-         'http://ftp.fr.debian.org/debian/',
-         'http://ftp.gr.debian.org/debian/',
-         'http://ftp.hk.debian.org/debian/',
-         'http://ftp.hr.debian.org/debian/',
-         'http://ftp.hu.debian.org/debian/',
-         'http://ftp.ie.debian.org/debian/',
-         'http://ftp.is.debian.org/debian/',
-         'http://ftp.it.debian.org/debian/',
-         'http://ftp.jp.debian.org/debian/',
-         'http://ftp.kr.debian.org/debian/',
-         'http://ftp.lt.debian.org/debian/',
-         'http://ftp.md.debian.org/debian/',
-         'http://ftp.mx.debian.org/debian/',
-         'http://ftp.nc.debian.org/debian/',
-         'http://ftp.nl.debian.org/debian/',
-         'http://ftp.no.debian.org/debian/',
-         'http://ftp.nz.debian.org/debian/',
-         'http://ftp.pl.debian.org/debian/',
-         'http://ftp.pt.debian.org/debian/',
-         'http://ftp.ro.debian.org/debian/',
-         'http://ftp.ru.debian.org/debian/',
-         'http://ftp.se.debian.org/debian/',
-         'http://ftp.si.debian.org/debian/',
-         'http://ftp.sk.debian.org/debian/',
-         'http://ftp.sv.debian.org/debian/',
-         'http://ftp.th.debian.org/debian/',
-         'http://ftp.tr.debian.org/debian/',
-         'http://ftp.tw.debian.org/debian/',
-         'http://ftp.ua.debian.org/debian/',
-         'http://ftp.uk.debian.org/debian/',
-         'http://ftp.us.debian.org/debian/',
-         'http://ftp2.de.debian.org/debian/',
-         'http://ftp2.fr.debian.org/debian/'])
-    """
-    timer = Timer()
-    logger.info("Discovering Debian mirrors (using %s) ..", DEBIAN_MIRRORS_URL)
-    response = fetch_url(DEBIAN_MIRRORS_URL, retry=True)
-    soup = BeautifulSoup(response, 'html.parser')
-    tables = soup.findAll('table')
-    if not tables:
-        raise Exception("Failed to locate <table> element in Debian mirror page! (%s)" % DEBIAN_MIRRORS_URL)
-    mirrors = set(a['href'] for a in tables[0].findAll('a', href=True))
-    if not mirrors:
-        raise Exception("Failed to discover any Debian mirrors! (using %s)" % DEBIAN_MIRRORS_URL)
-    logger.info("Discovered %s in %s.", pluralize(len(mirrors), "Debian mirror"), timer)
-    return mirrors
 
 
 def check_suite_available(mirror_url, suite_name):

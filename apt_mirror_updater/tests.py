@@ -1,7 +1,7 @@
 # Automated, robust apt-get mirror selection for Debian and Ubuntu.
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: June 6, 2017
+# Last Change: June 7, 2017
 # URL: https://apt-mirror-updater.readthedocs.io
 
 """Test suite for the ``apt-mirror-updater`` package."""
@@ -20,11 +20,7 @@ from humanfriendly import compact
 from six.moves import StringIO
 
 # Modules included in our package.
-from apt_mirror_updater import (
-    AptMirrorUpdater,
-    discover_debian_mirrors,
-    discover_ubuntu_mirrors,
-)
+from apt_mirror_updater import AptMirrorUpdater
 from apt_mirror_updater.cli import main
 
 # Initialize a logger for this module.
@@ -57,13 +53,15 @@ class AptMirrorUpdaterTestCase(unittest.TestCase):
 
     def test_debian_mirror_discovery(self):
         """Test the discovery of Debian mirror URLs."""
-        mirror_urls = discover_debian_mirrors()
+        from apt_mirror_updater.backends.debian import discover_mirrors
+        mirror_urls = discover_mirrors()
         assert len(mirror_urls) > 0
         assert all(map(is_debian_mirror, mirror_urls))
 
     def test_ubuntu_mirror_discovery(self):
         """Test the discovery of Ubuntu mirror URLs."""
-        mirror_urls = discover_ubuntu_mirrors()
+        from apt_mirror_updater.backends.ubuntu import discover_mirrors
+        mirror_urls = discover_mirrors()
         assert len(mirror_urls) > 0
         assert all(map(is_ubuntu_mirror, mirror_urls))
 
