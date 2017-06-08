@@ -24,14 +24,7 @@ import time
 from bs4 import UnicodeDammit
 from capturer import CaptureOutput
 from humanfriendly import Timer, compact, format_timespan, pluralize
-from property_manager import (
-    PropertyManager,
-    cached_property,
-    key_property,
-    lazy_property,
-    mutable_property,
-    set_property,
-)
+from property_manager import PropertyManager, cached_property, key_property, mutable_property, set_property
 from six.moves.urllib.parse import urljoin, urlparse
 
 # Modules included in our package.
@@ -79,24 +72,6 @@ class AptMirrorUpdater(PropertyManager):
         """Limits the number of mirrors to rank (a number, defaults to :data:`MAX_MIRRORS`)."""
         return MAX_MIRRORS
 
-    @lazy_property
-    def distributor_id(self):
-        """
-        The distributor ID of the system (a lowercased string like ``debian`` or ``ubuntu``).
-
-        This is the output of ``lsb_release --short --id``.
-        """
-        return self.context.capture('lsb_release', '--short', '--id').lower()
-
-    @lazy_property
-    def distribution_codename(self):
-        """
-        The code name of the system's distribution (a lowercased string like ``precise`` or ``trusty``).
-
-        This is the output of ``lsb_release --short --codename``.
-        """
-        return self.context.capture('lsb_release', '--short', '--codename').lower()
-
     @cached_property
     def available_mirrors(self):
         """
@@ -108,7 +83,7 @@ class AptMirrorUpdater(PropertyManager):
         raised.
         """
         logger.debug("Checking whether platform of %s is supported ..", self.context)
-        module_path = "%s.backends.%s" % (__name__, self.distributor_id)
+        module_path = "%s.backends.%s" % (__name__, self.context.distributor_id)
         try:
             # Import the backend module.
             __import__(module_path)
@@ -118,7 +93,7 @@ class AptMirrorUpdater(PropertyManager):
             discover_mirrors = getattr(module, 'discover_mirrors')
         except (ImportError, KeyError, AttributeError):
             msg = "Platform of %s (%s) is unsupported! (only Debian and Ubuntu are supported)"
-            raise EnvironmentError(msg % (self.context, self.distributor_id))
+            raise EnvironmentError(msg % (self.context, self.context.distributor_id))
         else:
             mirrors = set()
             for candidate in discover_mirrors():
@@ -161,12 +136,12 @@ class AptMirrorUpdater(PropertyManager):
         mirror_url = self.prioritized_mirrors[0].mirror_url
         if self.validate_mirror(mirror_url):
             return mirror_url
-        elif self.distributor_id == 'ubuntu':
+        elif self.context.distributor_id == 'ubuntu':
             logger.info("Falling back to Ubuntu's old releases mirror (%s).", UBUNTU_OLD_RELEASES_URL)
             return UBUNTU_OLD_RELEASES_URL
         else:
             msg = "It looks like the suite %s is EOL (end of life) but there's no fall back available for %s!"
-            raise Exception(msg % (self.distribution_codename, self.distributor_id))
+            raise Exception(msg % (self.context.distribution_codename, self.context.distributor_id))
 
     @cached_property
     def current_mirror(self):
@@ -191,9 +166,9 @@ class AptMirrorUpdater(PropertyManager):
         :func:`check_suite_available()` that avoids validating a mirror more
         than once.
         """
-        key = (mirror_url, self.distribution_codename)
+        key = (mirror_url, self.context.distribution_codename)
         if key not in self.mirror_validity:
-            self.mirror_validity[key] = check_suite_available(mirror_url, self.distribution_codename)
+            self.mirror_validity[key] = check_suite_available(mirror_url, self.context.distribution_codename)
         return self.mirror_validity[key]
 
     def ignore_mirror(self, pattern):
@@ -340,7 +315,7 @@ class AptMirrorUpdater(PropertyManager):
                         # suite is EOL we need to verify our assumption.
                         if maybe_end_of_life:
                             logger.warning("It looks like the current suite (%s) is EOL, verifying ..",
-                                           self.distribution_codename)
+                                           self.context.distribution_codename)
                             if not self.validate_mirror(self.current_mirror):
                                 if switch_mirrors:
                                     logger.warning("Switching to old releases mirror because current suite is EOL ..")
@@ -354,7 +329,7 @@ class AptMirrorUpdater(PropertyManager):
                                         current suite ({suite}) is end of life but
                                         I'm not allowed to switch mirrors! (there's
                                         no point in retrying so I'm not going to)
-                                    """, suite=self.distribution_codename))
+                                    """, suite=self.context.distribution_codename))
                         # Check for `hash sum mismatch' errors.
                         if switch_mirrors and u'hash sum mismatch' in output.lower():
                             logger.warning("Detected 'hash sum mismatch' failure, switching to other mirror ..")
