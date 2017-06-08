@@ -55,27 +55,27 @@ class AptMirrorUpdaterTestCase(unittest.TestCase):
         """Test the discovery of Debian mirror URLs."""
         from apt_mirror_updater.backends.debian import discover_mirrors
         mirrors = discover_mirrors()
-        assert len(mirrors) > 0
+        assert len(mirrors) > 10
         assert all(is_debian_mirror(c.mirror_url) for c in mirrors)
 
     def test_ubuntu_mirror_discovery(self):
         """Test the discovery of Ubuntu mirror URLs."""
         from apt_mirror_updater.backends.ubuntu import discover_mirrors
         mirrors = discover_mirrors()
-        assert len(mirrors) > 0
+        assert len(mirrors) > 10
         assert all(is_ubuntu_mirror(c.mirror_url) for c in mirrors)
 
     def test_adaptive_mirror_discovery(self):
         """Test the discovery of mirrors for the current type of system."""
         updater = AptMirrorUpdater(LocalContext())
-        assert len(updater.available_mirrors) > 0
+        assert len(updater.available_mirrors) > 10
         assert all(is_mirror_url(c.mirror_url) for c in updater.available_mirrors)
 
     def test_mirror_prioritization(self):
         """Test the ranking of discovered mirrors."""
         updater = AptMirrorUpdater(LocalContext())
         # Make sure that multiple discovered mirrors are available.
-        assert sum(m.is_available for m in updater.prioritized_mirrors) > 1
+        assert sum(m.is_available for m in updater.prioritized_mirrors) > 10
 
     def test_best_mirror_selection(self):
         """Test the selection of a "best" mirror."""
