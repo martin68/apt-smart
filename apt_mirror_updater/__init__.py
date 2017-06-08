@@ -46,6 +46,9 @@ MAIN_SOURCES_LIST = '/etc/apt/sources.list'
 MAX_MIRRORS = 50
 """Limits the number of mirrors ranked by :func:`prioritize_mirrors()` (a number)."""
 
+LAST_UPDATED_DEFAULT = 60 * 60 * 24 * 7 * 4
+"""A default, pessimistic :attr:`~CandidateMirror.last_updated` value (a number)."""
+
 UBUNTU_SECURITY_URL = 'http://security.ubuntu.com/ubuntu'
 """The URL where Ubuntu security updates are hosted (a string)."""
 
@@ -439,7 +442,8 @@ class CandidateMirror(PropertyManager):
            the number 1 when :attr:`is_updating` is :data:`False`
            (because being updated at this very moment is *bad*).
         3. The negated value of :attr:`last_updated` (because the
-           lower :attr:`last_updated` is, the better).
+           lower :attr:`last_updated` is, the better). If :attr:`last_updated`
+           is :data:`None` then :data:`LAST_UPDATED_DEFAULT` is used instead.
         4. The value of :attr:`bandwidth` (because the higher
            :attr:`bandwidth` is, the better).
 
@@ -449,7 +453,7 @@ class CandidateMirror(PropertyManager):
         """
         return (int(self.is_available),
                 int(not self.is_updating),
-                -(self.last_updated if self.last_updated is not None else sys.maxint),
+                -(self.last_updated if self.last_updated is not None else LAST_UPDATED_DEFAULT),
                 self.bandwidth or 0)
 
 
