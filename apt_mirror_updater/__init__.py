@@ -480,8 +480,8 @@ def prioritize_mirrors(mirrors, limit=MAX_MIRRORS, concurrency=None):
     # Sort the candidates based on the currently available information
     # (and transform the input argument into a list in the process).
     mirrors = sorted(mirrors, key=lambda c: c.sort_key, reverse=True)
-    # Limit the number of candidates to a reasonable number.
-    if len(mirrors) > limit:
+    # Limit the number of candidates to a reasonable number?
+    if limit and len(mirrors) > limit:
         mirrors = mirrors[:limit]
     mapping = dict((c.mirror_url, c) for c in mirrors)
     num_mirrors = pluralize(len(mapping), "mirror")
