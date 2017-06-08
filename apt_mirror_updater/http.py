@@ -1,7 +1,7 @@
 # Automated, robust apt-get mirror selection for Debian and Ubuntu.
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: May 31, 2017
+# Last Change: June 8, 2017
 # URL: https://apt-mirror-updater.readthedocs.io
 
 """Simple, robust and concurrent HTTP requests (designed for one very narrow use case)."""
@@ -9,6 +9,7 @@
 # Standard library modules.
 import logging
 import multiprocessing
+import signal
 
 # External dependencies.
 from humanfriendly import Timer, format_size
@@ -82,6 +83,11 @@ def fetch_worker(url):
               2. The data that was fetched (a string or :data:`None`).
               3. The number of seconds it took to fetch the URL (a number).
     """
+    # Ignore Control-C instead of raising KeyboardInterrupt because (due to a
+    # quirk in multiprocessing) this can cause the parent and child processes
+    # to get into a deadlock kind of state where only Control-Z will get you
+    # your precious terminal back; super annoying IMHO.
+    signal.signal(signal.SIGINT, signal.SIG_IGN)
     timer = Timer()
     try:
         response = fetch_url(url, retry=False)
