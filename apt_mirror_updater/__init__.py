@@ -387,6 +387,10 @@ class CandidateMirror(PropertyManager):
         """The time it took to download the mirror's index page (a floating point number or :data:`None`)."""
 
     @mutable_property
+    def last_updated(self):
+        """The time in seconds since the last mirror update (a number or :data:`None`)."""
+
+    @mutable_property
     def is_available(self):
         """:data:`True` if an HTTP connection to the mirror was successfully established, :data:`False` otherwise."""
         return self.index_page is not None
@@ -426,7 +430,7 @@ class CandidateMirror(PropertyManager):
         """
         A tuple that can be used to sort the mirror by its availability/performance metrics.
 
-        The tuple created by this property contains three numbers in the following order:
+        The tuple created by this property contains four numbers in the following order:
 
         1. The number 1 when :attr:`is_available` is :data:`True` or
            the number 0 when :attr:`is_available` is :data:`False`
@@ -434,7 +438,10 @@ class CandidateMirror(PropertyManager):
         2. The number 0 when :attr:`is_updating` is :data:`True` or
            the number 1 when :attr:`is_updating` is :data:`False`
            (because being updated at this very moment is _bad_).
-        3. The value of :attr:`bandwidth`.
+        3. The negated value of :attr:`last_updated` (because the
+           lower :attr:`last_updated` is, the better).
+        4. The value of :attr:`bandwidth` (because the higher
+           :attr:`bandwidth` is, the better).
 
         By sorting :class:`CandidateMirror` objects on these tuples in
         ascending order, the last mirror in the sorted results will be the
@@ -442,6 +449,7 @@ class CandidateMirror(PropertyManager):
         """
         return (int(self.is_available),
                 int(not self.is_updating),
+                -(self.last_updated if self.last_updated is not None else sys.maxint),
                 self.bandwidth or 0)
 
 

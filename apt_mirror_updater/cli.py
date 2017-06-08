@@ -82,7 +82,7 @@ import sys
 # External dependencies.
 import coloredlogs
 from executor.contexts import LocalContext, RemoteContext
-from humanfriendly import format_size, format_table
+from humanfriendly import format_size, format_table, format_timespan
 from humanfriendly.terminal import connected_to_terminal, output, usage, warning
 
 # Modules included in our package.
@@ -164,16 +164,28 @@ def report_current_mirror(updater):
 def report_available_mirrors(updater):
     """Print the available mirrors to the terminal (in a human friendly format)."""
     if connected_to_terminal():
-        output(format_table(
-            data=[
-                (i, candidate.mirror_url,
-                 "Yes" if candidate.is_available else "No",
-                 "Yes" if candidate.is_updating else "No" if candidate.is_available else "Unknown",
-                 format_size(candidate.bandwidth) if candidate.bandwidth else "Unknown")
-                for i, candidate in enumerate(updater.prioritized_mirrors, start=1)
-            ],
-            column_names=["Position", "Mirror URL", "Is available?", "Is being updated?", "Bandwidth (p/s)"],
-        ))
+        have_bandwidth = any(c.bandwidth for c in updater.prioritized_mirrors)
+        have_last_updated = any(c.last_updated is not None for c in updater.prioritized_mirrors)
+        column_names = ["Rank", "Mirror URL", "Available?", "Updating?"]
+        if have_last_updated:
+            column_names.append("Last updated")
+        if have_bandwidth:
+            column_names.append("Bandwidth")
+        data = []
+        for i, candidate in enumerate(updater.prioritized_mirrors, start=1):
+            row = [i, candidate.mirror_url,
+                   "Yes" if candidate.is_available else "No",
+                   "Yes" if candidate.is_updating else "No"]
+            if have_last_updated:
+                row.append("Up to date" if candidate.last_updated == 0 else (
+                    "%s behind" % format_timespan(candidate.last_updated)
+                    if candidate.last_updated else "Unknown"
+                ))
+            if have_bandwidth:
+                row.append("%s/s" % format_size(round(candidate.bandwidth, 2))
+                           if candidate.bandwidth else "Unknown")
+            data.append(row)
+        output(format_table(data, column_names=column_names))
     else:
         output(u"\n".join(
             candidate.mirror_url for candidate in updater.prioritized_mirrors
