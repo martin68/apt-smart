@@ -10,8 +10,8 @@ apt-mirror-updater: Automated Debian/Ubuntu mirror selection
 The `apt-mirror-updater` package automates robust apt-get_ mirror selection for
 Debian_ and Ubuntu_ by enabling discovery of available mirrors, ranking of
 available mirrors, automatic switching between mirrors and robust package list
-updating (see features_). The goal is to support Python 2.6, 2.7, 3.4 and PyPy
-but an automated test suite hasn't been developed yet (see status_).
+updating (see features_). It's currently tested on Python 2.6, 2.7, 3.4, 3.5,
+3.6 and PyPy (although test coverage is still rather low, see status_).
 
 .. contents::
    :local:
@@ -24,8 +24,8 @@ Features
 **Discovery of available mirrors**
  Debian_ and Ubuntu_ mirrors are discovered automatically by querying the
  `Debian mirror list <https://www.debian.org/mirror/list>`_ or the `Ubuntu
- mirror list <http://mirrors.ubuntu.com/mirrors.txt>`_ (the applicable mirror
- list is automatically selected based on the current platform).
+ mirror list <https://launchpad.net/ubuntu/+archivemirrors>`_ (the applicable
+ mirror list is automatically selected based on the current platform).
 
 **Ranking of available mirrors**
  Discovered mirrors are ranked by bandwidth (to pick the fastest mirror) and
@@ -53,8 +53,8 @@ Status
 On the one hand the `apt-mirror-updater` package was developed based on quite a
 few years of experience in using apt-get_ on Debian_ and Ubuntu_ systems and
 large scale automation of apt-get (working on 150+ remote systems). On the
-other hand the Python package itself is quite new at the time of writing: it
-was developed and published in March 2016. As such:
+other hand the Python package itself is relatively new: it was developed and
+published in March 2016. As such:
 
 .. warning:: Until `apt-mirror-updater` has been rigorously tested I consider
              it a proof of concept (beta software) so if it corrupts your
@@ -67,10 +67,9 @@ was developed and published in March 2016. As such:
              made before any changes are applied, so I don't see how this can
              result in irreversible corruption.
 
-My intention is to develop an automated test suite but at the moment I'm still
-a bit fuzzy on how to create representative tests for the error handling code
-paths (also, writing a decent test suite will require a significant chunk of
-time :-).
+I'm working on an automated test suite but at the moment I'm still a bit fuzzy
+on how to create representative tests for the error handling code paths (also,
+writing a decent test suite requires a significant chunk of time :-).
 
 Installation
 ------------

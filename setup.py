@@ -3,7 +3,7 @@
 """Setup script for the `apt-mirror-updater` package."""
 
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: May 31, 2017
+# Last Change: June 8, 2017
 # URL: https://apt-mirror-updater.readthedocs.io
 
 # Standard library modules.
@@ -73,6 +73,7 @@ setup(
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: Implementation :: CPython',
         'Programming Language :: Python :: Implementation :: PyPy',
         'Topic :: Software Development',
