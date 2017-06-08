@@ -1,7 +1,7 @@
 # Automated, robust apt-get mirror selection for Debian and Ubuntu.
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: June 6, 2017
+# Last Change: June 8, 2017
 # URL: https://apt-mirror-updater.readthedocs.io
 
 """
@@ -41,14 +41,22 @@ Supported options:
   -u, --update, --update-package-lists
 
     Update the package lists using `apt-get update', retrying on failure and
-    automatically switching to a different mirror when it looks like the
-    current mirror is being updated.
+    automatically switch to a different mirror when it looks like the current
+    mirror is being updated.
 
   -x, --exclude=PATTERN
 
     Add a pattern to the mirror selection blacklist. PATTERN is expected to be
     a shell pattern (containing wild cards like `?' and `*') that is matched
     against the full URL of each mirror.
+
+  -m, --max=COUNT
+
+    Don't query more than COUNT mirrors for their connection status (defaults
+    to 50). Because Ubuntu mirror discovery can report more than 300 mirrors it
+    is useful to limit the number of mirrors that are queried, otherwise the
+    ranking of mirrors can take a long time (because 300+ connections need to
+    be established during ranking).
 
   -v, --verbose
 
@@ -76,7 +84,7 @@ from humanfriendly import format_size, format_table
 from humanfriendly.terminal import connected_to_terminal, output, usage, warning
 
 # Modules included in our package.
-from apt_mirror_updater import AptMirrorUpdater
+from apt_mirror_updater import MAX_MIRRORS, AptMirrorUpdater
 
 # Initialize a logger for this module.
 logger = logging.getLogger(__name__)
@@ -89,13 +97,15 @@ def main():
     # Command line option defaults.
     context = LocalContext()
     updater = AptMirrorUpdater(context)
+    limit = MAX_MIRRORS
     actions = []
     # Parse the command line arguments.
     try:
-        options, arguments = getopt.getopt(sys.argv[1:], 'r:flc:aux:vqh', [
+        options, arguments = getopt.getopt(sys.argv[1:], 'r:flc:aux:m:vqh', [
             'remote-host=', 'find-current-mirror', 'list-mirrors',
             'change-mirror', 'auto-change-mirror', 'update',
-            'update-package-lists', 'exclude=', 'verbose', 'quiet', 'help',
+            'update-package-lists', 'exclude=', 'max=', 'verbose', 'quiet',
+            'help',
         ])
         for option, value in options:
             if option in ('-r', '--remote-host'):
@@ -116,6 +126,8 @@ def main():
                 actions.append(updater.smart_update)
             elif option in ('-x', '--exclude'):
                 actions.insert(0, functools.partial(updater.ignore_mirror, value))
+            elif option in ('-m', '--max'):
+                limit = int(value)
             elif option in ('-v', '--verbose'):
                 coloredlogs.increase_verbosity()
             elif option in ('-q', '--quiet'):
@@ -128,6 +140,8 @@ def main():
         if not actions:
             usage(__doc__)
             return
+        # Propagate options to the Python API.
+        updater.max_mirrors = limit
     except Exception as e:
         warning("Error: Failed to parse command line arguments! (%s)" % e)
         sys.exit(1)

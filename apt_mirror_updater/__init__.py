@@ -43,6 +43,9 @@ __version__ = '0.3.1'
 MAIN_SOURCES_LIST = '/etc/apt/sources.list'
 """The absolute pathname of the list of configured APT data sources (a string)."""
 
+MAX_MIRRORS = 50
+"""Limits the number of mirrors to rank (a number)."""
+
 UBUNTU_SECURITY_URL = 'http://security.ubuntu.com/ubuntu'
 """The URL where Ubuntu security updates are hosted (a string)."""
 
@@ -67,6 +70,11 @@ class AptMirrorUpdater(PropertyManager):
         self.context = context
         self.blacklist = set()
         self.mirror_validity = dict()
+
+    @mutable_property
+    def max_mirrors(self):
+        """Limits the number of mirrors to rank (a number, defaults to :data:`MAX_MIRRORS`)."""
+        return MAX_MIRRORS
 
     @lazy_property
     def distributor_id(self):
@@ -131,7 +139,7 @@ class AptMirrorUpdater(PropertyManager):
         Refer to :func:`prioritize_mirrors()` for details about how this
         property's value is computed.
         """
-        return prioritize_mirrors(self.available_mirrors)
+        return prioritize_mirrors(self.available_mirrors, limit=self.max_mirrors)
 
     @cached_property
     def best_mirror(self):
@@ -456,17 +464,25 @@ def check_suite_available(mirror_url, suite_name):
         return False
 
 
-def prioritize_mirrors(mirrors, concurrency=None):
+def prioritize_mirrors(mirrors, limit=MAX_MIRRORS, concurrency=None):
     """
     Rank the given mirrors by connection speed and update status.
 
     :param mirrors: An iterable of :class:`CandidateMirror` objects.
+    :param limit: The maximum number of mirrors to query and report (a number,
+                  defaults to :data:`MAX_MIRRORS`).
     :returns: A list of :class:`CandidateMirror` objects where the first object
               is the highest ranking mirror (the best mirror) and the last
               object is the lowest ranking mirror (the worst mirror).
     :raises: If none of the given mirrors are available an exception is raised.
     """
     timer = Timer()
+    # Sort the candidates based on the currently available information
+    # (and transform the input argument into a list in the process).
+    mirrors = sorted(mirrors, key=lambda c: c.sort_key, reverse=True)
+    # Limit the number of candidates to a reasonable number.
+    if len(mirrors) > limit:
+        mirrors = mirrors[:limit]
     mapping = dict((c.mirror_url, c) for c in mirrors)
     num_mirrors = pluralize(len(mapping), "mirror")
     logger.info("Checking %s for speed and update status ..", num_mirrors)

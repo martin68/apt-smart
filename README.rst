@@ -130,11 +130,16 @@ updating.
    "``-a``, ``--auto-change-mirror``","Discover available mirrors, rank the mirrors by connection speed and update
    status and update /etc/apt/sources.list to use the best available mirror."
    "``-u``, ``--update``, ``--update-package-lists``","Update the package lists using ""apt-get update"", retrying on failure and
-   automatically switching to a different mirror when it looks like the
-   current mirror is being updated."
+   automatically switch to a different mirror when it looks like the current
+   mirror is being updated."
    "``-x``, ``--exclude=PATTERN``","Add a pattern to the mirror selection blacklist. ``PATTERN`` is expected to be
    a shell pattern (containing wild cards like ""?"" and ""\*"") that is matched
    against the full URL of each mirror."
+   "``-m``, ``--max=COUNT``","Don't query more than ``COUNT`` mirrors for their connection status (defaults
+   to 50). Because Ubuntu mirror discovery can report more than 300 mirrors it
+   is useful to limit the number of mirrors that are queried, otherwise the
+   ranking of mirrors can take a long time (because 300+ connections need to
+   be established during ranking)."
    "``-v``, ``--verbose``",Increase logging verbosity (can be repeated).
    "``-q``, ``--quiet``",Decrease logging verbosity (can be repeated).
    "``-h``, ``--help``",Show this message and exit.
