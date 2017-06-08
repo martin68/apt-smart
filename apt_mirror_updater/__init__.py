@@ -44,7 +44,7 @@ MAIN_SOURCES_LIST = '/etc/apt/sources.list'
 """The absolute pathname of the list of configured APT data sources (a string)."""
 
 MAX_MIRRORS = 50
-"""Limits the number of mirrors to rank (a number)."""
+"""Limits the number of mirrors ranked by :func:`prioritize_mirrors()` (a number)."""
 
 UBUNTU_SECURITY_URL = 'http://security.ubuntu.com/ubuntu'
 """The URL where Ubuntu security updates are hosted (a string)."""
@@ -437,7 +437,7 @@ class CandidateMirror(PropertyManager):
            (because most importantly a mirror must be available).
         2. The number 0 when :attr:`is_updating` is :data:`True` or
            the number 1 when :attr:`is_updating` is :data:`False`
-           (because being updated at this very moment is _bad_).
+           (because being updated at this very moment is *bad*).
         3. The negated value of :attr:`last_updated` (because the
            lower :attr:`last_updated` is, the better).
         4. The value of :attr:`bandwidth` (because the higher
@@ -479,6 +479,7 @@ def prioritize_mirrors(mirrors, limit=MAX_MIRRORS, concurrency=None):
     :param mirrors: An iterable of :class:`CandidateMirror` objects.
     :param limit: The maximum number of mirrors to query and report (a number,
                   defaults to :data:`MAX_MIRRORS`).
+    :param concurrency: Refer to :func:`~apt_mirror_updater.http.fetch_concurrent()`.
     :returns: A list of :class:`CandidateMirror` objects where the first object
               is the highest ranking mirror (the best mirror) and the last
               object is the lowest ranking mirror (the worst mirror).

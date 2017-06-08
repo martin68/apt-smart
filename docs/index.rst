@@ -15,8 +15,26 @@ the `apt-mirror-updater` package.
 .. automodule:: apt_mirror_updater
    :members:
 
+:mod:`apt_mirror_updater.backends.debian`
+-----------------------------------------
+
+.. automodule:: apt_mirror_updater.backends.debian
+   :members:
+
+:mod:`apt_mirror_updater.backends.ubuntu`
+-----------------------------------------
+
+.. automodule:: apt_mirror_updater.backends.ubuntu
+   :members:
+
 :mod:`apt_mirror_updater.cli`
 -----------------------------
 
 .. automodule:: apt_mirror_updater.cli
+   :members:
+
+:mod:`apt_mirror_updater.http`
+------------------------------
+
+.. automodule:: apt_mirror_updater.http
    :members:

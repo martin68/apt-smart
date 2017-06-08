@@ -31,7 +31,7 @@ UBUNTU_MIRROR_STATUSES = (
     ('One week behind', 60 * 60 * 24 * 7),
     ('Unknown', None),
 )
-"""
+r"""
 A tuple of tuples with Launchpad mirror statuses. Each tuple consists of two values:
 
 1. The human readable mirror latency (a string) as used on :data:`UBUNTU_MIRRORS_URL`.
@@ -61,9 +61,9 @@ def discover_mirrors():
     """
     Discover available Ubuntu mirrors by querying :data:`UBUNTU_MIRRORS_URL`.
 
-    :returns: A set of :class:`CandidateMirror` objects that have their
-              :attr:`~CandidateMirror.mirror_url` property set and may have
-              the :attr:`~CandidateMirror.last_updated` property set.
+    :returns: A set of :class:`.CandidateMirror` objects that have their
+              :attr:`~.CandidateMirror.mirror_url` property set and may have
+              the :attr:`~.CandidateMirror.last_updated` property set.
     :raises: If no mirrors are discovered an exception is raised.
 
     An example run:

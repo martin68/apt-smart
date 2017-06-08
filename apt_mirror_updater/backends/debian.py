@@ -28,8 +28,8 @@ def discover_mirrors():
     """
     Discover available Debian mirrors by querying :data:`DEBIAN_MIRRORS_URL`.
 
-    :returns: A set of :class:`CandidateMirror` objects that have their
-             :attr:`~CandidateMirror.mirror_url` property set.
+    :returns: A set of :class:`.CandidateMirror` objects that have their
+             :attr:`~.CandidateMirror.mirror_url` property set.
     :raises: If no mirrors are discovered an exception is raised.
 
     An example run:
