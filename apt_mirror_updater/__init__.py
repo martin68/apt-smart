@@ -1,7 +1,7 @@
 # Automated, robust apt-get mirror selection for Debian and Ubuntu.
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: June 8, 2017
+# Last Change: June 9, 2017
 # URL: https://apt-mirror-updater.readthedocs.io
 
 """
@@ -259,10 +259,15 @@ class AptMirrorUpdater(PropertyManager):
         logger.info("Finished changing mirror of %s in %s.", self.context, timer)
 
     def clear_package_lists(self):
-        """Clear the package list cache by removing all files under ``/var/lib/apt/lists``."""
+        """Clear the package list cache by removing the files under ``/var/lib/apt/lists``."""
         timer = Timer()
         logger.info("Clearing package list cache on %s ..", self.context)
-        self.context.execute('find', '/var/lib/apt/lists', '-type', 'f', '-delete', sudo=True)
+        self.context.execute(
+            # We use an ugly but necessary find | xargs pipeline here because
+            # find's -delete option implies -depth which negates -prune. Sigh.
+            'find /var/lib/apt/lists -type f -name lock -prune -o -type f -print0 | xargs -0 rm -f',
+            sudo=True,
+        )
         logger.info("Successfully cleared package list cache on %s in %s.", self.context, timer)
 
     def dumb_update(self):
