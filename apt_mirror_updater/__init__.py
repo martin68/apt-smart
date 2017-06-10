@@ -201,6 +201,31 @@ class AptMirrorUpdater(PropertyManager):
         logger.debug("Parsing %s to find current mirror of %s ..", MAIN_SOURCES_LIST, self.context)
         return find_current_mirror(self.context.capture('cat', MAIN_SOURCES_LIST))
 
+    @cached_property
+    def stable_mirror(self):
+        """
+        A mirror URL that is stable for the given execution context (a string).
+
+        The value of this property defaults to the value of
+        :attr:`current_mirror`, however if the current mirror can't be
+        determined or is deemed inappropriate by :func:`validate_mirror()`
+        then :attr:`best_mirror` will be used instead.
+
+        This provides a stable mirror selection algorithm which is useful
+        because switching mirrors causes ``apt-get update`` to unconditionally
+        download all package lists and this takes a lot of time so should it be
+        avoided when unnecessary.
+        """
+        try:
+            logger.debug("Trying to select current mirror as stable mirror ..")
+            if self.validate_mirror(self.current_mirror):
+                return self.current_mirror
+            else:
+                logger.debug("Failed to validate current mirror, selecting best mirror instead ..")
+        except Exception as e:
+            logger.debug("Failed to determine current mirror, selecting best mirror instead (error was: %s) ..", e)
+        return self.best_mirror
+
     def validate_mirror(self, mirror_url):
         """
         Make sure a mirror serves the given suite.
