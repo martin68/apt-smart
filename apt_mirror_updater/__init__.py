@@ -330,6 +330,24 @@ class AptMirrorUpdater(PropertyManager):
             self.smart_update(switch_mirrors=False)
         logger.info("Finished changing mirror of %s in %s.", self.context, timer)
 
+    def generate_sources_list(self, **options):
+        """
+        Generate the contents of ``/etc/apt/sources.list``.
+
+        If no `mirror_url` keyword argument is given then :attr:`stable_mirror`
+        is used as a default.
+
+        Please refer to the documentation of the Debian
+        (:func:`apt_mirror_updater.backends.debian.generate_sources_list()`)
+        and Ubuntu (:func:`apt_mirror_updater.backends.ubuntu.generate_sources_list()`)
+        backend implementations of this method for details on argument handling
+        and the return value.
+        """
+        if options.get('mirror_url') is None:
+            options['mirror_url'] = self.stable_mirror
+        options.setdefault('codename', self.distribution_codename)
+        return self.backend.generate_sources_list(**options)
+
     def clear_package_lists(self):
         """Clear the package list cache by removing the files under ``/var/lib/apt/lists``."""
         timer = Timer()

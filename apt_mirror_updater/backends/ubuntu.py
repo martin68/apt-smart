@@ -1,7 +1,7 @@
 # Automated, robust apt-get mirror selection for Debian and Ubuntu.
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: June 8, 2017
+# Last Change: June 10, 2017
 # URL: https://apt-mirror-updater.readthedocs.io
 
 """Discovery of Ubuntu package archive mirrors."""
@@ -11,7 +11,7 @@ import logging
 
 # External dependencies.
 from bs4 import BeautifulSoup
-from humanfriendly import Timer, pluralize
+from humanfriendly import Timer, format, pluralize
 
 # Modules included in our package.
 from apt_mirror_updater import CandidateMirror
@@ -19,6 +19,9 @@ from apt_mirror_updater.http import fetch_url
 
 UBUNTU_MIRRORS_URL = 'https://launchpad.net/ubuntu/+archivemirrors'
 """The URL of the HTML page listing official Ubuntu mirrors (a string)."""
+
+UBUNTU_SECURITY_URL = 'http://security.ubuntu.com/ubuntu'
+"""The URL where Ubuntu security updates are hosted (a string)."""
 
 UBUNTU_MIRROR_STATUSES = (
     ('Up to date', 0),
@@ -52,6 +55,26 @@ The 'known statuses' used by Launchpad were checked as follows:
    distromirrorstatusONEWEEKBEHIND
    distromirrorstatusUNKNOWN
 """
+
+VALID_UBUNTU_COMPONENTS = 'main', 'restricted', 'universe', 'multiverse'
+"""A tuple of strings with the names of the components available in the Ubuntu package repositories."""
+
+VALID_UBUNTU_SUITES = 'release', 'security', 'updates', 'backports', 'proposed'
+"""
+A tuple of strings with the names of the suites available in the Ubuntu package
+repositories.
+
+The actual name of the 'release' suite is the codename of the relevant Ubuntu
+release, while the names of the other suites are formed by concatenating the
+codename with the suite name (separated by a dash).
+
+As an example to make things more concrete, Ubuntu 16.04 has the following five
+suites available: ``xenial`` (this is the release suite), ``xenial-security``,
+``xenial-updates``, ``xenial-backports`` and ``xenial-proposed``.
+"""
+
+DEFAULT_UBUNTU_SUITES = 'release', 'updates', 'backports', 'security'
+"""A tuple of strings with the Ubuntu suites that are enabled by default."""
 
 # Initialize a logger for this program.
 logger = logging.getLogger(__name__)
@@ -112,3 +135,34 @@ def discover_mirrors():
         raise Exception("Failed to discover any Ubuntu mirrors! (using %s)" % UBUNTU_MIRRORS_URL)
     logger.info("Discovered %s in %s.", pluralize(len(mirrors), "Ubuntu mirror"), timer)
     return mirrors
+
+
+def generate_sources_list(mirror_url, codename,
+                          suites=DEFAULT_UBUNTU_SUITES,
+                          components=VALID_UBUNTU_COMPONENTS,
+                          enable_sources=False):
+    """
+    Generate the contents of ``/etc/apt/sources.list`` for an Ubuntu system.
+
+    :param mirror_url: The base URL of the mirror (a string).
+    :param codename: The codename of the Ubuntu release (a string like 'trusty' or 'xenial').
+    :param suites: An iterable of strings (defaults to
+                   :data:`DEFAULT_UBUNTU_SUITES`, refer to
+                   :data:`VALID_UBUNTU_SUITES` for details).
+    :param components: An iterable of strings (refer to
+                       :data:`VALID_UBUNTU_COMPONENTS` for details).
+    :param enable_sources: :data:`True` to include ``deb-src`` entries,
+                           :data:`False` to omit them.
+    :returns: The suggested contents of ``/etc/apt/sources.list`` (a string).
+    """
+    lines = []
+    directives = ('deb', 'deb-src') if enable_sources else ('deb',)
+    for suite in suites:
+        for directive in directives:
+            lines.append(format(
+                '{directive} {mirror} {suite} {components}', directive=directive,
+                mirror=(UBUNTU_SECURITY_URL if suite == 'security' else mirror_url),
+                suite=(codename if suite == 'release' else codename + '-' + suite),
+                components=' '.join(components),
+            ))
+    return '\n'.join(lines)
