@@ -23,6 +23,7 @@ import time
 # External dependencies.
 from bs4 import UnicodeDammit
 from capturer import CaptureOutput
+from executor.contexts import LocalContext
 from humanfriendly import AutomaticSpinner, Timer, compact, format_timespan, pluralize
 from property_manager import PropertyManager, cached_property, key_property, mutable_property, set_property
 from six.moves.urllib.parse import urljoin, urlparse
@@ -56,16 +57,23 @@ class AptMirrorUpdater(PropertyManager):
 
     """Python API for the `apt-mirror-updater` package."""
 
-    def __init__(self, context):
+    def __init__(self, **options):
         """
         Initialize an :class:`AptMirrorUpdater` object.
 
-        :param context: An execution context created using
-                        :mod:`executor.contexts`.
+        :param options: Refer to the :class:`.PropertyManager` initializer for
+                        details on argument handling.
         """
-        self.context = context
+        # Initialize our superclass.
+        super(AptMirrorUpdater, self).__init__(**options)
+        # Initialize instance variables.
         self.blacklist = set()
         self.mirror_validity = dict()
+
+    @mutable_property(cached=True)
+    def context(self):
+        """An execution context created using :mod:`executor.contexts` (defaults to :class:`.LocalContext`)."""
+        return LocalContext()
 
     @mutable_property
     def max_mirrors(self):

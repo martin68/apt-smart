@@ -1,7 +1,7 @@
 # Automated, robust apt-get mirror selection for Debian and Ubuntu.
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: June 8, 2017
+# Last Change: June 10, 2017
 # URL: https://apt-mirror-updater.readthedocs.io
 
 """Test suite for the ``apt-mirror-updater`` package."""
@@ -67,19 +67,19 @@ class AptMirrorUpdaterTestCase(unittest.TestCase):
 
     def test_adaptive_mirror_discovery(self):
         """Test the discovery of mirrors for the current type of system."""
-        updater = AptMirrorUpdater(LocalContext())
+        updater = AptMirrorUpdater()
         assert len(updater.available_mirrors) > 10
         assert all(is_mirror_url(c.mirror_url) for c in updater.available_mirrors)
 
     def test_mirror_prioritization(self):
         """Test the ranking of discovered mirrors."""
-        updater = AptMirrorUpdater(LocalContext())
+        updater = AptMirrorUpdater()
         # Make sure that multiple discovered mirrors are available.
         assert sum(m.is_available for m in updater.prioritized_mirrors) > 10
 
     def test_best_mirror_selection(self):
         """Test the selection of a "best" mirror."""
-        updater = AptMirrorUpdater(LocalContext())
+        updater = AptMirrorUpdater()
         assert is_mirror_url(updater.best_mirror)
 
     def test_current_mirror_discovery(self):
@@ -92,7 +92,7 @@ class AptMirrorUpdaterTestCase(unittest.TestCase):
         """Test that our dumb ``apt-get update`` wrapper works."""
         if os.getuid() != 0:
             return self.skipTest("root privileges required to opt in")
-        updater = AptMirrorUpdater(LocalContext())
+        updater = AptMirrorUpdater()
         # Remove all existing package lists.
         updater.clear_package_lists()
         # Verify that package lists aren't available.
@@ -111,7 +111,7 @@ class AptMirrorUpdaterTestCase(unittest.TestCase):
         """
         if os.getuid() != 0:
             return self.skipTest("root privileges required to opt in")
-        updater = AptMirrorUpdater(LocalContext())
+        updater = AptMirrorUpdater()
         # Remove all existing package lists.
         updater.clear_package_lists()
         # Verify that package lists aren't available.

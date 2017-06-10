@@ -1,7 +1,7 @@
 # Automated, robust apt-get mirror selection for Debian and Ubuntu.
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: June 8, 2017
+# Last Change: June 10, 2017
 # URL: https://apt-mirror-updater.readthedocs.io
 
 """
@@ -98,7 +98,7 @@ def main():
     coloredlogs.install(syslog=True)
     # Command line option defaults.
     context = LocalContext()
-    updater = AptMirrorUpdater(context)
+    updater = AptMirrorUpdater(context=context)
     limit = MAX_MIRRORS
     actions = []
     # Parse the command line arguments.
@@ -115,7 +115,7 @@ def main():
                     msg = "The %s option should be the first option given on the command line!"
                     raise Exception(msg % option)
                 context = RemoteContext(value)
-                updater = AptMirrorUpdater(context)
+                updater = AptMirrorUpdater(context=context)
             elif option in ('-f', '--find-current-mirror'):
                 actions.append(functools.partial(report_current_mirror, updater))
             elif option in ('-l', '--list-mirrors'):
