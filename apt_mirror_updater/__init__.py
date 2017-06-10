@@ -1,7 +1,7 @@
 # Automated, robust apt-get mirror selection for Debian and Ubuntu.
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: June 9, 2017
+# Last Change: June 10, 2017
 # URL: https://apt-mirror-updater.readthedocs.io
 
 """
@@ -23,7 +23,7 @@ import time
 # External dependencies.
 from bs4 import UnicodeDammit
 from capturer import CaptureOutput
-from humanfriendly import Timer, compact, format_timespan, pluralize
+from humanfriendly import AutomaticSpinner, Timer, compact, format_timespan, pluralize
 from property_manager import PropertyManager, cached_property, key_property, mutable_property, set_property
 from six.moves.urllib.parse import urljoin, urlparse
 
@@ -479,10 +479,11 @@ def prioritize_mirrors(mirrors, limit=MAX_MIRRORS, concurrency=None):
     mapping = dict((c.mirror_url, c) for c in mirrors)
     num_mirrors = pluralize(len(mapping), "mirror")
     logger.info("Checking %s for speed and update status ..", num_mirrors)
-    for url, data, elapsed_time in fetch_concurrent(mapping.keys()):
-        candidate = mapping[url]
-        candidate.index_page = data
-        candidate.index_latency = elapsed_time
+    with AutomaticSpinner(label="Checking mirrors"):
+        for url, data, elapsed_time in fetch_concurrent(mapping.keys()):
+            candidate = mapping[url]
+            candidate.index_page = data
+            candidate.index_latency = elapsed_time
     mirrors = list(mapping.values())
     logger.info("Finished checking speed and update status of %s (in %s).", num_mirrors, timer)
     if not any(c.is_available for c in mirrors):
