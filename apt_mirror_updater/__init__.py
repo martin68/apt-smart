@@ -76,6 +76,36 @@ class AptMirrorUpdater(PropertyManager):
         return LocalContext()
 
     @mutable_property
+    def distributor_id(self):
+        """
+        The distributor ID (a lowercase string like 'debian' or 'ubuntu').
+
+        The value of this property defaults to the value of the
+        :attr:`executor.contexts.AbstractContext.distributor_id`
+        property which is the right choice 99% of the time.
+
+        An example of a situation where it's not the right choice is when you
+        want to create a chroot_ using debootstrap_: In this case the host
+        system's :attr:`distributor_id` and :attr:`distribution_codename` may
+        very well differ from those inside the chroot.
+
+        .. _chroot: https://en.wikipedia.org/wiki/chroot
+        .. _debootstrap: https://en.wikipedia.org/wiki/debootstrap
+        """
+        return self.context.distributor_id
+
+    @mutable_property
+    def distribution_codename(self):
+        """
+        The distribution codename (a lowercase string like 'trusty' or 'xenial').
+
+        The value of this property defaults to the value of the
+        :attr:`executor.contexts.AbstractContext.distribution_codename`
+        property which is the right choice 99% of the time.
+        """
+        return self.context.distribution_codename
+
+    @mutable_property
     def max_mirrors(self):
         """Limits the number of mirrors to rank (a number, defaults to :data:`MAX_MIRRORS`)."""
         return MAX_MIRRORS
@@ -91,7 +121,7 @@ class AptMirrorUpdater(PropertyManager):
         raised.
         """
         logger.debug("Checking whether platform of %s is supported ..", self.context)
-        module_path = "%s.backends.%s" % (__name__, self.context.distributor_id)
+        module_path = "%s.backends.%s" % (__name__, self.distributor_id)
         try:
             # Import the backend module.
             __import__(module_path)
@@ -101,7 +131,7 @@ class AptMirrorUpdater(PropertyManager):
             discover_mirrors = getattr(module, 'discover_mirrors')
         except (ImportError, KeyError, AttributeError):
             msg = "Platform of %s (%s) is unsupported! (only Debian and Ubuntu are supported)"
-            raise EnvironmentError(msg % (self.context, self.context.distributor_id))
+            raise EnvironmentError(msg % (self.context, self.distributor_id))
         else:
             mirrors = set()
             for candidate in discover_mirrors():
@@ -140,16 +170,16 @@ class AptMirrorUpdater(PropertyManager):
         :raises: If the current suite is EOL (end of life) but there's no fall
                  back mirror available an exception is raised.
         """
-        logger.debug("Selecting best mirror for %s ..", self.context)
+        logger.debug("Selecting best %s mirror ..", self.distributor_id.capitalize())
         mirror_url = self.prioritized_mirrors[0].mirror_url
         if self.validate_mirror(mirror_url):
             return mirror_url
-        elif self.context.distributor_id == 'ubuntu':
+        elif self.distributor_id == 'ubuntu':
             logger.info("Falling back to Ubuntu's old releases mirror (%s).", UBUNTU_OLD_RELEASES_URL)
             return UBUNTU_OLD_RELEASES_URL
         else:
             msg = "It looks like the suite %s is EOL (end of life) but there's no fall back available for %s!"
-            raise Exception(msg % (self.context.distribution_codename, self.context.distributor_id))
+            raise Exception(msg % (self.distribution_codename, self.distributor_id))
 
     @cached_property
     def current_mirror(self):
@@ -174,9 +204,9 @@ class AptMirrorUpdater(PropertyManager):
         :func:`check_suite_available()` that avoids validating a mirror more
         than once.
         """
-        key = (mirror_url, self.context.distribution_codename)
+        key = (mirror_url, self.distribution_codename)
         if key not in self.mirror_validity:
-            self.mirror_validity[key] = check_suite_available(mirror_url, self.context.distribution_codename)
+            self.mirror_validity[key] = check_suite_available(mirror_url, self.distribution_codename)
         return self.mirror_validity[key]
 
     def ignore_mirror(self, pattern):
@@ -240,7 +270,7 @@ class AptMirrorUpdater(PropertyManager):
                 lines[i] = u' '.join(tokens)
         # Install the modified package resource list.
         sources_list = u''.join('%s\n' % l for l in lines)
-        logger.info("Updating %s on %s ..", MAIN_SOURCES_LIST, self.context)
+        logger.info("Updating %s of %s ..", MAIN_SOURCES_LIST, self.context)
         with self.context:
             # Write the updated sources.list contents to a temporary file.
             temporary_file = '/tmp/apt-mirror-updater-sources-list-%i.txt' % os.getpid()
@@ -269,21 +299,21 @@ class AptMirrorUpdater(PropertyManager):
     def clear_package_lists(self):
         """Clear the package list cache by removing the files under ``/var/lib/apt/lists``."""
         timer = Timer()
-        logger.info("Clearing package list cache on %s ..", self.context)
+        logger.info("Clearing package list cache of %s ..", self.context)
         self.context.execute(
             # We use an ugly but necessary find | xargs pipeline here because
             # find's -delete option implies -depth which negates -prune. Sigh.
             'find /var/lib/apt/lists -type f -name lock -prune -o -type f -print0 | xargs -0 rm -f',
             sudo=True,
         )
-        logger.info("Successfully cleared package list cache on %s in %s.", self.context, timer)
+        logger.info("Successfully cleared package list cache of %s in %s.", self.context, timer)
 
     def dumb_update(self):
         """Update the system's package lists (by running ``apt-get update``)."""
         timer = Timer()
-        logger.info("Updating package lists on %s ..", self.context)
+        logger.info("Updating package lists of %s ..", self.context)
         self.context.execute('apt-get', 'update', sudo=True)
-        logger.info("Finished updating package lists on %s in %s ..", self.context, timer)
+        logger.info("Finished updating package lists of %s in %s ..", self.context, timer)
 
     def smart_update(self, max_attempts=10, switch_mirrors=True):
         """
@@ -328,7 +358,7 @@ class AptMirrorUpdater(PropertyManager):
                         # suite is EOL we need to verify our assumption.
                         if maybe_end_of_life:
                             logger.warning("It looks like the current suite (%s) is EOL, verifying ..",
-                                           self.context.distribution_codename)
+                                           self.distribution_codename)
                             if not self.validate_mirror(self.current_mirror):
                                 if switch_mirrors:
                                     logger.warning("Switching to old releases mirror because current suite is EOL ..")
@@ -342,7 +372,7 @@ class AptMirrorUpdater(PropertyManager):
                                         current suite ({suite}) is end of life but
                                         I'm not allowed to switch mirrors! (there's
                                         no point in retrying so I'm not going to)
-                                    """, suite=self.context.distribution_codename))
+                                    """, suite=self.distribution_codename))
                         # Check for `hash sum mismatch' errors.
                         if switch_mirrors and u'hash sum mismatch' in output.lower():
                             logger.warning("Detected 'hash sum mismatch' failure, switching to other mirror ..")
