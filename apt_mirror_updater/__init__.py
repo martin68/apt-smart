@@ -199,7 +199,7 @@ class AptMirrorUpdater(PropertyManager):
         :func:`find_current_mirror()`.
         """
         logger.debug("Parsing %s to find current mirror of %s ..", MAIN_SOURCES_LIST, self.context)
-        return find_current_mirror(self.context.capture('cat', MAIN_SOURCES_LIST))
+        return find_current_mirror(self.context.read_file(MAIN_SOURCES_LIST))
 
     @cached_property
     def stable_mirror(self):
@@ -281,7 +281,7 @@ class AptMirrorUpdater(PropertyManager):
             new_mirror = self.best_mirror
             logger.info("Selected mirror: %s", new_mirror)
         # Parse /etc/apt/sources.list to replace the old mirror with the new one.
-        sources_list = self.context.capture('cat', MAIN_SOURCES_LIST)
+        sources_list = self.context.read_file(MAIN_SOURCES_LIST)
         current_mirror = find_current_mirror(sources_list)
         mirrors_to_replace = [current_mirror]
         if new_mirror == UBUNTU_OLD_RELEASES_URL or not self.validate_mirror(new_mirror):
