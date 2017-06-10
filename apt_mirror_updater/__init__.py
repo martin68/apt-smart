@@ -111,6 +111,24 @@ class AptMirrorUpdater(PropertyManager):
         return MAX_MIRRORS
 
     @cached_property
+    def backend(self):
+        """
+        The backend module whose name matches :attr:`distributor_id`.
+
+        :raises: :exc:`~exceptions.EnvironmentError` when no matching backend
+                 module is available.
+        """
+        logger.debug("Checking whether %s platform is supported ..", self.distributor_id.capitalize())
+        module_path = "%s.backends.%s" % (__name__, self.distributor_id)
+        try:
+            __import__(module_path)
+        except ImportError:
+            msg = "%s platform is unsupported! (only Debian and Ubuntu are supported)"
+            raise EnvironmentError(msg % self.distributor_id.capitalize())
+        else:
+            return sys.modules[module_path]
+
+    @cached_property
     def available_mirrors(self):
         """
         A set of :class:`CandidateMirror` objects with available mirrors for the current platform.
@@ -120,32 +138,23 @@ class AptMirrorUpdater(PropertyManager):
         supported. On other platforms :exc:`~exceptions.EnvironmentError` is
         raised.
         """
-        logger.debug("Checking whether platform of %s is supported ..", self.context)
-        module_path = "%s.backends.%s" % (__name__, self.distributor_id)
+        mirrors = set()
+        for candidate in self.backend.discover_mirrors():
+            if any(fnmatch.fnmatch(candidate.mirror_url, pattern) for pattern in self.blacklist):
+                logger.warning("Ignoring mirror %s because it matches the blacklist.", candidate.mirror_url)
+            else:
+                mirrors.add(candidate)
+        # We make an attempt to incorporate the system's current mirror in
+        # the candidates but we don't propagate failures while doing so.
         try:
-            # Import the backend module.
-            __import__(module_path)
-            # Get the module object.
-            module = sys.modules[module_path]
-            # Get the mirror discovery function.
-            discover_mirrors = getattr(module, 'discover_mirrors')
-        except (ImportError, KeyError, AttributeError):
-            msg = "Platform of %s (%s) is unsupported! (only Debian and Ubuntu are supported)"
-            raise EnvironmentError(msg % (self.context, self.distributor_id))
-        else:
-            mirrors = set()
-            for candidate in discover_mirrors():
-                if any(fnmatch.fnmatch(candidate.mirror_url, pattern) for pattern in self.blacklist):
-                    logger.warning("Ignoring mirror %s because it matches the blacklist.", candidate.mirror_url)
-                else:
-                    mirrors.add(candidate)
-            # We make an attempt to incorporate the system's current mirror in
-            # the candidates but we don't propagate failures while doing so.
-            try:
+            # Gotcha: We should never include the system's current mirror in
+            # the candidates when we're bootstrapping a chroot for a different
+            # platform.
+            if self.distributor_id == self.context.distributor_id:
                 mirrors.add(CandidateMirror(mirror_url=self.current_mirror))
-            except Exception as e:
-                logger.warning("Failed to add current mirror to set of available mirrors! (%s)", e)
-            return mirrors
+        except Exception as e:
+            logger.warning("Failed to add current mirror to set of available mirrors! (%s)", e)
+        return mirrors
 
     @cached_property
     def prioritized_mirrors(self):
