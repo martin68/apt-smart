@@ -284,13 +284,14 @@ class AptMirrorUpdater(PropertyManager):
         sources_list = self.context.read_file(MAIN_SOURCES_LIST)
         current_mirror = find_current_mirror(sources_list)
         mirrors_to_replace = [current_mirror]
-        if new_mirror == UBUNTU_OLD_RELEASES_URL or not self.validate_mirror(new_mirror):
-            # When a suite goes EOL the Ubuntu security updates mirror
-            # stops serving that suite as well, so we need to remove it.
-            logger.debug("Replacing %s URLs as well ..", UBUNTU_SECURITY_URL)
-            mirrors_to_replace.append(UBUNTU_SECURITY_URL)
-        else:
-            logger.debug("Not touching %s URLs.", UBUNTU_SECURITY_URL)
+        if self.distributor_id == 'ubuntu':
+            if new_mirror == UBUNTU_OLD_RELEASES_URL or not self.validate_mirror(new_mirror):
+                # When a suite goes EOL the Ubuntu security updates mirror
+                # stops serving that suite as well, so we need to remove it.
+                logger.debug("Replacing %s URLs as well ..", UBUNTU_SECURITY_URL)
+                mirrors_to_replace.append(UBUNTU_SECURITY_URL)
+            else:
+                logger.debug("Not touching %s URLs.", UBUNTU_SECURITY_URL)
         lines = sources_list.splitlines()
         for i, line in enumerate(lines):
             # The first token should be `deb' or `deb-src', the second token is
