@@ -304,24 +304,7 @@ class AptMirrorUpdater(PropertyManager):
                 tokens[1] = new_mirror
                 lines[i] = u' '.join(tokens)
         # Install the modified package resource list.
-        sources_list = u''.join('%s\n' % l for l in lines)
-        logger.info("Updating %s of %s ..", MAIN_SOURCES_LIST, self.context)
-        with self.context:
-            # Write the updated sources.list contents to a temporary file.
-            temporary_file = '/tmp/apt-mirror-updater-sources-list-%i.txt' % os.getpid()
-            self.context.write_file(temporary_file, sources_list)
-            # Make sure the temporary file is cleaned up when we're done with it.
-            self.context.cleanup('rm', '--force', temporary_file)
-            # Make a backup copy of /etc/apt/sources.list in case shit hits the fan.
-            backup_copy = '%s.save.%i' % (MAIN_SOURCES_LIST, time.time())
-            logger.info("Backing up contents of %s to %s ..", MAIN_SOURCES_LIST, backup_copy)
-            self.context.execute('cp', MAIN_SOURCES_LIST, backup_copy, sudo=True)
-            # Move the temporary file into place without changing ownership and permissions.
-            self.context.execute(
-                'cp', '--no-preserve=mode,ownership',
-                temporary_file, MAIN_SOURCES_LIST,
-                sudo=True,
-            )
+        self.install_sources_list(u'\n'.join(lines))
         # Clear (relevant) cached properties.
         del self.current_mirror
         # Make sure previous package lists are removed.
@@ -348,6 +331,33 @@ class AptMirrorUpdater(PropertyManager):
             options['mirror_url'] = self.stable_mirror
         options.setdefault('codename', self.distribution_codename)
         return self.backend.generate_sources_list(**options)
+
+    def install_sources_list(self, contents):
+        """
+        Install a new ``/etc/apt/sources.list`` file.
+
+        :param contents: The new contents of the sources list (a string). You
+                         can generate a suitable value using the method
+                         :func:`generate_sources_list()`.
+        """
+        logger.info("Installing new %s ..", MAIN_SOURCES_LIST)
+        with self.context:
+            # Write the sources.list contents to a temporary file.
+            temporary_file = '/tmp/apt-mirror-updater-sources-list-%i.txt' % os.getpid()
+            self.context.write_file(temporary_file, '%s\n' % contents.rstrip())
+            # Make sure the temporary file is cleaned up when we're done with it.
+            self.context.cleanup('rm', '--force', temporary_file)
+            # Make a backup copy of /etc/apt/sources.list in case shit hits the fan?
+            if self.context.exists(MAIN_SOURCES_LIST):
+                backup_copy = '%s.save.%i' % (MAIN_SOURCES_LIST, time.time())
+                logger.info("Backing up contents of %s to %s ..", MAIN_SOURCES_LIST, backup_copy)
+                self.context.execute('cp', MAIN_SOURCES_LIST, backup_copy, sudo=True)
+            # Move the temporary file into place without changing ownership and permissions.
+            self.context.execute(
+                'cp', '--no-preserve=mode,ownership',
+                temporary_file, MAIN_SOURCES_LIST,
+                sudo=True,
+            )
 
     def clear_package_lists(self):
         """Clear the package list cache by removing the files under ``/var/lib/apt/lists``."""
