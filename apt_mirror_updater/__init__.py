@@ -26,7 +26,7 @@ from capturer import CaptureOutput
 from executor.contexts import ChangeRootContext, LocalContext
 from humanfriendly import AutomaticSpinner, Timer, compact, format_timespan, pluralize
 from property_manager import PropertyManager, cached_property, key_property, mutable_property, set_property
-from six.moves.urllib.parse import urljoin, urlparse
+from six.moves.urllib.parse import urlparse
 
 # Modules included in our package.
 from apt_mirror_updater.http import fetch_concurrent, fetch_url
@@ -610,7 +610,9 @@ def check_suite_available(mirror_url, suite_name):
     """
     logger.info("Validating mirror %s for suite %s ..", mirror_url, suite_name)
     try:
-        fetch_url(urljoin(mirror_url, u'dists/%s' % suite_name), retry=False)
+        # Gotcha: The following URL manipulation previously used urljoin()
+        # and it would break when the mirror URL didn't end in a slash.
+        fetch_url('%s/dists/%s' % (mirror_url.rstrip('/'), suite_name), retry=False)
         logger.info("Mirror %s is a valid choice for the suite %s.", mirror_url, suite_name)
         return True
     except Exception:
