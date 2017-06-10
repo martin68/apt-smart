@@ -1,7 +1,7 @@
 # Automated, robust apt-get mirror selection for Debian and Ubuntu.
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: June 10, 2017
+# Last Change: June 11, 2017
 # URL: https://apt-mirror-updater.readthedocs.io
 
 """
@@ -23,7 +23,7 @@ import time
 # External dependencies.
 from bs4 import UnicodeDammit
 from capturer import CaptureOutput
-from executor.contexts import LocalContext
+from executor.contexts import ChangeRootContext, LocalContext
 from humanfriendly import AutomaticSpinner, Timer, compact, format_timespan, pluralize
 from property_manager import PropertyManager, cached_property, key_property, mutable_property, set_property
 from six.moves.urllib.parse import urljoin, urlparse
@@ -452,6 +452,67 @@ class AptMirrorUpdater(PropertyManager):
                             else:
                                 backoff_time += backoff_time / 3
         raise Exception("Failed to update package lists %i consecutive times?!" % max_attempts)
+
+    def create_chroot(self, directory, arch=None):
+        """
+        Bootstrap a basic Debian or Ubuntu system using debootstrap_.
+
+        :param directory: The pathname of the target directory (a string).
+        :param arch: The target architecture (a string or :data:`None`).
+        :returns: A :class:`~executor.contexts.ChangeRootContext` object.
+
+        If `directory` already exists and isn't empty then it is assumed that
+        the chroot has already been created and debootstrap_ won't be run.
+        Before this method returns it changes :attr:`context` to the chroot.
+        """
+        logger.debug("Checking if chroot already exists (%s) ..", directory)
+        if self.context.exists(directory) and self.context.list_entries(directory):
+            logger.debug("The chroot already exists, skipping initialization.")
+            first_run = False
+        else:
+            # Ensure the `debootstrap' program is installed.
+            if not self.context.find_program('debootstrap'):
+                logger.info("Installing `debootstrap' program ..")
+                self.context.execute('apt-get', 'install', '--yes', 'debootstrap', sudo=True)
+            # Use the `debootstrap' program to create the chroot.
+            timer = Timer()
+            logger.info("Creating chroot using debootstrap (%s) ..", directory)
+            debootstrap_command = ['debootstrap']
+            if arch:
+                debootstrap_command.append('--arch=%s' % arch)
+            debootstrap_command.append(self.distribution_codename)
+            debootstrap_command.append(directory)
+            debootstrap_command.append(self.best_mirror)
+            self.context.execute(*debootstrap_command, sudo=True)
+            logger.info("Took %s to create chroot.", timer)
+            first_run = True
+        # Switch the execution context to the chroot and reset the locale (to
+        # avoid locale warnings emitted by post-installation scripts run by
+        # `apt-get install').
+        self.context = ChangeRootContext(
+            chroot=directory,
+            environment=dict(LC_ALL='C'),
+        )
+        # Clear the values of cached properties that can be
+        # invalidated by switching the execution context.
+        del self.current_mirror
+        del self.stable_mirror
+        # The following initialization only needs to happen on the first
+        # run, but it requires the context to be set to the chroot.
+        if first_run:
+            # Make sure the `lsb_release' program is available. It is
+            # my experience that this package cannot be installed using
+            # `debootstrap --include=lsb-release', it specifically
+            # needs to be installed afterwards.
+            self.context.execute('apt-get', 'install', '--yes', 'lsb-release', sudo=True)
+            # Cleanup downloaded *.deb archives.
+            self.context.execute('apt-get', 'clean', sudo=True)
+            # Install a suitable /etc/apt/sources.list file. The logic behind
+            # generate_sources_list() depends on the `lsb_release' program.
+            self.install_sources_list(self.generate_sources_list())
+            # Make sure the package lists are up to date.
+            self.smart_update()
+        return self.context
 
 
 class CandidateMirror(PropertyManager):
