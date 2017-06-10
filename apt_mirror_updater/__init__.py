@@ -308,7 +308,7 @@ class AptMirrorUpdater(PropertyManager):
         with self.context:
             # Write the updated sources.list contents to a temporary file.
             temporary_file = '/tmp/apt-mirror-updater-sources-list-%i.txt' % os.getpid()
-            self.context.execute('cat > %s' % temporary_file, input=sources_list)
+            self.context.write_file(temporary_file, sources_list)
             # Make sure the temporary file is cleaned up when we're done with it.
             self.context.cleanup('rm', '--force', temporary_file)
             # Make a backup copy of /etc/apt/sources.list in case shit hits the fan.
