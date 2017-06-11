@@ -32,7 +32,7 @@ from six.moves.urllib.parse import urlparse
 from apt_mirror_updater.http import fetch_concurrent, fetch_url
 
 # Semi-standard module versioning.
-__version__ = '1.0'
+__version__ = '2.0'
 
 MAIN_SOURCES_LIST = '/etc/apt/sources.list'
 """The absolute pathname of the list of configured APT data sources (a string)."""
