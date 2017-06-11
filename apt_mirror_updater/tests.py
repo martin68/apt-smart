@@ -1,7 +1,7 @@
 # Automated, robust apt-get mirror selection for Debian and Ubuntu.
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: June 10, 2017
+# Last Change: June 11, 2017
 # URL: https://apt-mirror-updater.readthedocs.io
 
 """Test suite for the ``apt-mirror-updater`` package."""
@@ -15,7 +15,6 @@ import unittest
 # External dependencies.
 import coloredlogs
 from executor import execute
-from executor.contexts import LocalContext
 from humanfriendly import compact
 from six.moves import StringIO
 
