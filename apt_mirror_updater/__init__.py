@@ -581,17 +581,26 @@ class CandidateMirror(PropertyManager):
         #     mirror while that upstream mirror is itself in the process of being
         #     updated. This has all sorts of awkward implications about robustness
         #     that I don't want to think about :-(.
+        is_updating = False
         if self.is_available:
-            components = urlparse(self.mirror_url)
-            filename = u'Archive-Update-in-Progress-%s' % components.netloc
-            dammit = UnicodeDammit(self.index_page)
-            tokens = dammit.unicode_markup.split()
-            value = filename in tokens
-            # Cache the computed value (only when `index_page' is available).
-            set_property(self, 'is_updating', value)
-            return value
-        else:
-            return False
+            # I've seen UnicodeDammit fail to produce decoded output [2] and
+            # although I don't fully understand that situation (I couldn't
+            # reproduce it locally) I do think apt-mirror-updater shouldn't
+            # fail in this situation. As such this code has been changed to
+            # swallow exceptions instead of propagating them.
+            #
+            # [2] https://travis-ci.org/xolox/python-apt-mirror-updater/jobs/242128010
+            try:
+                components = urlparse(self.mirror_url)
+                filename = u'Archive-Update-in-Progress-%s' % components.netloc
+                dammit = UnicodeDammit(self.index_page)
+                tokens = dammit.unicode_markup.split()
+                is_updating = filename in tokens
+            except Exception:
+                pass
+            # Use a (nasty) trick to conditionally cache the computed value.
+            set_property(self, 'is_updating', is_updating)
+        return is_updating
 
     @mutable_property
     def bandwidth(self):
