@@ -558,8 +558,16 @@ class CandidateMirror(PropertyManager):
 
     @mutable_property
     def is_available(self):
-        """:data:`True` if an HTTP connection to the mirror was successfully established, :data:`False` otherwise."""
-        return self.index_page is not None
+        """
+        :data:`True` if the index page of the mirror was successfully fetched, :data:`False` otherwise.
+
+        The value of this property is computed by checking whether
+        :attr:`index_page` is 'nonempty' (so not an empty string and
+        also not :data:`None`). This is considered a sufficient check
+        because :func:`apt_mirror_updater.http.fetch_url()` ensures
+        that the status code of the HTTP response is 200.
+        """
+        return bool(self.index_page)
 
     @mutable_property
     def is_updating(self):
