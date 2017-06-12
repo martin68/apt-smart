@@ -1,7 +1,7 @@
 # Automated, robust apt-get mirror selection for Debian and Ubuntu.
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: June 8, 2017
+# Last Change: June 12, 2017
 # URL: https://apt-mirror-updater.readthedocs.io
 
 """Simple, robust and concurrent HTTP requests (designed for one very narrow use case)."""
@@ -16,7 +16,7 @@ from humanfriendly import Timer, format_size
 from six.moves.urllib.request import urlopen
 from stopit import SignalTimeout
 
-# Initialize a logger for this program.
+# Initialize a logger for this module.
 logger = logging.getLogger(__name__)
 
 # Stop the `stopit' logger from logging tracebacks.

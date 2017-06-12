@@ -1,7 +1,7 @@
 # Automated, robust apt-get mirror selection for Debian and Ubuntu.
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: June 12, 2017
+# Last Change: June 13, 2017
 # URL: https://apt-mirror-updater.readthedocs.io
 
 """
@@ -47,13 +47,7 @@ MAX_MIRRORS = 50
 LAST_UPDATED_DEFAULT = 60 * 60 * 24 * 7 * 4
 """A default, pessimistic :attr:`~CandidateMirror.last_updated` value (a number)."""
 
-UBUNTU_SECURITY_URL = 'http://security.ubuntu.com/ubuntu'
-"""The URL where Ubuntu security updates are hosted (a string)."""
-
-UBUNTU_OLD_RELEASES_URL = 'http://old-releases.ubuntu.com/ubuntu/'
-"""The URL where EOL (end of life) Ubuntu suites are hosted (a string)."""
-
-# Initialize a logger for this program.
+# Initialize a logger for this module.
 logger = logging.getLogger(__name__)
 
 
@@ -65,8 +59,8 @@ class AptMirrorUpdater(PropertyManager):
         """
         Initialize an :class:`AptMirrorUpdater` object.
 
-        :param options: Refer to the :class:`.PropertyManager` initializer for
-                        details on argument handling.
+        :param options: Refer to the :class:`~property_manager.PropertyManager`
+                        initializer for details on argument handling.
         """
         # Initialize our superclass.
         super(AptMirrorUpdater, self).__init__(**options)
@@ -76,7 +70,12 @@ class AptMirrorUpdater(PropertyManager):
 
     @mutable_property(cached=True)
     def context(self):
-        """An execution context created using :mod:`executor.contexts` (defaults to :class:`.LocalContext`)."""
+        """
+        An execution context created using :mod:`executor.contexts`.
+
+        The value of this property defaults to a
+        :class:`~executor.contexts.LocalContext` object.
+        """
         return LocalContext()
 
     @mutable_property
@@ -179,20 +178,13 @@ class AptMirrorUpdater(PropertyManager):
         best mirror from :attr:`available_mirrors` and validating the current
         suite's availability using :func:`validate_mirror()`. If
         :attr:`available_mirrors` is empty an exception is raised.
-
-        :raises: If the current suite is EOL (end of life) but there's no fall
-                 back mirror available an exception is raised.
         """
         logger.debug("Selecting best %s mirror ..", self.distributor_id.capitalize())
         mirror_url = self.prioritized_mirrors[0].mirror_url
-        if self.validate_mirror(mirror_url):
-            return mirror_url
-        elif self.distributor_id == 'ubuntu':
-            logger.info("Falling back to Ubuntu's old releases mirror (%s).", UBUNTU_OLD_RELEASES_URL)
-            return UBUNTU_OLD_RELEASES_URL
-        else:
-            msg = "It looks like the suite %s is EOL (end of life) but there's no fall back available for %s!"
-            raise Exception(msg % (self.distribution_codename, self.distributor_id))
+        if not self.validate_mirror(mirror_url):
+            mirror_url = self.backend.OLD_RELEASES_URL
+            logger.info("Falling back to old releases mirror (%s).", mirror_url)
+        return mirror_url
 
     @cached_property
     def current_mirror(self):
@@ -288,14 +280,13 @@ class AptMirrorUpdater(PropertyManager):
         sources_list = self.get_sources_list()
         current_mirror = find_current_mirror(sources_list)
         mirrors_to_replace = [current_mirror]
-        if self.distributor_id == 'ubuntu':
-            if new_mirror == UBUNTU_OLD_RELEASES_URL or not self.validate_mirror(new_mirror):
-                # When a suite goes EOL the Ubuntu security updates mirror
-                # stops serving that suite as well, so we need to remove it.
-                logger.debug("Replacing %s URLs as well ..", UBUNTU_SECURITY_URL)
-                mirrors_to_replace.append(UBUNTU_SECURITY_URL)
-            else:
-                logger.debug("Not touching %s URLs.", UBUNTU_SECURITY_URL)
+        if new_mirror == self.backend.OLD_RELEASES_URL or not self.validate_mirror(new_mirror):
+            # When a suite goes EOL the security updates mirrors stop
+            # serving that suite as well, so we need to remove them.
+            logger.debug("Replacing %s URLs as well ..", self.backend.SECURITY_URL)
+            mirrors_to_replace.append(self.backend.SECURITY_URL)
+        else:
+            logger.debug("Not touching %s URLs.", self.backend.SECURITY_URL)
         lines = sources_list.splitlines()
         for i, line in enumerate(lines):
             # The first token should be `deb' or `deb-src', the second token is
@@ -446,7 +437,7 @@ class AptMirrorUpdater(PropertyManager):
                             if not self.validate_mirror(self.current_mirror):
                                 if switch_mirrors:
                                     logger.warning("Switching to old releases mirror because current suite is EOL ..")
-                                    self.change_mirror(UBUNTU_OLD_RELEASES_URL, update=False)
+                                    self.change_mirror(self.backend.OLD_RELEASES_URL, update=False)
                                     continue
                                 else:
                                     # When asked to do the impossible we abort
