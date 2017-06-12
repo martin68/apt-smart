@@ -234,7 +234,7 @@ class AptMirrorUpdater(PropertyManager):
         :func:`check_suite_available()` that avoids validating a mirror more
         than once.
         """
-        if mirror_url == self.backend.OLD_RELEASES_URL:
+        if mirrors_are_equal(mirror_url, self.backend.OLD_RELEASES_URL):
             # Don't bother validating the archive / old-releases mirror.
             return True
         else:
@@ -284,7 +284,7 @@ class AptMirrorUpdater(PropertyManager):
         sources_list = self.get_sources_list()
         current_mirror = find_current_mirror(sources_list)
         mirrors_to_replace = [current_mirror]
-        if new_mirror == self.backend.OLD_RELEASES_URL or not self.validate_mirror(new_mirror):
+        if mirrors_are_equal(new_mirror, self.backend.OLD_RELEASES_URL) or not self.validate_mirror(new_mirror):
             # When a suite goes EOL the security updates mirrors stop
             # serving that suite as well, so we need to remove them.
             logger.debug("Replacing %s URLs as well ..", self.backend.SECURITY_URL)
@@ -715,3 +715,25 @@ def find_current_mirror(sources_list):
                 'main' in tokens[3:]):
             return tokens[1]
     raise EnvironmentError("Failed to determine current mirror in apt's package resource list!")
+
+
+def mirrors_are_equal(a, b):
+    """
+    Check whether two mirror URLS are equal.
+
+    :param a: The first mirror URL (a string).
+    :param b: The second mirror URL (a string).
+    :returns: :data:`True` if the mirror URLs are equal,
+              :data:`False` otherwise.
+    """
+    return normalize_mirror_url(a) == normalize_mirror_url(b)
+
+
+def normalize_mirror_url(url):
+    """
+    Normalize a mirror URL so it can be compared using string equality comparison.
+
+    :param url: The mirror URL to normalize (a string).
+    :returns: The normalized mirror URL (a string).
+    """
+    return url.rstrip('/')

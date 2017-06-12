@@ -23,7 +23,8 @@ from bs4 import BeautifulSoup
 from humanfriendly import Timer, format, pluralize
 
 # Modules included in our package.
-from apt_mirror_updater import CandidateMirror
+from apt_mirror_updater import CandidateMirror, mirrors_are_equal
+
 from apt_mirror_updater.http import fetch_url
 
 MIRRORS_URL = 'https://www.debian.org/mirror/list'
@@ -124,7 +125,7 @@ def generate_sources_list(mirror_url, codename,
         for directive in directives:
             lines.append(format(
                 '{directive} {mirror} {suite} {components}', directive=directive,
-                mirror=(OLD_RELEASES_URL if mirror_url == OLD_RELEASES_URL
+                mirror=(OLD_RELEASES_URL if mirrors_are_equal(mirror_url, OLD_RELEASES_URL)
                         else (SECURITY_URL if suite == 'security' else mirror_url)),
                 suite=(codename if suite == 'release' else (
                     ('%s/updates' % codename if suite == 'security'
