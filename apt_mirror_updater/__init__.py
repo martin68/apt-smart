@@ -1,7 +1,7 @@
 # Automated, robust apt-get mirror selection for Debian and Ubuntu.
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: June 11, 2017
+# Last Change: June 12, 2017
 # URL: https://apt-mirror-updater.readthedocs.io
 
 """
@@ -26,6 +26,7 @@ from capturer import CaptureOutput
 from executor.contexts import ChangeRootContext, LocalContext
 from humanfriendly import AutomaticSpinner, Timer, compact, format_timespan, pluralize
 from property_manager import PropertyManager, cached_property, key_property, mutable_property, set_property
+from six import text_type
 from six.moves.urllib.parse import urlparse
 
 # Modules included in our package.
@@ -36,6 +37,9 @@ __version__ = '2.0'
 
 MAIN_SOURCES_LIST = '/etc/apt/sources.list'
 """The absolute pathname of the list of configured APT data sources (a string)."""
+
+SOURCES_LIST_ENCODING = 'UTF-8'
+"""The text encoding of :data:`MAIN_SOURCES_LIST` (a string)."""
 
 MAX_MIRRORS = 50
 """Limits the number of mirrors ranked by :func:`prioritize_mirrors()` (a number)."""
@@ -199,7 +203,7 @@ class AptMirrorUpdater(PropertyManager):
         :func:`find_current_mirror()`.
         """
         logger.debug("Parsing %s to find current mirror of %s ..", MAIN_SOURCES_LIST, self.context)
-        return find_current_mirror(self.context.read_file(MAIN_SOURCES_LIST))
+        return find_current_mirror(self.get_sources_list())
 
     @cached_property
     def stable_mirror(self):
@@ -281,7 +285,7 @@ class AptMirrorUpdater(PropertyManager):
             new_mirror = self.best_mirror
             logger.info("Selected mirror: %s", new_mirror)
         # Parse /etc/apt/sources.list to replace the old mirror with the new one.
-        sources_list = self.context.read_file(MAIN_SOURCES_LIST)
+        sources_list = self.get_sources_list()
         current_mirror = find_current_mirror(sources_list)
         mirrors_to_replace = [current_mirror]
         if self.distributor_id == 'ubuntu':
@@ -314,6 +318,20 @@ class AptMirrorUpdater(PropertyManager):
             self.smart_update(switch_mirrors=False)
         logger.info("Finished changing mirror of %s in %s.", self.context, timer)
 
+    def get_sources_list(self):
+        """
+        Get the contents of :data:`MAIN_SOURCES_LIST`.
+
+        :returns: A Unicode string.
+
+        This code currently assumes that the ``sources.list`` file is encoded
+        using :data:`SOURCES_LIST_ENCODING`. I'm not actually sure if this is
+        correct because I haven't been able to find a formal specification!
+        Feedback is welcome :-).
+        """
+        contents = self.context.read_file(MAIN_SOURCES_LIST)
+        return contents.decode(SOURCES_LIST_ENCODING)
+
     def generate_sources_list(self, **options):
         """
         Generate the contents of ``/etc/apt/sources.list``.
@@ -336,15 +354,18 @@ class AptMirrorUpdater(PropertyManager):
         """
         Install a new ``/etc/apt/sources.list`` file.
 
-        :param contents: The new contents of the sources list (a string). You
-                         can generate a suitable value using the method
-                         :func:`generate_sources_list()`.
+        :param contents: The new contents of the sources list (a Unicode
+                         string). You can generate a suitable value using
+                         the :func:`generate_sources_list()` method.
         """
+        if isinstance(contents, text_type):
+            contents = contents.encode(SOURCES_LIST_ENCODING)
         logger.info("Installing new %s ..", MAIN_SOURCES_LIST)
         with self.context:
-            # Write the sources.list contents to a temporary file.
+            # Write the sources.list contents to a temporary file. We make sure
+            # the file always ends in a newline to adhere to UNIX conventions.
             temporary_file = '/tmp/apt-mirror-updater-sources-list-%i.txt' % os.getpid()
-            self.context.write_file(temporary_file, '%s\n' % contents.rstrip())
+            self.context.write_file(temporary_file, b'%s\n' % contents.rstrip())
             # Make sure the temporary file is cleaned up when we're done with it.
             self.context.cleanup('rm', '--force', temporary_file)
             # Make a backup copy of /etc/apt/sources.list in case shit hits the fan?
