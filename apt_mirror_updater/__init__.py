@@ -234,10 +234,14 @@ class AptMirrorUpdater(PropertyManager):
         :func:`check_suite_available()` that avoids validating a mirror more
         than once.
         """
-        key = (mirror_url, self.distribution_codename)
-        if key not in self.mirror_validity:
-            self.mirror_validity[key] = check_suite_available(mirror_url, self.distribution_codename)
-        return self.mirror_validity[key]
+        if mirror_url == self.backend.OLD_RELEASES_URL:
+            # Don't bother validating the archive / old-releases mirror.
+            return True
+        else:
+            key = (mirror_url, self.distribution_codename)
+            if key not in self.mirror_validity:
+                self.mirror_validity[key] = check_suite_available(mirror_url, self.distribution_codename)
+            return self.mirror_validity[key]
 
     def ignore_mirror(self, pattern):
         """
