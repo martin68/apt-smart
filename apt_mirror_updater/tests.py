@@ -1,7 +1,7 @@
 # Automated, robust apt-get mirror selection for Debian and Ubuntu.
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: June 11, 2017
+# Last Change: June 14, 2017
 # URL: https://apt-mirror-updater.readthedocs.io
 
 """Test suite for the ``apt-mirror-updater`` package."""
@@ -70,11 +70,11 @@ class AptMirrorUpdaterTestCase(unittest.TestCase):
         assert len(updater.available_mirrors) > 10
         assert all(is_mirror_url(c.mirror_url) for c in updater.available_mirrors)
 
-    def test_mirror_prioritization(self):
+    def test_mirror_ranking(self):
         """Test the ranking of discovered mirrors."""
         updater = AptMirrorUpdater()
         # Make sure that multiple discovered mirrors are available.
-        assert sum(m.is_available for m in updater.prioritized_mirrors) > 10
+        assert sum(m.is_available for m in updater.ranked_mirrors) > 10
 
     def test_best_mirror_selection(self):
         """Test the selection of a "best" mirror."""

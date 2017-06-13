@@ -1,7 +1,7 @@
 # Automated, robust apt-get mirror selection for Debian and Ubuntu.
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: June 10, 2017
+# Last Change: June 14, 2017
 # URL: https://apt-mirror-updater.readthedocs.io
 
 """
@@ -22,8 +22,13 @@ Supported options:
 
   -f, --find-current-mirror
 
-    Determine the URL of the main mirror that is currently configured in
-    /etc/apt/sources.list.
+    Determine the main mirror that is currently configured in
+    /etc/apt/sources.list and report its URL on standard output.
+
+  -b, --find-best-mirror
+
+    Discover available mirrors, rank them, select the best one and report its
+    URL on standard output.
 
   -l, --list-mirrors
 
@@ -103,9 +108,9 @@ def main():
     actions = []
     # Parse the command line arguments.
     try:
-        options, arguments = getopt.getopt(sys.argv[1:], 'r:flc:aux:m:vqh', [
-            'remote-host=', 'find-current-mirror', 'list-mirrors',
-            'change-mirror', 'auto-change-mirror', 'update',
+        options, arguments = getopt.getopt(sys.argv[1:], 'r:fblc:aux:m:vqh', [
+            'remote-host=', 'find-current-mirror', 'find-best-mirror',
+            'list-mirrors', 'change-mirror', 'auto-change-mirror', 'update',
             'update-package-lists', 'exclude=', 'max=', 'verbose', 'quiet',
             'help',
         ])
@@ -118,6 +123,8 @@ def main():
                 updater = AptMirrorUpdater(context=context)
             elif option in ('-f', '--find-current-mirror'):
                 actions.append(functools.partial(report_current_mirror, updater))
+            elif option in ('-b', '--find-best-mirror'):
+                actions.append(functools.partial(report_best_mirror, updater))
             elif option in ('-l', '--list-mirrors'):
                 actions.append(functools.partial(report_available_mirrors, updater))
             elif option in ('-c', '--change-mirror'):
@@ -161,18 +168,23 @@ def report_current_mirror(updater):
     output(updater.current_mirror)
 
 
+def report_best_mirror(updater):
+    """Print the URL of the "best" mirror."""
+    output(updater.best_mirror)
+
+
 def report_available_mirrors(updater):
     """Print the available mirrors to the terminal (in a human friendly format)."""
     if connected_to_terminal():
-        have_bandwidth = any(c.bandwidth for c in updater.prioritized_mirrors)
-        have_last_updated = any(c.last_updated is not None for c in updater.prioritized_mirrors)
+        have_bandwidth = any(c.bandwidth for c in updater.ranked_mirrors)
+        have_last_updated = any(c.last_updated is not None for c in updater.ranked_mirrors)
         column_names = ["Rank", "Mirror URL", "Available?", "Updating?"]
         if have_last_updated:
             column_names.append("Last updated")
         if have_bandwidth:
             column_names.append("Bandwidth")
         data = []
-        for i, candidate in enumerate(updater.prioritized_mirrors, start=1):
+        for i, candidate in enumerate(updater.ranked_mirrors, start=1):
             row = [i, candidate.mirror_url,
                    "Yes" if candidate.is_available else "No",
                    "Yes" if candidate.is_updating else "No"]
@@ -188,6 +200,6 @@ def report_available_mirrors(updater):
         output(format_table(data, column_names=column_names))
     else:
         output(u"\n".join(
-            candidate.mirror_url for candidate in updater.prioritized_mirrors
+            candidate.mirror_url for candidate in updater.ranked_mirrors
             if candidate.is_available and not candidate.is_updating
         ))

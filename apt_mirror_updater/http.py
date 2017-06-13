@@ -1,7 +1,7 @@
 # Automated, robust apt-get mirror selection for Debian and Ubuntu.
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: June 12, 2017
+# Last Change: June 13, 2017
 # URL: https://apt-mirror-updater.readthedocs.io
 
 """Simple, robust and concurrent HTTP requests (designed for one very narrow use case)."""
@@ -60,16 +60,26 @@ def fetch_concurrent(urls, concurrency=None):
     Fetch the given URLs concurrently using :mod:`multiprocessing`.
 
     :param urls: An iterable of URLs (strings).
-    :param concurrency: Overrides the default concurrency (an integer).
+    :param concurrency: Override the concurrency (an integer, defaults to the
+                        value computed by :func:`get_default_concurrency()`).
     :returns: A list of tuples like those returned by :func:`fetch_worker()`.
     """
     if concurrency is None:
-        concurrency = max(4, multiprocessing.cpu_count() * 2)
+        concurrency = get_default_concurrency()
     pool = multiprocessing.Pool(concurrency)
     try:
         return pool.map(fetch_worker, urls, chunksize=1)
     finally:
         pool.terminate()
+
+
+def get_default_concurrency():
+    """
+    Get the default concurrency for :func:`fetch_concurrent()`.
+
+    :returns: A positive integer number.
+    """
+    return max(4, multiprocessing.cpu_count() * 2)
 
 
 def fetch_worker(url):

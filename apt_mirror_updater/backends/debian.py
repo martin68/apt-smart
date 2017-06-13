@@ -1,7 +1,7 @@
 # Automated, robust apt-get mirror selection for Debian and Ubuntu.
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: June 13, 2017
+# Last Change: June 14, 2017
 # URL: https://apt-mirror-updater.readthedocs.io
 
 """
@@ -34,7 +34,7 @@ SECURITY_URL = 'http://security.debian.org/'
 """The base URL of the Debian mirror with security updates (a string)."""
 
 OLD_RELEASES_URL = 'http://archive.debian.org/debian-archive/debian/'
-"""The URL where EOL (end of life) Debian suites are hosted (a string)."""
+"""The URL where EOL (end of life) Debian releases are hosted (a string)."""
 
 DEFAULT_SUITES = 'release', 'security', 'updates'
 """A tuple of strings with the Debian suites that are enabled by default."""
@@ -75,7 +75,7 @@ def discover_mirrors():
          ...])
     """
     timer = Timer()
-    logger.info("Discovering Debian mirrors (using %s) ..", MIRRORS_URL)
+    logger.info("Discovering Debian mirrors at %s ..", MIRRORS_URL)
     response = fetch_url(MIRRORS_URL, retry=True)
     soup = BeautifulSoup(response, 'html.parser')
     tables = soup.findAll('table')

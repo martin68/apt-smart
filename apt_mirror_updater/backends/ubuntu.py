@@ -1,7 +1,7 @@
 # Automated, robust apt-get mirror selection for Debian and Ubuntu.
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: June 13, 2017
+# Last Change: June 14, 2017
 # URL: https://apt-mirror-updater.readthedocs.io
 
 """Discovery of Ubuntu package archive mirrors."""
@@ -21,7 +21,7 @@ MIRRORS_URL = 'https://launchpad.net/ubuntu/+archivemirrors'
 """The URL of the HTML page listing official Ubuntu mirrors (a string)."""
 
 OLD_RELEASES_URL = 'http://old-releases.ubuntu.com/ubuntu/'
-"""The URL where EOL (end of life) Ubuntu suites are hosted (a string)."""
+"""The URL where EOL (end of life) Ubuntu releases are hosted (a string)."""
 
 SECURITY_URL = 'http://security.ubuntu.com/ubuntu'
 """The URL where Ubuntu security updates are hosted (a string)."""
@@ -111,7 +111,7 @@ def discover_mirrors():
     """
     timer = Timer()
     mirrors = set()
-    logger.info("Discovering available Ubuntu mirrors (using %s) ..", MIRRORS_URL)
+    logger.info("Discovering Ubuntu mirrors at %s ..", MIRRORS_URL)
     response = fetch_url(MIRRORS_URL, retry=True)
     soup = BeautifulSoup(response, 'html.parser')
     for table in soup.findAll('table'):
