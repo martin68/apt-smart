@@ -19,6 +19,7 @@ import logging
 import os
 import sys
 import time
+import urllib2
 
 # External dependencies.
 from capturer import CaptureOutput
