@@ -437,8 +437,8 @@ class AptMirrorUpdater(PropertyManager):
         timer = Timer()
         logger.info("Updating package lists of %s ..", self.context)
         if args:
-	         argarr = ['update'] + args
-	         self.context.execute('apt-get', *argarr, sudo=True)
+            argarr = ['update'] + args
+            self.context.execute('apt-get', *argarr, sudo=True)
         else:
             self.context.execute('apt-get', 'update', sudo=True)
         logger.info("Finished updating package lists of %s in %s ..", self.context, timer)
