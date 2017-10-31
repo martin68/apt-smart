@@ -19,6 +19,12 @@ import logging
 import os
 import sys
 import time
+try:
+    # For Python 3.0 and later
+    from urllib.error import URLError
+except ImportError:
+    # Fall back to Python 2's urllib2
+    from urllib2 import URLError
 
 # External dependencies.
 from capturer import CaptureOutput
@@ -263,7 +269,9 @@ class AptMirrorUpdater(PropertyManager):
         logger.debug("Checking whether %s suite %s is EOL ..",
                      self.distributor_id.capitalize(),
                      self.distribution_codename.capitalize())
-        release_is_eol = not self.validate_mirror(self.security_url)
+        # only set EOL if we can connect but validation fails
+        # this prevents incorrect setting of EOL if network connection fails
+        release_is_eol = self.can_connect_to_mirror(self.security_url) and not self.validate_mirror(self.security_url)
         logger.debug("The %s suite %s is %s.",
                      self.distributor_id.capitalize(),
                      self.distribution_codename.capitalize(),
@@ -597,6 +605,29 @@ class AptMirrorUpdater(PropertyManager):
                             else:
                                 backoff_time += backoff_time / 3
         raise Exception("Failed to update package lists %i consecutive times?!" % max_attempts)
+
+    def can_connect_to_mirror(self, mirror_url):
+        """
+        Make sure the mirror can be connected to
+
+        :param mirror_url: The base URL of the mirror (a string).
+        :returns: :data:`True` if the mirror can be connected to,
+                  :data:`False` otherwise.
+        """
+        mirror_url = normalize_mirror_url(mirror_url)
+        logger.info("Checking whether %s can be connected to.", mirror_url)
+        mirror = CandidateMirror(mirror_url=mirror_url, updater=self)
+        try:
+            response = fetch_url(mirror.release_gpg_url, retry=False)
+            mirror.release_gpg_contents = response.read()
+        except URLError as e:
+            if 'connection refused' in str(e).lower() or 'name or service not known' in str(e).lower():
+                logger.warning("Cannot connect to %s.", mirror_url)
+                return False
+        except Exception:
+            pass
+        logger.info("Can connect to %s.", mirror_url)
+        return True
 
     def validate_mirror(self, mirror_url):
         """
