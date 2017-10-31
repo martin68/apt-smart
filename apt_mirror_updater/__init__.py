@@ -440,11 +440,15 @@ class AptMirrorUpdater(PropertyManager):
             self.smart_update()
         return self.context
 
-    def dumb_update(self):
+    def dumb_update(self, args=None):
         """Update the system's package lists (by running ``apt-get update``)."""
         timer = Timer()
         logger.info("Updating package lists of %s ..", self.context)
-        self.context.execute('apt-get', 'update', sudo=True)
+        if args:
+            argarr = ['update'] + args
+            self.context.execute('apt-get', *argarr, sudo=True)
+        else:
+            self.context.execute('apt-get', 'update', sudo=True)
         logger.info("Finished updating package lists of %s in %s ..", self.context, timer)
 
     def generate_sources_list(self, **options):
