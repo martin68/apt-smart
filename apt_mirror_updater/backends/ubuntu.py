@@ -1,7 +1,7 @@
 # Automated, robust apt-get mirror selection for Debian and Ubuntu.
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: June 14, 2017
+# Last Change: October 31, 2017
 # URL: https://apt-mirror-updater.readthedocs.io
 
 """Discovery of Ubuntu package archive mirrors."""
@@ -112,8 +112,8 @@ def discover_mirrors():
     timer = Timer()
     mirrors = set()
     logger.info("Discovering Ubuntu mirrors at %s ..", MIRRORS_URL)
-    response = fetch_url(MIRRORS_URL, retry=True)
-    soup = BeautifulSoup(response, 'html.parser')
+    data = fetch_url(MIRRORS_URL, retry=True)
+    soup = BeautifulSoup(data, 'html.parser')
     for table in soup.findAll('table'):
         for tr in table.findAll('tr'):
             for a in tr.findAll('a', href=True):

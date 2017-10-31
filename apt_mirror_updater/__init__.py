@@ -1,7 +1,7 @@
 # Automated, robust apt-get mirror selection for Debian and Ubuntu.
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: June 14, 2017
+# Last Change: October 31, 2017
 # URL: https://apt-mirror-updater.readthedocs.io
 
 """
@@ -655,8 +655,8 @@ class AptMirrorUpdater(PropertyManager):
                             self.distributor_id.capitalize())
                 mirror = CandidateMirror(mirror_url=mirror_url, updater=self)
                 try:
-                    response = fetch_url(mirror.release_gpg_url, retry=False)
-                    mirror.release_gpg_contents = response.read()
+                    data = fetch_url(mirror.release_gpg_url, retry=False)
+                    mirror.release_gpg_contents = data
                 except Exception:
                     pass
                 self.validated_mirrors[key] = value = mirror.is_available

@@ -1,7 +1,7 @@
 # Automated, robust apt-get mirror selection for Debian and Ubuntu.
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: June 13, 2017
+# Last Change: October 31, 2017
 # URL: https://apt-mirror-updater.readthedocs.io
 
 """Simple, robust and concurrent HTTP requests (designed for one very narrow use case)."""
@@ -33,7 +33,7 @@ def fetch_url(url, timeout=10, retry=False, max_attempts=3):
     :param retry: Whether to retry on failure (defaults to :data:`False`).
     :param max_attempts: The maximum number of attempts when retrying is
                          enabled (an integer, defaults to three).
-    :returns: The response object.
+    :returns: The response body (a byte string).
     :raises: Any exception raised by Python's standard library in the last
              attempt (assuming all attempts raise an exception).
     """
@@ -45,14 +45,14 @@ def fetch_url(url, timeout=10, retry=False, max_attempts=3):
                 response = urlopen(url)
                 if response.getcode() != 200:
                     raise Exception("Got HTTP %i response when fetching %s!" % (response.getcode(), url))
+                response_body = response.read()
+                logger.debug("Took %s to fetch %s.", timer, url)
+                return response_body
         except Exception as e:
             if retry and i < max_attempts:
                 logger.warning("Failed to fetch %s, retrying (%i/%i, error was: %s)", url, i, max_attempts, e)
             else:
                 raise
-        else:
-            logger.debug("Took %s to fetch %s.", timer, url)
-            return response
 
 
 def fetch_concurrent(urls, concurrency=None):
@@ -100,8 +100,7 @@ def fetch_worker(url):
     signal.signal(signal.SIGINT, signal.SIG_IGN)
     timer = Timer()
     try:
-        response = fetch_url(url, retry=False)
-        data = response.read()
+        data = fetch_url(url, retry=False)
     except Exception as e:
         logger.debug("Failed to fetch %s! (%s)", url, e)
         data = None
