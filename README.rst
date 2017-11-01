@@ -122,8 +122,10 @@ updating.
    "``-r``, ``--remote-host=SSH_ALIAS``","Operate on a remote system instead of the local system. The ``SSH_ALIAS``
    argument gives the SSH alias of the remote host. It is assumed that the
    remote account has root privileges or password-less sudo access."
-   "``-f``, ``--find-current-mirror``","Determine the URL of the main mirror that is currently configured in
-   /etc/apt/sources.list."
+   "``-f``, ``--find-current-mirror``","Determine the main mirror that is currently configured in
+   /etc/apt/sources.list and report its URL on standard output."
+   "``-b``, ``--find-best-mirror``","Discover available mirrors, rank them, select the best one and report its
+   URL on standard output."
    "``-l``, ``--list-mirrors``",List available (ranked) mirrors on the terminal in a human readable format.
    "``-c``, ``--change-mirror=MIRROR_URL``",Update /etc/apt/sources.list to use the given ``MIRROR_URL``.
    "``-a``, ``--auto-change-mirror``","Discover available mirrors, rank the mirrors by connection speed and update

@@ -1,7 +1,7 @@
 # Automated, robust apt-get mirror selection for Debian and Ubuntu.
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: June 24, 2017
+# Last Change: November 1, 2017
 # URL: https://apt-mirror-updater.readthedocs.io
 
 """Test suite for the ``apt-mirror-updater`` package."""
@@ -12,11 +12,13 @@ import os
 
 # External dependencies.
 from executor import execute
+from executor.contexts import LocalContext
 from humanfriendly.testing import TestCase, run_cli
 
 # Modules included in our package.
 from apt_mirror_updater import AptMirrorUpdater
 from apt_mirror_updater.cli import main
+from apt_mirror_updater.eol import DISTRO_INFO_DIRECTORY, gather_eol_dates
 
 # Initialize a logger for this module.
 logger = logging.getLogger(__name__)
@@ -95,6 +97,17 @@ class AptMirrorUpdaterTestCase(TestCase):
         updater.smart_update()
         # Verify that package lists are again available.
         assert have_package_lists()
+
+    def test_gather_eol_dates(self):
+        """Test that gathering of EOL dates works properly."""
+        if not os.path.exists(DISTRO_INFO_DIRECTORY):
+            return self.skipTest("distro-info-data not available")
+        dates = gather_eol_dates(context=LocalContext())
+        assert len(dates) >= 2
+        assert 'debian' in dates
+        assert 'ubuntu' in dates
+        assert len(dates['debian']) > 0
+        assert len(dates['ubuntu']) > 0
 
 
 def have_package_lists():

@@ -42,6 +42,7 @@ from six import text_type
 from six.moves.urllib.parse import urlparse
 
 # Modules included in our package.
+from apt_mirror_updater.eol import KNOWN_EOL_DATES
 from apt_mirror_updater.http import NotFoundError, fetch_concurrent, fetch_url, get_default_concurrency
 
 # Semi-standard module versioning.
@@ -78,11 +79,11 @@ class AptMirrorUpdater(PropertyManager):
         """
         mirrors = set()
         if self.release_is_eol:
-            logger.debug("Skipping mirror discovery because release is EOL.")
+            logger.debug("Skipping mirror discovery because %s is EOL.", self.release_label)
         else:
             for candidate in self.backend.discover_mirrors():
                 if any(fnmatch.fnmatch(candidate.mirror_url, pattern) for pattern in self.blacklist):
-                    logger.warning("Ignoring mirror %s because it matches the blacklist.", candidate.mirror_url)
+                    logger.warning("Ignoring blacklisted mirror %s.", candidate.mirror_url)
                 else:
                     candidate.updater = self
                     mirrors.add(candidate)
@@ -128,7 +129,7 @@ class AptMirrorUpdater(PropertyManager):
         """
         logger.debug("Selecting best %s mirror ..", self.distributor_id.capitalize())
         if self.release_is_eol:
-            logger.info("Release is EOL, using %s.", self.old_releases_url)
+            logger.info("%s is EOL, using %s.", self.release_label, self.old_releases_url)
             return self.old_releases_url
         else:
             return self.ranked_mirrors[0].mirror_url
@@ -265,16 +266,41 @@ class AptMirrorUpdater(PropertyManager):
 
     @cached_property
     def release_is_eol(self):
-        """:data:`True` if :attr:`distribution_codename` is EOL (end of life), :data:`False` otherwise."""
-        logger.debug("Checking whether %s suite %s is EOL ..",
-                     self.distributor_id.capitalize(),
-                     self.distribution_codename.capitalize())
-        release_is_eol = (self.validate_mirror(self.security_url) == MirrorStatus.MAYBE_EOL)
-        logger.debug("The %s suite %s is %s.",
-                     self.distributor_id.capitalize(),
-                     self.distribution_codename.capitalize(),
-                     "EOL" if release_is_eol else "supported")
+        """
+        :data:`True` if the release is EOL (end of life), :data:`False` otherwise.
+
+        If :data:`.KNOWN_EOL_DATES` contains a date for :attr:`distributor_id`
+        and :attr:`distribution_codename`, the current date will be compared
+        against the EOL date to determine whether the release is EOL.
+
+        As a fall back :func:`validate_mirror()` is used to check whether
+        :attr:`security_url` results in :data:`MirrorStatus.MAYBE_EOL`.
+        """
+        release_is_eol = None
+        logger.debug("Checking whether %s is EOL ..", self.release_label)
+        # Check the known EOL dates.
+        if self.distributor_id in KNOWN_EOL_DATES:
+            dates = KNOWN_EOL_DATES[self.distributor_id]
+            if self.distribution_codename in dates:
+                eol_date = dates[self.distribution_codename]
+                release_is_eol = (time.time() >= eol_date)
+                source = "known EOL dates"
+        # Validate the security mirror as a fall back.
+        if release_is_eol is None:
+            release_is_eol = (self.validate_mirror(self.security_url) == MirrorStatus.MAYBE_EOL)
+            source = "security mirror"
+        logger.debug(
+            "%s is %s (based on %s).",
+            self.release_label,
+            "EOL" if release_is_eol else "supported",
+            source,
+        )
         return release_is_eol
+
+    @property
+    def release_label(self):
+        """A human readable label based on :attr:`distributor_id` and :attr:`distribution_codename` (a string)."""
+        return "%s release %s" % (self.distributor_id.capitalize(), self.distribution_codename.capitalize())
 
     @mutable_property
     def security_url(self):
@@ -297,7 +323,8 @@ class AptMirrorUpdater(PropertyManager):
         avoided when unnecessary.
         """
         if self.release_is_eol:
-            logger.debug("Release is EOL, falling back to %s.", self.old_releases_url)
+            logger.debug("%s is EOL, falling back to %s.",
+                         self.release_label, self.old_releases_url)
             return self.old_releases_url
         else:
             try:
@@ -397,10 +424,8 @@ class AptMirrorUpdater(PropertyManager):
                 self.context.execute('apt-get', 'install', '--yes', 'debootstrap', sudo=True)
             # Use the `debootstrap' program to create the chroot.
             timer = Timer()
-            logger.info("Creating %s %s chroot in %s ..",
-                        self.distributor_id.capitalize(),
-                        self.distribution_codename.capitalize(),
-                        directory)
+            logger.info("Creating %s chroot in %s ..",
+                        self.release_label, directory)
             debootstrap_command = ['debootstrap']
             if arch:
                 debootstrap_command.append('--arch=%s' % arch)
@@ -408,7 +433,7 @@ class AptMirrorUpdater(PropertyManager):
             debootstrap_command.append(directory)
             debootstrap_command.append(self.best_mirror)
             self.context.execute(*debootstrap_command, sudo=True)
-            logger.info("Took %s to create chroot.", timer)
+            logger.info("Took %s to create %s chroot.", timer, self.release_label)
             first_run = True
         # Switch the execution context to the chroot and reset the locale (to
         # avoid locale warnings emitted by post-installation scripts run by
@@ -578,10 +603,11 @@ class AptMirrorUpdater(PropertyManager):
                         # of `apt-get update' implies that the release is EOL
                         # we need to verify our assumption.
                         if any(self.current_mirror in line and u'404' in line.split() for line in output.splitlines()):
-                            logger.warning("Current release (%s) may be EOL, checking ..", self.distribution_codename)
+                            logger.warning("%s may be EOL, checking ..", self.release_label)
                             if self.release_is_eol:
                                 if switch_mirrors:
-                                    logger.warning("Switching to old releases mirror (release appears to be EOL) ..")
+                                    logger.warning("Switching to old releases mirror because %s is EOL ..",
+                                                   self.release_label)
                                     self.change_mirror(self.old_releases_url, update=False)
                                     continue
                                 else:
@@ -624,9 +650,7 @@ class AptMirrorUpdater(PropertyManager):
             key = (mirror_url, self.distribution_codename)
             value = self.validated_mirrors.get(key)
             if value is None:
-                logger.info("Checking whether %s is a supported release for %s ..",
-                            self.distribution_codename.capitalize(),
-                            self.distributor_id.capitalize())
+                logger.info("Checking if %s is available on %s ..", self.release_label, mirror_url)
                 # Try to download the Release.gpg file, in the assumption that
                 # this file should always exist and is more or less guaranteed
                 # to be relatively small.

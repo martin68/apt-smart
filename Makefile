@@ -1,7 +1,7 @@
 # Makefile for the 'apt-mirror-updater' package.
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: June 6, 2017
+# Last Change: November 1, 2017
 # URL: https://apt-mirror-updater.readthedocs.io
 
 PACKAGE_NAME = apt-mirror-updater
@@ -21,6 +21,7 @@ default:
 	@echo '    make check      check coding style (PEP-8, PEP-257)'
 	@echo '    make test       run the test suite, report coverage'
 	@echo '    make tox        run the tests on all Python versions'
+	@echo '    make eol        update apt_mirror_updater.eol module'
 	@echo '    make readme     update usage in readme'
 	@echo '    make docs       update documentation using Sphinx'
 	@echo '    make publish    publish changes to GitHub/PyPI'
@@ -60,10 +61,17 @@ full-coverage: install
 	@scripts/collect-full-coverage.sh
 	@coverage html
 
-readme: install
-	@pip-accel install --quiet cogapp && cog.py -r README.rst
+cog: install
+	@echo Installing cog ...
+	@pip-accel install --quiet cogapp
 
-docs: readme
+eol: cog
+	@cog.py -r apt_mirror_updater/eol.py
+
+readme: cog
+	@cog.py -r README.rst
+
+docs: eol readme
 	@pip-accel install --quiet sphinx
 	@cd docs && sphinx-build -nb html -d build/doctrees . build/html
 

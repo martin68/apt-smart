@@ -33,6 +33,12 @@ the `apt-mirror-updater` package.
 .. automodule:: apt_mirror_updater.cli
    :members:
 
+:mod:`apt_mirror_updater.eol`
+-----------------------------
+
+.. automodule:: apt_mirror_updater.eol
+   :members:
+
 :mod:`apt_mirror_updater.http`
 ------------------------------
 
