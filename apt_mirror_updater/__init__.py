@@ -46,7 +46,7 @@ from apt_mirror_updater.eol import KNOWN_EOL_DATES
 from apt_mirror_updater.http import NotFoundError, fetch_concurrent, fetch_url, get_default_concurrency
 
 # Semi-standard module versioning.
-__version__ = '5.0'
+__version__ = '5.0.1'
 
 MAIN_SOURCES_LIST = '/etc/apt/sources.list'
 """The absolute pathname of the list of configured APT data sources (a string)."""
@@ -818,7 +818,7 @@ class MirrorStatus(Enum):
     MAYBE_EOL = 2
     """The mirror is serving HTTP 404 "Not Found" responses instead of the expected content."""
 
-    UNAVAILABLE = 2
+    UNAVAILABLE = 3
     """The mirror is not accepting connections or not serving the expected content."""
 
 
