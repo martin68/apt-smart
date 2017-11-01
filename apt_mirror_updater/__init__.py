@@ -438,16 +438,20 @@ class AptMirrorUpdater(PropertyManager):
             self.smart_update()
         return self.context
 
-    def dumb_update(self, args=None):
-        """Update the system's package lists (by running ``apt-get update``)."""
+    def dumb_update(self, *args):
+        """
+        Update the system's package lists (by running ``apt-get update``).
+
+        :param args: Command line arguments to ``apt-get update`` (zero or more strings).
+
+        The :func:`dumb_update()` method doesn't do any error handling or
+        retrying, if that's what you're looking for then you need
+        :func:`smart_update()` instead.
+        """
         timer = Timer()
         logger.info("Updating package lists of %s ..", self.context)
-        if args:
-            argarr = ['update'] + args
-            self.context.execute('apt-get', *argarr, sudo=True)
-        else:
-            self.context.execute('apt-get', 'update', sudo=True)
-        logger.info("Finished updating package lists of %s in %s ..", self.context, timer)
+        self.context.execute('apt-get', 'update', *args, sudo=True)
+        logger.info("Finished updating package lists of %s in %s.", self.context, timer)
 
     def generate_sources_list(self, **options):
         """
@@ -533,10 +537,11 @@ class AptMirrorUpdater(PropertyManager):
                 sudo=True,
             )
 
-    def smart_update(self, max_attempts=10, switch_mirrors=True):
+    def smart_update(self, *args, **kw):
         """
         Update the system's package lists (switching mirrors if necessary).
 
+        :param args: Command line arguments to ``apt-get update`` (zero or more strings).
         :param max_attempts: The maximum number of attempts at successfully
                              updating the system's package lists (an integer,
                              defaults to 10).
@@ -557,10 +562,12 @@ class AptMirrorUpdater(PropertyManager):
         - Failing ``apt-get update`` runs are retried up to `max_attempts`.
         """
         backoff_time = 10
+        max_attempts = kw.get('max_attempts', 10)
+        switch_mirrors = kw.get('switch_mirrors', True)
         for i in range(1, max_attempts + 1):
             with CaptureOutput() as session:
                 try:
-                    self.dumb_update()
+                    self.dumb_update(*args)
                     return
                 except Exception:
                     if i < max_attempts:
