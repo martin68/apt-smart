@@ -1,7 +1,7 @@
 # Automated, robust apt-get mirror selection for Debian and Ubuntu.
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: October 31, 2017
+# Last Change: November 1, 2017
 # URL: https://apt-mirror-updater.readthedocs.io
 
 """
@@ -19,12 +19,12 @@ import logging
 import os
 import sys
 import time
+
+# Python 2.x / 3.x compatibility.
 try:
-    # For Python 3.0 and later
-    from urllib.error import URLError
+    from enum import Enum
 except ImportError:
-    # Fall back to Python 2's urllib2
-    from urllib2 import URLError
+    from flufl.enum import Enum
 
 # External dependencies.
 from capturer import CaptureOutput
@@ -42,7 +42,7 @@ from six import text_type
 from six.moves.urllib.parse import urlparse
 
 # Modules included in our package.
-from apt_mirror_updater.http import fetch_concurrent, fetch_url, get_default_concurrency
+from apt_mirror_updater.http import NotFoundError, fetch_concurrent, fetch_url, get_default_concurrency
 
 # Semi-standard module versioning.
 __version__ = '4.0'
@@ -269,9 +269,7 @@ class AptMirrorUpdater(PropertyManager):
         logger.debug("Checking whether %s suite %s is EOL ..",
                      self.distributor_id.capitalize(),
                      self.distribution_codename.capitalize())
-        # only set EOL if we can connect but validation fails
-        # this prevents incorrect setting of EOL if network connection fails
-        release_is_eol = self.can_connect_to_mirror(self.security_url) and not self.validate_mirror(self.security_url)
+        release_is_eol = (self.validate_mirror(self.security_url) == MirrorStatus.MAYBE_EOL)
         logger.debug("The %s suite %s is %s.",
                      self.distributor_id.capitalize(),
                      self.distribution_codename.capitalize(),
@@ -569,30 +567,23 @@ class AptMirrorUpdater(PropertyManager):
                         output = session.get_text()
                         # Check for EOL releases. This somewhat peculiar way of
                         # checking is meant to ignore 404 responses from
-                        # `secondary package mirrors' like PPAs.
-                        maybe_end_of_life = any(
-                            self.current_mirror in line and u'404' in line.split()
-                            for line in output.splitlines()
-                        )
-                        # If the output of `apt-get update' implies that the
-                        # release is EOL we need to verify our assumption.
-                        if maybe_end_of_life:
-                            logger.warning("It looks like the current release (%s) is EOL, verifying ..",
-                                           self.distribution_codename)
-                            if not self.validate_mirror(self.current_mirror):
+                        # `secondary package mirrors' like PPAs. If the output
+                        # of `apt-get update' implies that the release is EOL
+                        # we need to verify our assumption.
+                        if any(self.current_mirror in line and u'404' in line.split() for line in output.splitlines()):
+                            logger.warning("Current release (%s) may be EOL, checking ..", self.distribution_codename)
+                            if self.release_is_eol:
                                 if switch_mirrors:
-                                    logger.warning("Switching to old releases mirror because current release is EOL ..")
+                                    logger.warning("Switching to old releases mirror (release appears to be EOL) ..")
                                     self.change_mirror(self.old_releases_url, update=False)
                                     continue
                                 else:
-                                    # When asked to do the impossible we abort
-                                    # with a clear error message :-).
                                     raise Exception(compact("""
-                                        Failed to update package lists because the
-                                        current release ({release}) is end of life but
-                                        I'm not allowed to switch mirrors! (there's
-                                        no point in retrying so I'm not going to)
-                                    """, release=self.distribution_codename))
+                                        Failed to update package lists because it looks like
+                                        the current release (%s) is end of life but I'm not
+                                        allowed to switch mirrors! (there's no point in
+                                        retrying so I'm not going to)
+                                    """, self.distribution_codename))
                         # Check for `hash sum mismatch' errors.
                         if switch_mirrors and u'hash sum mismatch' in output.lower():
                             logger.warning("Detected 'hash sum mismatch' failure, switching to other mirror ..")
@@ -610,41 +601,17 @@ class AptMirrorUpdater(PropertyManager):
                                 backoff_time += backoff_time / 3
         raise Exception("Failed to update package lists %i consecutive times?!" % max_attempts)
 
-    def can_connect_to_mirror(self, mirror_url):
-        """
-        Make sure the mirror can be connected to
-
-        :param mirror_url: The base URL of the mirror (a string).
-        :returns: :data:`True` if the mirror can be connected to,
-                  :data:`False` otherwise.
-        """
-        mirror_url = normalize_mirror_url(mirror_url)
-        logger.info("Checking whether %s can be connected to.", mirror_url)
-        mirror = CandidateMirror(mirror_url=mirror_url, updater=self)
-        try:
-            response = fetch_url(mirror.release_gpg_url, retry=False)
-            mirror.release_gpg_contents = response.read()
-        except URLError as e:
-            if 'connection refused' in str(e).lower() or 'name or service not known' in str(e).lower():
-                logger.warning("Cannot connect to %s.", mirror_url)
-                return False
-        except Exception:
-            pass
-        logger.info("Can connect to %s.", mirror_url)
-        return True
-
     def validate_mirror(self, mirror_url):
         """
         Make sure a mirror serves :attr:`distribution_codename`.
 
         :param mirror_url: The base URL of the mirror (a string).
-        :returns: :data:`True` if the mirror hosts the relevant release,
-                  :data:`False` otherwise.
+        :returns: One of the values in the :class:`MirrorStatus` enumeration.
 
         This method assumes that :attr:`old_releases_url` is always valid.
         """
         if mirrors_are_equal(mirror_url, self.old_releases_url):
-            return True
+            return MirrorStatus.AVAILABLE
         else:
             mirror_url = normalize_mirror_url(mirror_url)
             key = (mirror_url, self.distribution_codename)
@@ -653,13 +620,24 @@ class AptMirrorUpdater(PropertyManager):
                 logger.info("Checking whether %s is a supported release for %s ..",
                             self.distribution_codename.capitalize(),
                             self.distributor_id.capitalize())
-                mirror = CandidateMirror(mirror_url=mirror_url, updater=self)
+                # Try to download the Release.gpg file, in the assumption that
+                # this file should always exist and is more or less guaranteed
+                # to be relatively small.
                 try:
-                    data = fetch_url(mirror.release_gpg_url, retry=False)
-                    mirror.release_gpg_contents = data
+                    mirror = CandidateMirror(mirror_url=mirror_url, updater=self)
+                    mirror.release_gpg_contents = fetch_url(mirror.release_gpg_url, retry=False)
+                    value = (MirrorStatus.AVAILABLE if mirror.is_available else MirrorStatus.UNAVAILABLE)
+                except NotFoundError:
+                    # When the mirror is serving 404 responses it can be an
+                    # indication that the release has gone end of life. In any
+                    # case the mirror is unavailable.
+                    value = MirrorStatus.MAYBE_EOL
                 except Exception:
-                    pass
-                self.validated_mirrors[key] = value = mirror.is_available
+                    # When we get an unspecified error that is not a 404
+                    # response we conclude that the mirror is unavailable.
+                    value = MirrorStatus.UNAVAILABLE
+                # Cache the mirror status that we just determined.
+                self.validated_mirrors[key] = value
             return value
 
 
@@ -797,6 +775,20 @@ class CandidateMirror(PropertyManager):
     @mutable_property
     def updater(self):
         """A reference to the :class:`AptMirrorUpdater` object that created the candidate."""
+
+
+class MirrorStatus(Enum):
+
+    """Enumeration for mirror statuses determined by :func:`AptMirrorUpdater.validate_mirror()`."""
+
+    AVAILABLE = 1
+    """The mirror is accepting connections and serving the expected content."""
+
+    MAYBE_EOL = 2
+    """The mirror is serving HTTP 404 "Not Found" responses instead of the expected content."""
+
+    UNAVAILABLE = 2
+    """The mirror is not accepting connections or not serving the expected content."""
 
 
 def find_current_mirror(sources_list):
