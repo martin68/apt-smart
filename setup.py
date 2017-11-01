@@ -46,7 +46,10 @@ def get_install_requires():
     """Get the conditional dependencies for source distributions."""
     install_requires = get_requirements('requirements.txt')
     if 'bdist_wheel' not in sys.argv:
-        if sys.version_info[:2] < (3, 4):
+        if sys.version_info[:2] == (2, 6):
+            # flufl.enum 4.1 drops Python 2.6 compatibility.
+            install_requires.append('flufl.enum >= 4.0.1, < 4.1')
+        elif sys.version_info[:2] < (3, 4):
             install_requires.append('flufl.enum >= 4.0.1')
     return sorted(install_requires)
 
@@ -55,6 +58,8 @@ def get_extras_require():
     """Get the conditional dependencies for wheel distributions."""
     extras_require = {}
     if have_environment_marker_support():
+        # flufl.enum 4.1 drops Python 2.6 compatibility.
+        extras_require[':python_version == "2.6"'] = ['flufl.enum >= 4.0.1, < 4.1']
         expression = ':%s' % ' or '.join([
             'python_version == "2.6"',
             'python_version == "2.7"',
