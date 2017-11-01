@@ -14,7 +14,7 @@ import signal
 # External dependencies.
 from humanfriendly import Timer, format_size
 from six.moves.urllib.request import urlopen
-from stopit import SignalTimeout
+from stopit import SignalTimeout, TimeoutException
 
 # Initialize a logger for this module.
 logger = logging.getLogger(__name__)
@@ -34,8 +34,16 @@ def fetch_url(url, timeout=10, retry=False, max_attempts=3):
     :param max_attempts: The maximum number of attempts when retrying is
                          enabled (an integer, defaults to three).
     :returns: The response body (a byte string).
-    :raises: Any exception raised by Python's standard library in the last
-             attempt (assuming all attempts raise an exception).
+    :raises: Any of the following exceptions can be raised:
+
+             - :exc:`NotFoundError` when the URL returns a 404 status code.
+             - :exc:`InvalidResponseError` when the URL returns a status code
+               that isn't 200.
+             - :exc:`stopit.TimeoutException` when the request takes longer
+               than `timeout` seconds (refer to the `stopit documentation
+               <https://pypi.python.org/pypi/stopit>`_ for details).
+             - Any exception raised by Python's standard library in the last
+               attempt (assuming all attempts raise an exception).
     """
     timer = Timer()
     logger.debug("Fetching %s ..", url)
@@ -43,11 +51,16 @@ def fetch_url(url, timeout=10, retry=False, max_attempts=3):
         try:
             with SignalTimeout(timeout, swallow_exc=False):
                 response = urlopen(url)
-                if response.getcode() != 200:
-                    raise Exception("Got HTTP %i response when fetching %s!" % (response.getcode(), url))
+                status_code = response.getcode()
+                if status_code != 200:
+                    exc_type = (NotFoundError if status_code == 404 else InvalidResponseError)
+                    raise exc_type("URL returned unexpected status code %s! (%s)" % (status_code, url))
                 response_body = response.read()
                 logger.debug("Took %s to fetch %s.", timer, url)
                 return response_body
+        except (NotFoundError, TimeoutException):
+            # We never retry 404 responses and timeouts.
+            raise
         except Exception as e:
             if retry and i < max_attempts:
                 logger.warning("Failed to fetch %s, retrying (%i/%i, error was: %s)", url, i, max_attempts, e)
@@ -108,3 +121,13 @@ def fetch_worker(url):
         kbps = format_size(round(len(data) / timer.elapsed_time, 2))
         logger.debug("Downloaded %s at %s per second.", url, kbps)
     return url, data, timer.elapsed_time
+
+
+class InvalidResponseError(Exception):
+
+    """Raised by :func:`fetch_url()` when a URL returns a status code that isn't 200."""
+
+
+class NotFoundError(InvalidResponseError):
+
+    """Raised by :func:`fetch_url()` when a URL returns a 404 status code."""
