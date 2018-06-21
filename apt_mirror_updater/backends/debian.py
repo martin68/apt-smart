@@ -1,7 +1,7 @@
 # Automated, robust apt-get mirror selection for Debian and Ubuntu.
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: October 31, 2017
+# Last Change: June 22, 2018
 # URL: https://apt-mirror-updater.readthedocs.io
 
 """
@@ -26,6 +26,25 @@ from humanfriendly import Timer, format, pluralize
 from apt_mirror_updater import CandidateMirror, mirrors_are_equal
 
 from apt_mirror_updater.http import fetch_url
+
+LTS_ARCHITECTURES = ('i386', 'amd64', 'armel', 'armhf')
+"""The names of the architectures supported by the Debian LTS team (a tuple of strings)."""
+
+LTS_RELEASES = {
+    'jessie': 1593468000,  # 2020-06-30
+    'stretch': 1656540000,  # 2022-06-30
+}
+"""
+A dictionary with `Debian LTS`_ releases and their EOL dates.
+
+This is needed because distro-info-data_ doesn't contain information
+about Debian LTS releases but nevertheless ``archive.debian.org``
+doesn't adopt a release until the LTS status expires (this was
+originally reported in `issue #5`_).
+
+.. _Debian LTS: https://wiki.debian.org/LTS
+.. _issue #5: https://github.com/xolox/python-apt-mirror-updater/issues/5
+"""
 
 MIRRORS_URL = 'https://www.debian.org/mirror/list'
 """The URL of the HTML page listing all primary Debian mirrors (a string)."""
@@ -133,3 +152,14 @@ def generate_sources_list(mirror_url, codename,
                 components=' '.join(components),
             ))
     return '\n'.join(lines)
+
+
+def get_eol_date(updater):
+    """
+    Override the EOL date for `Debian LTS`_ releases.
+
+    :param updater: The :class:`~apt_mirror_updater.AptMirrorUpdater` object.
+    :returns: The overridden EOL date (a number) or :data:`None`.
+    """
+    if updater.architecture in LTS_ARCHITECTURES:
+        return LTS_RELEASES.get(updater.distribution_codename)

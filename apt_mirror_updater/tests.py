@@ -1,7 +1,7 @@
 # Automated, robust apt-get mirror selection for Debian and Ubuntu.
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: November 1, 2017
+# Last Change: June 22, 2018
 # URL: https://apt-mirror-updater.readthedocs.io
 
 """Test suite for the ``apt-mirror-updater`` package."""
@@ -9,6 +9,7 @@
 # Standard library modules.
 import logging
 import os
+import time
 
 # External dependencies.
 from executor import execute
@@ -108,6 +109,20 @@ class AptMirrorUpdaterTestCase(TestCase):
         assert 'ubuntu' in dates
         assert len(dates['debian']) > 0
         assert len(dates['ubuntu']) > 0
+
+    def test_debian_lts_eol_date(self):
+        """
+        Regression test for `issue #5`_.
+
+        .. _issue #5: https://github.com/xolox/python-apt-mirror-updater/issues/5
+        """
+        updater = AptMirrorUpdater(
+            distributor_id='debian',
+            distribution_codename='jessie',
+            architecture='amd64',
+        )
+        eol_expected = (time.time() >= 1593468000)
+        assert updater.release_is_eol == eol_expected
 
 
 def have_package_lists():

@@ -1,7 +1,7 @@
 # Automated, robust apt-get mirror selection for Debian and Ubuntu.
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: November 1, 2017
+# Last Change: June 22, 2018
 # URL: https://apt-mirror-updater.readthedocs.io
 
 """
@@ -67,6 +67,21 @@ logger = logging.getLogger(__name__)
 class AptMirrorUpdater(PropertyManager):
 
     """Python API for the `apt-mirror-updater` program."""
+
+    @mutable_property
+    def architecture(self):
+        """
+        The name of the Debian package architecture (a string like 'i386' or 'amd64').
+
+        The package architecture is used to detect whether `Debian LTS`_ status
+        applies to the given system (the Debian LTS team supports a specific
+        subset of package architectures).
+
+        .. _Debian LTS: https://wiki.debian.org/LTS
+        """
+        value = self.context.capture('dpkg', '--print-architecture')
+        set_property(self, 'architecture', value)
+        return value
 
     @cached_property
     def available_mirrors(self):
@@ -269,17 +284,39 @@ class AptMirrorUpdater(PropertyManager):
         """
         :data:`True` if the release is EOL (end of life), :data:`False` otherwise.
 
-        If :data:`.KNOWN_EOL_DATES` contains a date for :attr:`distributor_id`
-        and :attr:`distribution_codename`, the current date will be compared
-        against the EOL date to determine whether the release is EOL.
+        There are three ways in which the value of this property can be computed:
 
-        As a fall back :func:`validate_mirror()` is used to check whether
-        :attr:`security_url` results in :data:`MirrorStatus.MAYBE_EOL`.
+        - When available, the first of the following EOL dates will be compared
+          against the current date to determine whether the release is EOL:
+
+          - If the :attr:`backend` module contains a ``get_eol_date()``
+            function (only the :mod:`~apt_mirror_updater.backends.debian`
+            module does at the time of writing) then it is called and if it
+            returns a number, this number is the EOL date for the release.
+
+            This function was added to enable apt-mirror-updater backend
+            modules to override the default EOL dates, more specifically to
+            respect the `Debian LTS`_ release schedule (see also `issue #5`_).
+
+          - Otherwise :data:`.KNOWN_EOL_DATES` is checked for a date that
+            matches :attr:`distributor_id` and :attr:`distribution_codename`.
+
+        - As a fall back :func:`validate_mirror()` is used to check whether
+          :attr:`security_url` results in :data:`MirrorStatus.MAYBE_EOL`.
+
+        .. _Debian LTS: https://wiki.debian.org/LTS
+        .. _issue #5: https://github.com/xolox/python-apt-mirror-updater/issues/5
         """
         release_is_eol = None
         logger.debug("Checking whether %s is EOL ..", self.release_label)
-        # Check the known EOL dates.
-        if self.distributor_id in KNOWN_EOL_DATES:
+        # Check if the backend provides custom EOL dates.
+        if hasattr(self.backend, 'get_eol_date'):
+            eol_date = self.backend.get_eol_date(self)
+            if eol_date:
+                release_is_eol = (time.time() >= eol_date)
+                source = "custom EOL dates"
+        # Check if the bundled data contains an applicable EOL date.
+        if release_is_eol is None and self.distributor_id in KNOWN_EOL_DATES:
             dates = KNOWN_EOL_DATES[self.distributor_id]
             if self.distribution_codename in dates:
                 eol_date = dates[self.distribution_codename]

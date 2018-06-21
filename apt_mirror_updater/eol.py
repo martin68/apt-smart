@@ -75,6 +75,7 @@ KNOWN_EOL_DATES = {
         'artful': 1531951200,
         'bionic': 1682460000,
         'breezy': 1176415200,
+        'cosmic': 1563400800,
         'dapper': 1306879200,
         'edgy': 1209074400,
         'feisty': 1224367200,
@@ -99,7 +100,7 @@ KNOWN_EOL_DATES = {
         'wily': 1469138400,
         'xenial': 1618956000,
         'yakkety': 1500501600,
-        'zesty': 1516834800,
+        'zesty': 1515798000,
     },
 }
 
