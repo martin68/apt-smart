@@ -1,7 +1,7 @@
 # Automated, robust apt-get mirror selection for Debian and Ubuntu.
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: May 31, 2017
+# Last Change: June 22, 2018
 # URL: https://apt-mirror-updater.readthedocs.io
 
 """Sphinx documentation configuration for the `apt-mirror-updater` package."""
@@ -35,8 +35,8 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'apt-mirror-updater'
-copyright = u'2017, Peter Odding'
+project = 'apt-mirror-updater'
+copyright = '2018, Peter Odding'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
