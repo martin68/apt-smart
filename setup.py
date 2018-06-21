@@ -3,7 +3,7 @@
 # Setup script for the `apt-mirror-updater' package.
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: November 1, 2017
+# Last Change: June 22, 2018
 # URL: https://apt-mirror-updater.readthedocs.io
 
 """
@@ -113,6 +113,7 @@ setup(
     url='https://apt-mirror-updater.readthedocs.io',
     author='Peter Odding',
     author_email='peter@peterodding.com',
+    license='MIT',
     packages=find_packages(),
     install_requires=get_install_requires(),
     extras_require=get_extras_require(),
