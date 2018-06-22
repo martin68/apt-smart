@@ -840,7 +840,7 @@ class CandidateMirror(PropertyManager):
                 -(self.last_updated if self.last_updated is not None else LAST_UPDATED_DEFAULT),
                 self.bandwidth or 0)
 
-    @mutable_property
+    @mutable_property(repr=False)
     def updater(self):
         """A reference to the :class:`AptMirrorUpdater` object that created the candidate."""
 
