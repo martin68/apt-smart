@@ -68,6 +68,35 @@ class AptMirrorUpdater(PropertyManager):
 
     """Python API for the `apt-mirror-updater` program."""
 
+    repr_properties = (
+        'architecture',
+        'backend',
+        'blacklist',
+        'concurrency',
+        'context',
+        'distribution_codename',
+        'distributor_id',
+        'max_mirrors',
+        'old_releases_url',
+        'security_url',
+    )
+    """
+    Override the list of properties included in :func:`repr()` output (a tuple of strings).
+
+    The :class:`~property_manager.PropertyManager` superclass defines a
+    :class:`~property_manager.PropertyManager.__repr__()` method that includes
+    the values of computed properties in its output.
+
+    In the case of `apt-mirror-updater` this behavior would trigger external
+    command execution and (lots of) HTTP calls, sometimes with unintended side
+    effects, namely `infinite recursion`_.
+
+    By setting :attr:`repr_properties` to a list of "safe" properties this
+    problematic behavior can be avoided.
+
+    .. _infinite recursion: https://travis-ci.org/xolox/python-apt-mirror-updater/jobs/395421319
+    """
+
     @mutable_property
     def architecture(self):
         """
