@@ -46,7 +46,7 @@ from apt_mirror_updater.eol import KNOWN_EOL_DATES
 from apt_mirror_updater.http import NotFoundError, fetch_concurrent, fetch_url, get_default_concurrency
 
 # Semi-standard module versioning.
-__version__ = '5.0.1'
+__version__ = '5.1'
 
 MAIN_SOURCES_LIST = '/etc/apt/sources.list'
 """The absolute pathname of the list of configured APT data sources (a string)."""

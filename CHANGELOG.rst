@@ -11,6 +11,42 @@ to `semantic versioning`_.
 .. _Keep a Changelog: http://keepachangelog.com/
 .. _semantic versioning: http://semver.org/
 
+`Release 5.1`_ (2018-06-22)
+---------------------------
+
+Work on release 5.1 started with the intention of publishing a 5.0.2 bug fix
+release for the EOL detection of Debian LTS releases reported in `#5`_, however
+unrelated changes were required to stabilize the test suite. This explains how
+5.0.2 became 5.1 😇.
+
+When I started working on resolving the issue reported in `#5`_ it had been
+quite a while since the previous release (233 days) and so some technical debt
+had accumulated in the project, causing the test suite to break. Most
+significantly, Travis CI switched their workers from Ubuntu 12.04 to 14.04.
+
+Here's a detailed overview of changes:
+
+- Bug fix for EOL detection of Debian LTS releases (reported in `#5`_).
+- Bug fix for trivial string matching issue in test suite (caused by a naively
+  written test).
+- Bug fix for recursive ``repr()`` calls potentially causing infinite
+  recursion, depending on logging level (see e.g. build 395421319_).
+- Updated bundled EOL dates based on distro-info-data available in Ubuntu 18.04.
+- Added this changelog to the documentation, including a link in the readme.
+- Make sure the ``test_gather_eol_dates`` test method runs on Travis CI (by
+  installing the distro-info-data_ package). This exposed a Python 3
+  incompatibility (in build 395410569_) that has since been resolved.
+- Include documentation in source distributions (``MANIFEST.in``).
+- Silence flake8 complaining about bogus D402 issues.
+- Add license='MIT' key to ``setup.py`` script.
+- Bumped copyright to 2018.
+
+.. _Release 5.1: https://github.com/xolox/python-apt-mirror-updater/compare/5.0.1...5.1
+.. _#5: https://github.com/xolox/python-apt-mirror-updater/issues/5
+.. _395421319: https://travis-ci.org/xolox/python-apt-mirror-updater/jobs/395421319
+.. _distro-info-data: https://packages.ubuntu.com/distro-info-data
+.. _395410569: https://travis-ci.org/xolox/python-apt-mirror-updater/jobs/395410569
+
 `Release 5.0.1`_ (2017-11-01)
 -----------------------------
 
