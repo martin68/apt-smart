@@ -32,7 +32,7 @@ import time
 
 # External dependencies.
 from humanfriendly import parse_date
-from six.moves import StringIO
+from six import BytesIO
 
 DISTRO_INFO_DIRECTORY = '/usr/share/distro-info'
 """The pathname of a directory with CSV files containing end-of-life dates (a string)."""
@@ -134,7 +134,7 @@ def gather_eol_dates(context, directory=DISTRO_INFO_DIRECTORY):
                 distributor_id = basename.lower()
                 known_dates[distributor_id] = {}
                 contents = context.read_file(filename)
-                for row in csv.DictReader(StringIO(contents)):
+                for row in csv.DictReader(BytesIO(contents)):
                     series = row.get('series')
                     eol = row.get('eol-server') or row.get('eol')
                     if series and eol:
