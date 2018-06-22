@@ -141,6 +141,7 @@ def have_package_lists():
 
 def is_mirror_url(url):
     """Check whether the given URL looks like a Debian or Ubuntu mirror URL."""
+    url = url.rstrip('/') + '/'
     return is_debian_mirror(url) or is_ubuntu_mirror(url)
 
 
