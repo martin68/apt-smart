@@ -1,46 +1,33 @@
-.. include:: ../README.rst
+apt-mirror-updater: Automated Debian/Ubuntu mirror selection
+============================================================
 
-API documentation
-=================
-
-The following documentation is based on the source code of version |release| of
-the `apt-mirror-updater` package.
+Welcome to the documentation of `apt-mirror-updater` version |release|!
+The following sections are available:
 
 .. contents::
    :local:
 
-:mod:`apt_mirror_updater`
--------------------------
+User documentation
+------------------
 
-.. automodule:: apt_mirror_updater
-   :members:
+The readme is the best place to start reading, it's targeted at all users and
+documents the command line interface:
 
-:mod:`apt_mirror_updater.backends.debian`
------------------------------------------
+.. toctree::
+   readme.rst
 
-.. automodule:: apt_mirror_updater.backends.debian
-   :members:
+API documentation
+-----------------
 
-:mod:`apt_mirror_updater.backends.ubuntu`
------------------------------------------
+The following API documentation is automatically generated from the source code:
 
-.. automodule:: apt_mirror_updater.backends.ubuntu
-   :members:
+.. toctree::
+   api.rst
 
-:mod:`apt_mirror_updater.cli`
------------------------------
+Change log
+----------
 
-.. automodule:: apt_mirror_updater.cli
-   :members:
+The change log lists notable changes to the project:
 
-:mod:`apt_mirror_updater.eol`
------------------------------
-
-.. automodule:: apt_mirror_updater.eol
-   :members:
-
-:mod:`apt_mirror_updater.http`
-------------------------------
-
-.. automodule:: apt_mirror_updater.http
-   :members:
+.. toctree::
+   changelog.rst

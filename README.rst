@@ -187,9 +187,9 @@ Contact
 -------
 
 The latest version of `apt-mirror-updater` is available on PyPI_ and GitHub_.
-The documentation is hosted on `Read the Docs`_. For bug reports please create
-an issue on GitHub_. If you have questions, suggestions, etc. feel free to send
-me an e-mail at `peter@peterodding.com`_.
+The documentation is hosted on `Read the Docs`_ and includes a changelog_. For
+bug reports please create an issue on GitHub_. If you have questions,
+suggestions, etc. feel free to send me an e-mail at `peter@peterodding.com`_.
 
 License
 -------
@@ -202,6 +202,7 @@ This software is licensed under the `MIT license`_.
 .. External references:
 .. _apt-get: https://en.wikipedia.org/wiki/Advanced_Packaging_Tool
 .. _at work: http://www.paylogic.com/
+.. _changelog: https://apt-mirror-updater.readthedocs.io/changelog.html
 .. _Debian bug #110837: https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=110837
 .. _Debian bug #624122: https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=624122
 .. _Debian: https://en.wikipedia.org/wiki/Debian
