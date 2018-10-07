@@ -1,7 +1,7 @@
 # Automated, robust apt-get mirror selection for Debian and Ubuntu.
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: October 7, 2018
+# Last Change: October 8, 2018
 # URL: https://apt-mirror-updater.readthedocs.io
 
 """Test suite for the ``apt-mirror-updater`` package."""
@@ -9,7 +9,6 @@
 # Standard library modules.
 import logging
 import os
-import re
 import time
 
 # External dependencies.
@@ -177,9 +176,11 @@ def is_ubuntu_mirror(url):
     """Check whether the given URL looks like a Ubuntu mirror URL."""
     url = normalize_mirror_url(url)
     if has_compatible_scheme(url):
-        components = split(url, '/')
-        last_component_matches = (components[-1] in ('ubuntu', 'archive.ubuntu.com'))
-        return last_component_matches or re.search(r'\bubuntu\b', url)
+        # This function previously performed much more specific checks but in
+        # 2018 the test suite started encountering a number of legitimate
+        # mirror URLs that no longer passed the checks. As such this function
+        # was dumbed down until nothing much remained :-P.
+        return 'ubuntu' in url.lower()
 
 
 def has_compatible_scheme(url):
