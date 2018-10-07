@@ -35,20 +35,23 @@ class AptMirrorUpdaterTestCase(TestCase):
         from apt_mirror_updater.backends.debian import discover_mirrors
         mirrors = discover_mirrors()
         assert len(mirrors) > 10
-        assert all(is_debian_mirror(c.mirror_url) for c in mirrors)
+        for candidate in mirrors:
+            check_debian_mirror(candidate.mirror_url)
 
     def test_ubuntu_mirror_discovery(self):
         """Test the discovery of Ubuntu mirror URLs."""
         from apt_mirror_updater.backends.ubuntu import discover_mirrors
         mirrors = discover_mirrors()
         assert len(mirrors) > 10
-        assert all(is_ubuntu_mirror(c.mirror_url) for c in mirrors)
+        for candidate in mirrors:
+            check_ubuntu_mirror(candidate.mirror_url)
 
     def test_adaptive_mirror_discovery(self):
         """Test the discovery of mirrors for the current type of system."""
         updater = AptMirrorUpdater()
         assert len(updater.available_mirrors) > 10
-        assert all(is_mirror_url(c.mirror_url) for c in updater.available_mirrors)
+        for candidate in updater.available_mirrors:
+            check_mirror_url(candidate.mirror_url)
 
     def test_mirror_ranking(self):
         """Test the ranking of discovered mirrors."""
@@ -59,13 +62,13 @@ class AptMirrorUpdaterTestCase(TestCase):
     def test_best_mirror_selection(self):
         """Test the selection of a "best" mirror."""
         updater = AptMirrorUpdater()
-        assert is_mirror_url(updater.best_mirror)
+        check_mirror_url(updater.best_mirror)
 
     def test_current_mirror_discovery(self):
         """Test that the current mirror can be extracted from ``/etc/apt/sources.list``."""
         exit_code, output = run_cli(main, '--find-current-mirror')
         assert exit_code == 0
-        assert is_mirror_url(output.strip())
+        check_mirror_url(output.strip())
 
     def test_dumb_update(self):
         """Test that our dumb ``apt-get update`` wrapper works."""
@@ -140,9 +143,25 @@ def have_package_lists():
     return 'Filename:' in execute('apt-cache', 'show', 'python', check=False, capture=True)
 
 
-def is_mirror_url(url):
+def check_mirror_url(url):
     """Check whether the given URL looks like a Debian or Ubuntu mirror URL."""
-    return is_debian_mirror(url) or is_ubuntu_mirror(url)
+    if not (is_debian_mirror(url) or is_ubuntu_mirror(url)):
+        msg = "Invalid mirror URL! (%r)"
+        raise AssertionError(msg % url)
+
+
+def check_debian_mirror(url):
+    """Ensure the given URL looks like a Debian mirror URL."""
+    if not is_debian_mirror(url):
+        msg = "Invalid Debian mirror URL! (%r)"
+        raise AssertionError(msg % url)
+
+
+def check_ubuntu_mirror(url):
+    """Ensure the given URL looks like a Ubuntu mirror URL."""
+    if not is_ubuntu_mirror(url):
+        msg = "Invalid Ubuntu mirror URL! (%r)"
+        raise AssertionError(msg % url)
 
 
 def is_debian_mirror(url):
