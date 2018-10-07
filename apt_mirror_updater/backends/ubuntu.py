@@ -10,7 +10,7 @@
 import logging
 
 # External dependencies.
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, UnicodeDammit
 from humanfriendly import Timer, format, pluralize
 
 # Modules included in our package.
@@ -161,9 +161,10 @@ def discover_mirror_selection():
     timer = Timer()
     logger.info("Identifying fast Ubuntu mirrors using %s ..", MIRROR_SELECTION_URL)
     data = fetch_url(MIRROR_SELECTION_URL, retry=False)
+    dammit = UnicodeDammit(data)
     mirrors = set(
         CandidateMirror(mirror_url=mirror_url.strip())
-        for mirror_url in data.splitlines()
+        for mirror_url in dammit.unicode_markup.splitlines()
         if mirror_url and not mirror_url.isspace()
     )
     logger.debug("Found %s in %s.", pluralize(len(mirrors), "fast Ubuntu mirror"), timer)
