@@ -9,6 +9,7 @@
 # Standard library modules.
 import logging
 import os
+import re
 import time
 
 # External dependencies.
@@ -177,7 +178,8 @@ def is_ubuntu_mirror(url):
     url = normalize_mirror_url(url)
     if has_compatible_scheme(url):
         components = split(url, '/')
-        return components[-1] in ('ubuntu', 'archive.ubuntu.com')
+        last_component_matches = (components[-1] in ('ubuntu', 'archive.ubuntu.com'))
+        return last_component_matches or re.search(r'\bubuntu\b', url)
 
 
 def has_compatible_scheme(url):
