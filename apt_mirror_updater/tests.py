@@ -1,7 +1,7 @@
 # Automated, robust apt-get mirror selection for Debian and Ubuntu.
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: June 22, 2018
+# Last Change: October 7, 2018
 # URL: https://apt-mirror-updater.readthedocs.io
 
 """Test suite for the ``apt-mirror-updater`` package."""
@@ -15,9 +15,10 @@ import time
 from executor import execute
 from executor.contexts import LocalContext
 from humanfriendly.testing import TestCase, run_cli
+from humanfriendly.text import split
 
 # Modules included in our package.
-from apt_mirror_updater import AptMirrorUpdater
+from apt_mirror_updater import AptMirrorUpdater, normalize_mirror_url
 from apt_mirror_updater.cli import main
 from apt_mirror_updater.eol import DISTRO_INFO_DIRECTORY, gather_eol_dates
 
@@ -141,18 +142,23 @@ def have_package_lists():
 
 def is_mirror_url(url):
     """Check whether the given URL looks like a Debian or Ubuntu mirror URL."""
-    url = url.rstrip('/') + '/'
     return is_debian_mirror(url) or is_ubuntu_mirror(url)
 
 
 def is_debian_mirror(url):
     """Check whether the given URL looks like a Debian mirror URL."""
-    return has_compatible_scheme(url) and url.endswith('/debian/')
+    url = normalize_mirror_url(url)
+    if has_compatible_scheme(url):
+        components = split(url, '/')
+        return components[-1] == 'debian'
 
 
 def is_ubuntu_mirror(url):
     """Check whether the given URL looks like a Ubuntu mirror URL."""
-    return has_compatible_scheme(url) and url.endswith('/ubuntu/')
+    url = normalize_mirror_url(url)
+    if has_compatible_scheme(url):
+        components = split(url, '/')
+        return components[-1] in ('ubuntu', 'archive.ubuntu.com')
 
 
 def has_compatible_scheme(url):

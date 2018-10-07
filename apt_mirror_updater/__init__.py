@@ -1,7 +1,7 @@
 # Automated, robust apt-get mirror selection for Debian and Ubuntu.
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: June 22, 2018
+# Last Change: October 7, 2018
 # URL: https://apt-mirror-updater.readthedocs.io
 
 """
@@ -762,13 +762,17 @@ class CandidateMirror(PropertyManager):
         :attr:`mirror_url`.
         """
         return '%s/Archive-Update-in-Progress-%s' % (
-            self.mirror_url.rstrip('/'),
-            urlparse(self.mirror_url).netloc,
+            self.mirror_url, urlparse(self.mirror_url).netloc,
         )
 
     @key_property
     def mirror_url(self):
         """The base URL of the mirror (a string)."""
+
+    @mirror_url.setter
+    def mirror_url(self, value):
+        """Normalize the mirror URL when set."""
+        set_property(self, 'mirror_url', normalize_mirror_url(value))
 
     @mutable_property
     def is_available(self):
@@ -837,8 +841,7 @@ class CandidateMirror(PropertyManager):
         """
         if self.updater and self.updater.distribution_codename:
             return '%s/dists/%s/Release.gpg' % (
-                self.mirror_url.rstrip('/'),
-                self.updater.distribution_codename,
+                self.mirror_url, self.updater.distribution_codename,
             )
 
     @mutable_property
