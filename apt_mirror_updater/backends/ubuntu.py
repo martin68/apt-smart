@@ -1,7 +1,7 @@
 # Automated, robust apt-get mirror selection for Debian and Ubuntu.
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: October 31, 2017
+# Last Change: October 7, 2018
 # URL: https://apt-mirror-updater.readthedocs.io
 
 """Discovery of Ubuntu package archive mirrors."""
@@ -19,6 +19,9 @@ from apt_mirror_updater.http import fetch_url
 
 MIRRORS_URL = 'https://launchpad.net/ubuntu/+archivemirrors'
 """The URL of the HTML page listing official Ubuntu mirrors (a string)."""
+
+MIRROR_SELECTION_URL = 'http://mirrors.ubuntu.com/mirrors.txt'
+"""The URL of a plain text listing of "geographically suitable" mirror URLs (a string)."""
 
 OLD_RELEASES_URL = 'http://old-releases.ubuntu.com/ubuntu/'
 """The URL where EOL (end of life) Ubuntu releases are hosted (a string)."""
@@ -85,14 +88,15 @@ logger = logging.getLogger(__name__)
 
 def discover_mirrors():
     """
-    Discover available Ubuntu mirrors by querying :data:`MIRRORS_URL`.
+    Discover available Ubuntu mirrors.
 
     :returns: A set of :class:`.CandidateMirror` objects that have their
               :attr:`~.CandidateMirror.mirror_url` property set and may have
               the :attr:`~.CandidateMirror.last_updated` property set.
     :raises: If no mirrors are discovered an exception is raised.
 
-    An example run:
+    This queries :data:`MIRRORS_URL` and :data:`MIRROR_SELECTION_URL` to
+    discover available Ubuntu mirrors. Here's an example run:
 
     >>> from apt_mirror_updater.backends.ubuntu import discover_mirrors
     >>> from pprint import pprint
@@ -136,7 +140,33 @@ def discover_mirrors():
                     break
     if not mirrors:
         raise Exception("Failed to discover any Ubuntu mirrors! (using %s)" % MIRRORS_URL)
-    logger.info("Discovered %s in %s.", pluralize(len(mirrors), "Ubuntu mirror"), timer)
+    # Discover fast (geographically suitable) mirrors to speed up ranking.
+    # See also https://github.com/xolox/python-apt-mirror-updater/issues/6.
+    selected_mirrors = discover_mirror_selection()
+    slow_mirrors = mirrors ^ selected_mirrors
+    fast_mirrors = mirrors ^ slow_mirrors
+    if len(fast_mirrors) > 10:
+        # Narrow down the list of candidate mirrors to fast mirrors.
+        logger.info("Discovered %s in %s (narrowed down from %s).",
+                    pluralize(len(fast_mirrors), "Ubuntu mirror"),
+                    timer, pluralize(len(mirrors), "mirror"))
+        mirrors = fast_mirrors
+    else:
+        logger.info("Discovered %s in %s.", pluralize(len(mirrors), "Ubuntu mirror"), timer)
+    return mirrors
+
+
+def discover_mirror_selection():
+    """Discover "geographically suitable" Ubuntu mirrors."""
+    timer = Timer()
+    logger.info("Identifying fast Ubuntu mirrors using %s ..", MIRROR_SELECTION_URL)
+    data = fetch_url(MIRROR_SELECTION_URL, retry=False)
+    mirrors = set(
+        CandidateMirror(mirror_url=mirror_url.strip())
+        for mirror_url in data.splitlines()
+        if mirror_url and not mirror_url.isspace()
+    )
+    logger.debug("Found %s in %s.", pluralize(len(mirrors), "fast Ubuntu mirror"), timer)
     return mirrors
 
 
