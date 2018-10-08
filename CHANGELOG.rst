@@ -11,6 +11,41 @@ to `semantic versioning`_.
 .. _Keep a Changelog: http://keepachangelog.com/
 .. _semantic versioning: http://semver.org/
 
+`Release 5.2`_ (2018-10-08)
+---------------------------
+
+Use `mirrors.ubuntu.com/mirrors.txt`_ without placing our full trust in it like
+older versions of ``apt-mirror-updater`` did 😇.
+
+Feedback in issue `#6`_ suggested that `mirrors.ubuntu.com/mirrors.txt`_ is
+working properly (again) and should be preferred over scraping Launchpad.
+However I prefer for ``apt-mirror-updater`` to be a reliable "do what I mean"
+program and `mirrors.ubuntu.com/mirrors.txt`_ has proven to be unreliable in
+the past (see the discussion in `#6`_). As a compromise I've changed the Ubuntu
+mirror discovery as follows:
+
+1. Discover Ubuntu mirrors on Launchpad.
+
+2. Try to discover mirrors using `mirrors.ubuntu.com/mirrors.txt`_ and iff
+   successful, narrow down the list produced in step 1 based on the URLs
+   reported in step 2.
+
+3. Rank the discovered / narrowed down mirrors and pick the best one.
+
+The reason why I've decided to add this additional complexity is because it has
+bothered me in the past that Ubuntu mirror discovery was slow and this does
+help a lot. Also, why not use a service provided by Ubuntu to speed things up?
+
+Unrelated to the use of `mirrors.ubuntu.com/mirrors.txt`_ I've also bumped the
+``executor`` requirement (twice) in order to pull in upstream improvements
+discussed in `executor issue #10`_ and `executor issue #15`_.
+
+.. _Release 5.2: https://github.com/xolox/python-apt-mirror-updater/compare/5.1...5.2
+.. _mirrors.ubuntu.com/mirrors.txt: http://mirrors.ubuntu.com/mirrors.txt
+.. _#6: https://github.com/xolox/python-apt-mirror-updater/issues/6
+.. _executor issue #10: https://github.com/xolox/python-executor/issues/10
+.. _executor issue #15: https://github.com/xolox/python-executor/issues/15
+
 `Release 5.1`_ (2018-06-22)
 ---------------------------
 
