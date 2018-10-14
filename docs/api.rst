@@ -31,14 +31,14 @@ the `apt-mirror-updater` package. The following modules are available:
 .. automodule:: apt_mirror_updater.cli
    :members:
 
-:mod:`apt_mirror_updater.eol`
------------------------------
-
-.. automodule:: apt_mirror_updater.eol
-   :members:
-
 :mod:`apt_mirror_updater.http`
 ------------------------------
 
 .. automodule:: apt_mirror_updater.http
+   :members:
+
+:mod:`apt_mirror_updater.releases`
+----------------------------------
+
+.. automodule:: apt_mirror_updater.releases
    :members:

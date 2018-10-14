@@ -1,7 +1,7 @@
 # Automated, robust apt-get mirror selection for Debian and Ubuntu.
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: October 8, 2018
+# Last Change: October 14, 2018
 # URL: https://apt-mirror-updater.readthedocs.io
 
 """
@@ -42,8 +42,8 @@ from six import text_type
 from six.moves.urllib.parse import urlparse
 
 # Modules included in our package.
-from apt_mirror_updater.eol import KNOWN_EOL_DATES
 from apt_mirror_updater.http import NotFoundError, fetch_concurrent, fetch_url, get_default_concurrency
+from apt_mirror_updater.releases import coerce_release
 
 # Semi-standard module versioning.
 __version__ = '5.2'
@@ -123,7 +123,7 @@ class AptMirrorUpdater(PropertyManager):
         """
         mirrors = set()
         if self.release_is_eol:
-            logger.debug("Skipping mirror discovery because %s is EOL.", self.release_label)
+            logger.debug("Skipping mirror discovery because %s is EOL.", self.release)
         else:
             for candidate in self.backend.discover_mirrors():
                 if any(fnmatch.fnmatch(candidate.mirror_url, pattern) for pattern in self.blacklist):
@@ -173,7 +173,7 @@ class AptMirrorUpdater(PropertyManager):
         """
         logger.debug("Selecting best %s mirror ..", self.distributor_id.capitalize())
         if self.release_is_eol:
-            logger.info("%s is EOL, using %s.", self.release_label, self.old_releases_url)
+            logger.info("%s is EOL, using %s.", self.release, self.old_releases_url)
             return self.old_releases_url
         else:
             return self.ranked_mirrors[0].mirror_url
@@ -235,19 +235,15 @@ class AptMirrorUpdater(PropertyManager):
         """
         The distributor ID (a lowercase string like 'debian' or 'ubuntu').
 
-        The value of this property defaults to the value of the
-        :attr:`executor.contexts.AbstractContext.distributor_id`
-        property which is the right choice 99% of the time.
+        The default value of this property is based on the
+        :attr:`~apt_mirror_updater.releases.Release.distributor_id` property of
+        :attr:`release` (which in turn is based on :attr:`distribution_codename`).
 
-        An example of a situation where it's not the right choice is when you
-        want to create a chroot_ using debootstrap_: In this case the host
-        system's :attr:`distributor_id` and :attr:`distribution_codename` may
-        very well differ from those inside the chroot.
-
-        .. _chroot: https://en.wikipedia.org/wiki/chroot
-        .. _debootstrap: https://en.wikipedia.org/wiki/debootstrap
+        Because Debian and Ubuntu code names are unambiguous this means that in
+        practice you can provide a value for :attr:`distribution_codename` and
+        omit :attr:`distributor_id` and everything should be fine.
         """
-        return self.context.distributor_id
+        return self.release.distributor_id
 
     @mutable_property
     def max_mirrors(self):
@@ -309,6 +305,11 @@ class AptMirrorUpdater(PropertyManager):
         return sorted(mirrors, key=lambda c: c.sort_key, reverse=True)
 
     @cached_property
+    def release(self):
+        """A :class:`.Release` object corresponding to :attr:`distributor_id` and :attr:`distribution_codename`."""
+        return coerce_release(self.distribution_codename)
+
+    @cached_property
     def release_is_eol(self):
         """
         :data:`True` if the release is EOL (end of life), :data:`False` otherwise.
@@ -327,8 +328,8 @@ class AptMirrorUpdater(PropertyManager):
             modules to override the default EOL dates, more specifically to
             respect the `Debian LTS`_ release schedule (see also `issue #5`_).
 
-          - Otherwise :data:`.KNOWN_EOL_DATES` is checked for a date that
-            matches :attr:`distributor_id` and :attr:`distribution_codename`.
+          - Otherwise the :attr:`~apt_mirror_updater.releases.Release.eol_date`
+            of :attr:`release` is used.
 
         - As a fall back :func:`validate_mirror()` is used to check whether
           :attr:`security_url` results in :data:`MirrorStatus.MAYBE_EOL`.
@@ -337,7 +338,7 @@ class AptMirrorUpdater(PropertyManager):
         .. _issue #5: https://github.com/xolox/python-apt-mirror-updater/issues/5
         """
         release_is_eol = None
-        logger.debug("Checking whether %s is EOL ..", self.release_label)
+        logger.debug("Checking whether %s is EOL ..", self.release)
         # Check if the backend provides custom EOL dates.
         if hasattr(self.backend, 'get_eol_date'):
             eol_date = self.backend.get_eol_date(self)
@@ -345,28 +346,18 @@ class AptMirrorUpdater(PropertyManager):
                 release_is_eol = (time.time() >= eol_date)
                 source = "custom EOL dates"
         # Check if the bundled data contains an applicable EOL date.
-        if release_is_eol is None and self.distributor_id in KNOWN_EOL_DATES:
-            dates = KNOWN_EOL_DATES[self.distributor_id]
-            if self.distribution_codename in dates:
-                eol_date = dates[self.distribution_codename]
-                release_is_eol = (time.time() >= eol_date)
-                source = "known EOL dates"
+        if release_is_eol is None and self.release.eol_date:
+            release_is_eol = self.release.is_eol
+            source = "known EOL dates"
         # Validate the security mirror as a fall back.
         if release_is_eol is None:
             release_is_eol = (self.validate_mirror(self.security_url) == MirrorStatus.MAYBE_EOL)
             source = "security mirror"
         logger.debug(
-            "%s is %s (based on %s).",
-            self.release_label,
-            "EOL" if release_is_eol else "supported",
-            source,
+            "%s is %s (based on %s).", self.release,
+            "EOL" if release_is_eol else "supported", source,
         )
         return release_is_eol
-
-    @property
-    def release_label(self):
-        """A human readable label based on :attr:`distributor_id` and :attr:`distribution_codename` (a string)."""
-        return "%s release %s" % (self.distributor_id.capitalize(), self.distribution_codename.capitalize())
 
     @mutable_property
     def security_url(self):
@@ -389,8 +380,7 @@ class AptMirrorUpdater(PropertyManager):
         avoided when unnecessary.
         """
         if self.release_is_eol:
-            logger.debug("%s is EOL, falling back to %s.",
-                         self.release_label, self.old_releases_url)
+            logger.debug("%s is EOL, falling back to %s.", self.release, self.old_releases_url)
             return self.old_releases_url
         else:
             try:
@@ -478,6 +468,8 @@ class AptMirrorUpdater(PropertyManager):
         If `directory` already exists and isn't empty then it is assumed that
         the chroot has already been created and debootstrap_ won't be run.
         Before this method returns it changes :attr:`context` to the chroot.
+
+        .. _debootstrap: https://manpages.debian.org/debootstrap
         """
         logger.debug("Checking if chroot already exists (%s) ..", directory)
         if self.context.exists(directory) and self.context.list_entries(directory):
@@ -490,16 +482,16 @@ class AptMirrorUpdater(PropertyManager):
                 self.context.execute('apt-get', 'install', '--yes', 'debootstrap', sudo=True)
             # Use the `debootstrap' program to create the chroot.
             timer = Timer()
-            logger.info("Creating %s chroot in %s ..",
-                        self.release_label, directory)
+            logger.info("Creating %s chroot in %s ..", self.release, directory)
             debootstrap_command = ['debootstrap']
             if arch:
                 debootstrap_command.append('--arch=%s' % arch)
+            debootstrap_command.append('--keyring=%s' % self.release.keyring_file)
             debootstrap_command.append(self.distribution_codename)
             debootstrap_command.append(directory)
             debootstrap_command.append(self.best_mirror)
             self.context.execute(*debootstrap_command, sudo=True)
-            logger.info("Took %s to create %s chroot.", timer, self.release_label)
+            logger.info("Took %s to create %s chroot.", timer, self.release)
             first_run = True
         # Switch the execution context to the chroot and reset the locale (to
         # avoid locale warnings emitted by post-installation scripts run by
@@ -669,11 +661,11 @@ class AptMirrorUpdater(PropertyManager):
                         # of `apt-get update' implies that the release is EOL
                         # we need to verify our assumption.
                         if any(self.current_mirror in line and u'404' in line.split() for line in output.splitlines()):
-                            logger.warning("%s may be EOL, checking ..", self.release_label)
+                            logger.warning("%s may be EOL, checking ..", self.release)
                             if self.release_is_eol:
                                 if switch_mirrors:
                                     logger.warning("Switching to old releases mirror because %s is EOL ..",
-                                                   self.release_label)
+                                                   self.release)
                                     self.change_mirror(self.old_releases_url, update=False)
                                     continue
                                 else:
@@ -716,7 +708,7 @@ class AptMirrorUpdater(PropertyManager):
             key = (mirror_url, self.distribution_codename)
             value = self.validated_mirrors.get(key)
             if value is None:
-                logger.info("Checking if %s is available on %s ..", self.release_label, mirror_url)
+                logger.info("Checking if %s is available on %s ..", self.release, mirror_url)
                 # Try to download the Release.gpg file, in the assumption that
                 # this file should always exist and is more or less guaranteed
                 # to be relatively small.

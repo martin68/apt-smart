@@ -1,7 +1,7 @@
 # Makefile for the 'apt-mirror-updater' package.
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: November 1, 2017
+# Last Change: October 14, 2018
 # URL: https://apt-mirror-updater.readthedocs.io
 
 PACKAGE_NAME = apt-mirror-updater
@@ -65,13 +65,13 @@ cog: install
 	@echo Installing cog ...
 	@pip-accel install --quiet cogapp
 
-eol: cog
-	@cog.py -r apt_mirror_updater/eol.py
+releases: cog
+	@cog.py -r apt_mirror_updater/releases.py
 
 readme: cog
 	@cog.py -r README.rst
 
-docs: eol readme
+docs: releases readme
 	@pip-accel install --quiet sphinx
 	@cd docs && sphinx-build -nb html -d build/doctrees . build/html
 
