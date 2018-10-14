@@ -11,6 +11,22 @@ to `semantic versioning`_.
 .. _Keep a Changelog: http://keepachangelog.com/
 .. _semantic versioning: http://semver.org/
 
+`Release 6.0`_ (2018-10-14)
+---------------------------
+
+Enable the creation of Ubuntu <= 12.04 chroots on Ubuntu >= 17.04 hosts by
+working around (what I am convinced is) a bug in ``debootstrap`` which picks
+the wrong keyring when setting up chroots of old releases. For more information
+refer to issue `#8`_.
+
+I've bumped the major version number for this release because the highly
+specific ``apt_mirror_updater.eol`` module changed into the much more generic
+``apt_mirror_updater.releases`` module. Also the ``release_label`` property was
+removed.
+
+.. _Release 6.0: https://github.com/xolox/python-apt-mirror-updater/compare/5.2...6.0
+.. _#8: https://github.com/xolox/python-apt-mirror-updater/issues/8
+
 `Release 5.2`_ (2018-10-08)
 ---------------------------
 
