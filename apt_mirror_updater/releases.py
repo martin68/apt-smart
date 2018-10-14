@@ -147,16 +147,32 @@ def parse_csv_file(filename):
     :param filename: The pathname of the CSV file (a string).
     :returns: A generator of :class:`Release` objects.
     """
-    basename, ext = os.path.splitext(os.path.basename(filename))
+    # We import this here to avoid a circular import.
+    from apt_mirror_updater.backends.debian import LTS_RELEASES
+    basename, extension = os.path.splitext(os.path.basename(filename))
+    distributor_id = basename.lower()
     with open(filename) as handle:
         for entry in csv.DictReader(handle):
             yield Release(
                 codename=entry['codename'],
-                is_lts=('LTS' in entry['version']),
+                is_lts=(
+                    entry['series'] in LTS_RELEASES if distributor_id == 'debian' else (
+                        'LTS' in entry['version'] if distributor_id == 'ubuntu' else (
+                            # Neither Debian nor Ubuntu, let's not assume anything...
+                            False
+                        ),
+                    )
+                ),
                 created_date=parse_date(entry['created']),
-                distributor_id=basename.lower(),
+                distributor_id=distributor_id,
                 eol_date=parse_date(entry['eol']),
-                extended_eol_date=parse_date(entry.get('eol-server')),
+                extended_eol_date=(
+                    # Special handling for Debian LTS releases.
+                    datetime.datetime.fromtimestamp(LTS_RELEASES[entry['series']]).date()
+                    if distributor_id == 'debian' and entry['series'] in LTS_RELEASES
+                    # Ubuntu LTS releases are defined by the CSV file.
+                    else parse_date(entry.get('eol-server'))
+                ),
                 release_date=parse_date(entry['release']),
                 series=entry['series'],
                 version=parse_version(entry['version']) if entry['version'] else None,
@@ -240,20 +256,7 @@ class Release(PropertyManager):
 
     @writable_property
     def is_lts(self):
-        """
-        Whether an Ubuntu release is a long term support release (a boolean).
-
-        .. warning:: While this property correctly reflects the LTS status of
-                     Ubuntu releases it does not reflect the LTS status of
-                     Debian releases. This is because the value is based on the
-                     ``/usr/share/distro-info/*.csv`` files which don't contain
-                     information on Debian LTS releases.
-
-                     It's worth nothing that despite this value being wrong
-                     for Debian releases, ``apt-mirror-updater`` does in
-                     fact recognize Debian LTS releases (for details refer to
-                     :func:`~apt_mirror_updater.backends.debian.get_eol_date()`).
-        """
+        """Whether a release is a long term support release (a boolean)."""
 
     @writable_property
     def release_date(self):

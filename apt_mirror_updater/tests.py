@@ -105,10 +105,18 @@ class AptMirrorUpdaterTestCase(TestCase):
     def test_discover_releases(self):
         """Test that release discovery works properly."""
         releases = discover_releases()
+        # Check that a reasonable number of Debian and Ubuntu releases was discovered.
         assert len([r for r in releases if r.distributor_id == 'debian']) > 10
         assert len([r for r in releases if r.distributor_id == 'ubuntu']) > 10
+        # Check that LTS releases of Debian as well as Ubuntu were discovered.
+        assert any(r.distributor_id == 'debian' and r.is_lts for r in releases)
+        assert any(r.distributor_id == 'ubuntu' and r.is_lts for r in releases)
+        # Sanity check against duplicate releases.
         assert sum(r.series == 'bionic' for r in releases) == 1
         assert sum(r.series == 'jessie' for r in releases) == 1
+        # Sanity check some known LTS releases.
+        assert any(r.series == 'bionic' and r.is_lts for r in releases)
+        assert any(r.series == 'stretch' and r.is_lts for r in releases)
 
     def test_debian_lts_eol_date(self):
         """
