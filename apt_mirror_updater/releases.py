@@ -126,7 +126,7 @@ def discover_releases():
         # properties).
         result.update(BUNDLED_RELEASES)
         # Sort the releases by distributor ID and version / series.
-        result = sorted(result, key=lambda r: (r.distributor_id, r.version, r.series))
+        result = sorted(result, key=lambda r: (r.distributor_id, r.version or 0, r.series))
         # Cache the resulting value.
         discover_releases.cached_result = result
         return result
