@@ -1,7 +1,7 @@
 # Automated, robust apt-get mirror selection for Debian and Ubuntu.
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: October 8, 2018
+# Last Change: October 14, 2018
 # URL: https://apt-mirror-updater.readthedocs.io
 
 """Test suite for the ``apt-mirror-updater`` package."""
@@ -13,14 +13,13 @@ import time
 
 # External dependencies.
 from executor import execute
-from executor.contexts import LocalContext
 from humanfriendly.testing import TestCase, run_cli
 from humanfriendly.text import split
 
 # Modules included in our package.
 from apt_mirror_updater import AptMirrorUpdater, normalize_mirror_url
 from apt_mirror_updater.cli import main
-from apt_mirror_updater.eol import DISTRO_INFO_DIRECTORY, gather_eol_dates
+from apt_mirror_updater.releases import discover_releases
 
 # Initialize a logger for this module.
 logger = logging.getLogger(__name__)
@@ -103,16 +102,13 @@ class AptMirrorUpdaterTestCase(TestCase):
         # Verify that package lists are again available.
         assert have_package_lists()
 
-    def test_gather_eol_dates(self):
-        """Test that gathering of EOL dates works properly."""
-        if not os.path.exists(DISTRO_INFO_DIRECTORY):
-            return self.skipTest("distro-info-data not available")
-        dates = gather_eol_dates(context=LocalContext())
-        assert len(dates) >= 2
-        assert 'debian' in dates
-        assert 'ubuntu' in dates
-        assert len(dates['debian']) > 0
-        assert len(dates['ubuntu']) > 0
+    def test_discover_releases(self):
+        """Test that release discovery works properly."""
+        releases = discover_releases()
+        assert len([r for r in releases if r.distributor_id == 'debian']) > 10
+        assert len([r for r in releases if r.distributor_id == 'ubuntu']) > 10
+        assert sum(r.series == 'bionic' for r in releases) == 1
+        assert sum(r.series == 'jessie' for r in releases) == 1
 
     def test_debian_lts_eol_date(self):
         """
