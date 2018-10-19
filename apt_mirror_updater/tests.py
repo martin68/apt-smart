@@ -7,6 +7,7 @@
 """Test suite for the ``apt-mirror-updater`` package."""
 
 # Standard library modules.
+import decimal
 import logging
 import os
 import time
@@ -124,6 +125,14 @@ class AptMirrorUpdaterTestCase(TestCase):
         # Sanity check some known LTS releases.
         assert any(r.series == 'bionic' and r.is_lts for r in releases)
         assert any(r.series == 'stretch' and r.is_lts for r in releases)
+
+    def test_coerce_release(self):
+        """Test the coercion of release objects."""
+        # Test coercion of short code names.
+        assert coerce_release('lucid').version == decimal.Decimal('10.04')
+        assert coerce_release('woody').distributor_id == 'debian'
+        # Test coercion of version numbers.
+        assert coerce_release('10.04').series == 'lucid'
 
     def test_keyring_selection(self):
         """Make sure keyring selection works as intended."""
