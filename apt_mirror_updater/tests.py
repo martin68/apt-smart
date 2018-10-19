@@ -131,13 +131,10 @@ class AptMirrorUpdaterTestCase(TestCase):
         lenny = coerce_release('lenny')
         assert lenny.keyring_file == DEBIAN_KEYRING_CURRENT
         # Check Ubuntu <= 12.04 keyring selection.
-        lucid = coerce_release('lucid')
         precise = coerce_release('precise')
         if ubuntu_keyring_updated():
-            assert lucid.keyring_file == UBUNTU_KEYRING_REMOVED
             assert precise.keyring_file == UBUNTU_KEYRING_REMOVED
         else:
-            assert lucid.keyring_file == UBUNTU_KEYRING_REMOVED
             assert precise.keyring_file == UBUNTU_KEYRING_CURRENT
         # Check Ubuntu > 12.04 keyring selection.
         bionic = coerce_release('bionic')
