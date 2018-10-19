@@ -1,7 +1,7 @@
 # Automated, robust apt-get mirror selection for Debian and Ubuntu.
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: October 14, 2018
+# Last Change: October 19, 2018
 # URL: https://apt-mirror-updater.readthedocs.io
 
 """
@@ -46,7 +46,7 @@ from apt_mirror_updater.http import NotFoundError, fetch_concurrent, fetch_url, 
 from apt_mirror_updater.releases import coerce_release
 
 # Semi-standard module versioning.
-__version__ = '6.0'
+__version__ = '6.1'
 
 MAIN_SOURCES_LIST = '/etc/apt/sources.list'
 """The absolute pathname of the list of configured APT data sources (a string)."""

@@ -11,6 +11,18 @@ to `semantic versioning`_.
 .. _Keep a Changelog: http://keepachangelog.com/
 .. _semantic versioning: http://semver.org/
 
+`Release 6.1`_ (2018-10-19)
+---------------------------
+
+- Bug fix for Ubuntu keyring selection that prevented
+  ``ubuntu-archive-removed-keys.gpg`` from being used.
+- Bug fix for ``coerce_release()`` when given a release number.
+- Moved pathnames of Debian and Ubuntu keyring files to constants.
+- Added logging to enable debugging of keyring selection process.
+- Added proper tests for keyring selection and release coercion.
+
+.. _Release 6.1: https://github.com/xolox/python-apt-mirror-updater/compare/6.0...6.1
+
 `Release 6.0`_ (2018-10-14)
 ---------------------------
 
