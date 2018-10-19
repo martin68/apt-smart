@@ -1,7 +1,7 @@
 # Automated, robust apt-get mirror selection for Debian and Ubuntu.
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: October 14, 2018
+# Last Change: October 19, 2018
 # URL: https://apt-mirror-updater.readthedocs.io
 
 """Test suite for the ``apt-mirror-updater`` package."""
@@ -19,7 +19,13 @@ from humanfriendly.text import split
 # Modules included in our package.
 from apt_mirror_updater import AptMirrorUpdater, normalize_mirror_url
 from apt_mirror_updater.cli import main
-from apt_mirror_updater.releases import discover_releases
+from apt_mirror_updater.releases import (
+    DEBIAN_KEYRING_CURRENT,
+    UBUNTU_KEYRING_CURRENT,
+    UBUNTU_KEYRING_REMOVED,
+    discover_releases,
+    ubuntu_keyring_updated,
+)
 
 # Initialize a logger for this module.
 logger = logging.getLogger(__name__)
@@ -117,6 +123,24 @@ class AptMirrorUpdaterTestCase(TestCase):
         # Sanity check some known LTS releases.
         assert any(r.series == 'bionic' and r.is_lts for r in releases)
         assert any(r.series == 'stretch' and r.is_lts for r in releases)
+
+    def test_keyring_selection(self):
+        """Make sure keyring selection works as intended."""
+        # Check Debian keyring selection.
+        lenny = coerce_release('lenny')
+        assert lenny.keyring_file == DEBIAN_KEYRING_CURRENT
+        # Check Ubuntu <= 12.04 keyring selection.
+        lucid = coerce_release('lucid')
+        precise = coerce_release('precise')
+        if ubuntu_keyring_updated():
+            assert lucid.keyring_file == UBUNTU_KEYRING_REMOVED
+            assert precise.keyring_file == UBUNTU_KEYRING_REMOVED
+        else:
+            assert lucid.keyring_file == UBUNTU_KEYRING_REMOVED
+            assert precise.keyring_file == UBUNTU_KEYRING_CURRENT
+        # Check Ubuntu > 12.04 keyring selection.
+        bionic = coerce_release('bionic')
+        assert bionic.keyring_file == UBUNTU_KEYRING_CURRENT
 
     def test_debian_lts_eol_date(self):
         """
