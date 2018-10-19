@@ -82,16 +82,26 @@ def coerce_release(value):
     """
     Try to coerce the given value to a Debian or Ubuntu release.
 
-    :param value: The value to coerce (a number, string or :class:`Release` object).
+    :param value: The value to coerce (a number, a string or a :class:`Release` object).
     :returns: A :class:`Release` object.
     :raises: :exc:`~exceptions.ValueError` when the given value cannot be coerced to a known release.
+
+    The following values can be coerced:
+
+    - Numbers and numbers formatted as strings match :attr:`Release.version`.
+    - Strings match :attr:`Release.codename` (case insensitive).
+
+    .. warning:: Don't use floating point numbers like 10.04 because their
+                 actual value will be something like 10.039999999999999147
+                 which won't match the intended release.
     """
     # Release objects pass through untouched.
     if isinstance(value, Release):
         return value
     # Numbers and version strings are matched against release versions.
     if isinstance(value, numbers.Number) or is_version_string(value):
-        matches = [release for release in discover_releases() if release.version == float(value)]
+        typed_value = decimal.Decimal(value)
+        matches = [release for release in discover_releases() if release.version == typed_value]
         if len(matches) != 1:
             msg = "The number %s doesn't match a known Debian or Ubuntu release!"
             raise ValueError(msg % value)
