@@ -225,7 +225,9 @@ def ubuntu_keyring_updated():
     except AttributeError:
         # Use external commands to check the installed version of the package.
         version = execute('dpkg-query', '--show', '--showformat=${Version}', 'ubuntu-keyring', capture=True)
+        logger.debug("Detected ubuntu-keyring package version: %s", version)
         result = execute('dpkg', '--compare-versions', version, '>=', '2016.10.27', check=False, silent=True)
+        logger.debug("Does Launchpad bug #1363482 apply? %s", result)
         # Cache the resulting value.
         ubuntu_keyring_updated.cached_result = result
         return result
@@ -294,18 +296,28 @@ class Release(PropertyManager):
         use the wrong keyring to create Ubuntu chroots, for more details refer
         to :func:`ubuntu_keyring_updated()`.
         """
+        filename = None
+        reason = None
+        logger.debug("Selecting keyring file for %s ..", self)
         if self.distributor_id == 'debian':
-            return '/usr/share/keyrings/debian-keyring.gpg'
+            filename = DEBIAN_KEYRING_CURRENT
+            reason = "only known keyring"
         elif self.distributor_id == 'ubuntu':
-            current = '/usr/share/keyrings/ubuntu-archive-keyring.gpg'
-            removed = '/usr/share/keyrings/ubuntu-archive-removed-keys.gpg'
             if ubuntu_keyring_updated():
-                return current if self.version > 12.04 else removed
+                if self.version > decimal.Decimal('12.04'):
+                    filename = UBUNTU_KEYRING_CURRENT
+                    reason = "new keyring package / new release"
+                else:
+                    filename = UBUNTU_KEYRING_REMOVED
+                    reason = "new keyring package / old release"
             else:
-                return current
+                filename = UBUNTU_KEYRING_CURRENT
+                reason = "old keyring package"
         else:
             msg = "Unsupported distributor ID! (%s)"
             raise EnvironmentError(msg % self.distributor_id)
+        logger.debug("Using %s (reason: %s).", filename, reason)
+        return filename
 
     def __str__(self):
         """
