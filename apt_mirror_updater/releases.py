@@ -1,7 +1,7 @@
 # Easy to use metadata on Debian and Ubuntu releases.
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: October 14, 2018
+# Last Change: October 19, 2018
 # URL: https://apt-mirror-updater.readthedocs.io
 
 """
@@ -25,10 +25,8 @@ decision about the following questions:
    will it only be available in the archive of old releases?
 
 2. Is the signing key of a given Ubuntu release expected to be included in the
-   main keyring [#]_ or should the keyring with removed keys [#]_ be used?
-
-   .. [#] ``/usr/share/keyrings/ubuntu-archive-keyring.gpg``
-   .. [#] ``/usr/share/keyrings/ubuntu-archive-removed-keys.gpg``
+   main keyring (:data:`UBUNTU_KEYRING_CURRENT`) or should the keyring with
+   removed keys (:data:`UBUNTU_KEYRING_REMOVED`) be used?
 
 To make it possible to run `apt-mirror-updater` without direct access to the
 CSV files, a copy of the relevant information has been embedded in the source
@@ -55,9 +53,21 @@ from six import string_types
 DISTRO_INFO_DIRECTORY = '/usr/share/distro-info'
 """The pathname of the directory with CSV files containing release metadata (a string)."""
 
+DEBIAN_KEYRING_CURRENT = '/usr/share/keyrings/debian-keyring.gpg'
+"""The pathname of the main Debian keyring file (a string)."""
+
+UBUNTU_KEYRING_CURRENT = '/usr/share/keyrings/ubuntu-archive-keyring.gpg'
+"""The pathname of the main Ubuntu keyring file (a string)."""
+
+UBUNTU_KEYRING_REMOVED = '/usr/share/keyrings/ubuntu-archive-removed-keys.gpg'
+"""The pathname of the Ubuntu keyring file with removed keys (a string)."""
+
 # Public identifiers that require documentation.
 __all__ = (
     'DISTRO_INFO_DIRECTORY',
+    'DEBIAN_KEYRING_CURRENT',
+    'UBUNTU_KEYRING_CURRENT',
+    'UBUNTU_KEYRING_REMOVED',
     'Release',
     'coerce_release',
     'discover_releases',

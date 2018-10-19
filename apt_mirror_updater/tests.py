@@ -23,6 +23,7 @@ from apt_mirror_updater.releases import (
     DEBIAN_KEYRING_CURRENT,
     UBUNTU_KEYRING_CURRENT,
     UBUNTU_KEYRING_REMOVED,
+    coerce_release,
     discover_releases,
     ubuntu_keyring_updated,
 )
