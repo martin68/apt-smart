@@ -1,7 +1,7 @@
 # Easy to use metadata on Debian and Ubuntu releases.
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: October 19, 2018
+# Last Change: October 20, 2018
 # URL: https://apt-mirror-updater.readthedocs.io
 
 """
@@ -47,6 +47,7 @@ import os
 
 # External dependencies.
 from executor import execute
+from humanfriendly.decorators import cached
 from property_manager import PropertyManager, key_property, lazy_property, required_property, writable_property
 from six import string_types
 
@@ -114,6 +115,7 @@ def coerce_release(value):
     return matches[0]
 
 
+@cached
 def discover_releases():
     """
     Discover known Debian and Ubuntu releases.
@@ -129,27 +131,20 @@ def discover_releases():
     ``*.csv`` files (it won't cause a warning or error). Of course in this case
     only the embedded releases will be returned.
     """
-    try:
-        # Try to return the cached value.
-        return discover_releases.cached_result
-    except AttributeError:
-        # Discover the known releases on the first call to discover_releases().
-        # First we check the CSV files on the system where apt-mirror-updater
-        # is running, because those files may be more up-to-date than the
-        # bundled information is.
-        result = set()
-        for filename in glob.glob(os.path.join(DISTRO_INFO_DIRECTORY, '*.csv')):
-            for release in parse_csv_file(filename):
-                result.add(release)
-        # Add the releases bundled with apt-mirror-updater to the result
-        # without causing duplicate entries (due to the use of a set and key
-        # properties).
-        result.update(BUNDLED_RELEASES)
-        # Sort the releases by distributor ID and version / series.
-        result = sorted(result, key=lambda r: (r.distributor_id, r.version or 0, r.series))
-        # Cache the resulting value.
-        discover_releases.cached_result = result
-        return result
+    # Discover the known releases on the first call to discover_releases().
+    # First we check the CSV files on the system where apt-mirror-updater
+    # is running, because those files may be more up-to-date than the
+    # bundled information is.
+    result = set()
+    for filename in glob.glob(os.path.join(DISTRO_INFO_DIRECTORY, '*.csv')):
+        for release in parse_csv_file(filename):
+            result.add(release)
+    # Add the releases bundled with apt-mirror-updater to the result
+    # without causing duplicate entries (due to the use of a set and key
+    # properties).
+    result.update(BUNDLED_RELEASES)
+    # Sort the releases by distributor ID and version / series.
+    return sorted(result, key=lambda r: (r.distributor_id, r.version or 0, r.series))
 
 
 def is_version_string(value):
@@ -215,6 +210,7 @@ def parse_version(value):
     raise ValueError(msg % value)
 
 
+@cached
 def ubuntu_keyring_updated():
     """
     Detect update `#1363482`_ to the ``ubuntu-keyring`` package.
@@ -229,18 +225,12 @@ def ubuntu_keyring_updated():
     .. _#1363482: https://bugs.launchpad.net/ubuntu/+source/ubuntu-keyring/+bug/1363482
     .. _issue #8: https://github.com/xolox/python-apt-mirror-updater/issues/8
     """
-    try:
-        # Try to return the cached value.
-        return ubuntu_keyring_updated.cached_result
-    except AttributeError:
-        # Use external commands to check the installed version of the package.
-        version = execute('dpkg-query', '--show', '--showformat=${Version}', 'ubuntu-keyring', capture=True)
-        logger.debug("Detected ubuntu-keyring package version: %s", version)
-        result = execute('dpkg', '--compare-versions', version, '>=', '2016.10.27', check=False, silent=True)
-        logger.debug("Does Launchpad bug #1363482 apply? %s", result)
-        # Cache the resulting value.
-        ubuntu_keyring_updated.cached_result = result
-        return result
+    # Use external commands to check the installed version of the package.
+    version = execute('dpkg-query', '--show', '--showformat=${Version}', 'ubuntu-keyring', capture=True)
+    logger.debug("Detected ubuntu-keyring package version: %s", version)
+    updated = execute('dpkg', '--compare-versions', version, '>=', '2016.10.27', check=False, silent=True)
+    logger.debug("Does Launchpad bug #1363482 apply? %s", updated)
+    return updated
 
 
 class Release(PropertyManager):
