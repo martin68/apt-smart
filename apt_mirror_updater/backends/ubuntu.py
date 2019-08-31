@@ -160,7 +160,8 @@ def discover_mirror_selection():
     """Discover "geographically suitable" Ubuntu mirrors."""
     timer = Timer()
     logger.info("Identifying fast Ubuntu mirrors using %s ..", MIRROR_SELECTION_URL)
-    data = fetch_url(MIRROR_SELECTION_URL, retry=False)
+    data = fetch_url(MIRROR_SELECTION_URL, timeout=3, retry=True, max_attempts=5)
+    # shorter timeout with more retries is good for unstable connections to MIRROR_SELECTION_URL
     dammit = UnicodeDammit(data)
     mirrors = set(
         CandidateMirror(mirror_url=mirror_url.strip())

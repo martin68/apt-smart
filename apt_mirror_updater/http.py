@@ -58,8 +58,8 @@ def fetch_url(url, timeout=10, retry=False, max_attempts=3):
                 response_body = response.read()
                 logger.debug("Took %s to fetch %s.", timer, url)
                 return response_body
-        except (NotFoundError, TimeoutException):
-            # We never retry 404 responses and timeouts.
+        except (NotFoundError):
+            # We never retry 404 responses but retry timeouts.
             raise
         except Exception as e:
             if retry and i < max_attempts:
