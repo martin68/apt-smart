@@ -19,6 +19,7 @@ import logging
 import os
 import sys
 import time
+import calendar
 
 # Python 2.x / 3.x compatibility.
 try:
@@ -292,6 +293,15 @@ class AptMirrorUpdater(PropertyManager):
                 candidate = mapping[url]
                 candidate.release_gpg_contents = data
                 candidate.release_gpg_latency = elapsed_time
+
+        logger.info("Start retrieving :attr:`base_last_updated` using is_available")
+        self.base_last_updated = 0
+        if mapping[self.backend.BASE_URL].is_available:
+            logger.info(":attr:`base_last_updated`: %i", self.base_last_updated)
+            mapping[self.backend.BASE_URL].last_updated = 0 # BASE_URL 's contents are up-to-date naturally, so set its last_updated 0
+        else:
+            self.base_last_updated = int(time.time()) # BASE_URL not available, use time at the moment as base_last_updated.
+            logger.info(":attr:`base_last_updated` using time.time(): %i", self.base_last_updated)
         # Concurrently check for Archive-Update-in-Progress markers.
         update_mapping = dict((c.archive_update_in_progress_url, c) for c in mirrors if c.is_available)
         logger.info("Checking %s for Archive-Update-in-Progress marker ..",
@@ -777,7 +787,7 @@ class CandidateMirror(PropertyManager):
 
         The value of this property is computed by checking whether
         :attr:`release_gpg_contents` contains the expected ``BEGIN PGP
-        SIGNATURE`` header. This may seem like a rather obscure way of
+        MESSAGE`` header. This may seem like a rather obscure way of
         validating a mirror, but it was specifically chosen to detect
         all sorts of ways in which mirrors can be broken:
 
@@ -790,9 +800,27 @@ class CandidateMirror(PropertyManager):
         """
         value = False
         if self.release_gpg_contents:
-            value = b'BEGIN PGP SIGNATURE' in self.release_gpg_contents
+            value = b'BEGIN PGP SIGNED MESSAGE' in self.release_gpg_contents
             if not value:
                 logger.debug("Missing GPG header, considering mirror unavailable (%s).", self.release_gpg_url)
+            else:
+                date_string_raw = self.release_gpg_contents.decode().split("Date: ", 1) # Get all data following "Date: "
+                if len(date_string_raw) == 2: # split succussfully using "Date: "
+                    date_string = date_string_raw[1].split("\n")[0] # Get only date string like "Sun, 25 Aug 2019 23:35:36 UTC", drop other data
+                    if date_string.endswith("UTC"):
+                        last_updated_time = calendar.timegm(time.strptime(date_string, "%a, %d %b %Y %H:%M:%S %Z")) # Convert it into UNIX timestamp
+                        if self.updater.base_last_updated == 0: # First time launch this method, must be BASE_URL
+                            self.updater.base_last_updated = last_updated_time
+                            logger.debug("base_last_updated: %i", self.updater.base_last_updated)
+                        else:
+                            self.last_updated = self.updater.base_last_updated - last_updated_time # if last_updated is 0 means this mirror is up-to-date
+                            logger.debug("last_updated: %i", self.last_updated)
+                    else:
+                        logger.debug("Not UTC? Correct me. " + date_string)
+                    logger.debug("Looks good, %s is_available return True", self.release_gpg_url)
+                else: # split fails because lacking "Date: "
+                    logger.debug("Missing Date, considering mirror unavailable (%s).", self.release_gpg_url)
+                    value = False
             set_property(self, 'is_available', value)
         return value
 
@@ -836,7 +864,7 @@ class CandidateMirror(PropertyManager):
         :attr:`updater` object.
         """
         if self.updater and self.updater.distribution_codename:
-            return '%s/dists/%s/Release.gpg' % (
+            return '%s/dists/%s-security/InRelease' % (
                 self.mirror_url, self.updater.distribution_codename,
             )
 
