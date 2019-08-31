@@ -255,6 +255,10 @@ class AptMirrorUpdater(PropertyManager):
         """The URL of the mirror that serves old releases for this :attr:`backend` (a string)."""
         return self.backend.OLD_RELEASES_URL
 
+    @mutable_property
+    def base_last_updated(self):
+        """The Unix timestamp gotten from :data:`.BASE_URL`'s update date as minuend to determine which mirrors are up-to-date (an int)"""
+
     @cached_property
     def ranked_mirrors(self):
         """
