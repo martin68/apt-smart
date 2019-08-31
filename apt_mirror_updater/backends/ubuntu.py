@@ -86,7 +86,7 @@ The 'known statuses' used by Launchpad were checked as follows:
 logger = logging.getLogger(__name__)
 
 
-def discover_mirrors():
+def discover_mirrors_old():
     """
     Discover available Ubuntu mirrors.
 
@@ -98,9 +98,9 @@ def discover_mirrors():
     This queries :data:`MIRRORS_URL` and :data:`MIRROR_SELECTION_URL` to
     discover available Ubuntu mirrors. Here's an example run:
 
-    >>> from apt_mirror_updater.backends.ubuntu import discover_mirrors
+    >>> from apt_mirror_updater.backends.ubuntu import discover_mirrors_old
     >>> from pprint import pprint
-    >>> pprint(discover_mirrors())
+    >>> pprint(discover_mirrors_old())
     set([CandidateMirror(mirror_url='http://archive.ubuntu.com/ubuntu/'),
          CandidateMirror(mirror_url='http://ftp.nluug.nl/os/Linux/distr/ubuntu/'),
          CandidateMirror(mirror_url='http://ftp.snt.utwente.nl/pub/os/linux/ubuntu/'),
@@ -115,6 +115,16 @@ def discover_mirrors():
     """
     timer = Timer()
     mirrors = set()
+    """ It may be super-slow somewhere ( with 100Mbps fibre though ) in the world to access launchpad.net (see below), so we have to no longer rely on  MIRRORS_URL
+    time curl -o/dev/null 'https://launchpad.net/ubuntu/+archivemirrors'
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100  263k  100  263k    0     0   5316      0  0:00:50  0:00:50 --:--:--  6398
+
+real    0m50.869s
+user    0m0.045s
+sys     0m0.039s
+"""
     logger.info("Discovering Ubuntu mirrors at %s ..", MIRRORS_URL)
     data = fetch_url(MIRRORS_URL, retry=True)
     soup = BeautifulSoup(data, 'html.parser')
