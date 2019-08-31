@@ -166,6 +166,30 @@ sys     0m0.039s
     return mirrors
 
 
+def discover_mirrors():
+    """
+    Discover available Ubuntu mirrors.
+
+    :returns: A set of :class:`.CandidateMirror` objects that have their
+              :attr:`~.CandidateMirror.mirror_url` property set and may have
+              the :attr:`~.CandidateMirror.last_updated` property set.
+    :raises: If no mirrors are discovered an exception is raised.
+
+    This only queries :data:`MIRROR_SELECTION_URL` to
+    discover available Ubuntu mirrors. Here's an example run:
+    >>> from apt_mirror_updater.backends.ubuntu import discover_mirrors
+    >>> from pprint import pprint
+    >>> pprint(discover_mirrors())
+
+    """
+    timer = Timer()
+    mirrors = set()
+    mirrors = discover_mirror_selection()
+    if not mirrors:
+        raise Exception("Failed to discover any Ubuntu mirrors! (using %s)" % MIRROR_SELECTION_URL)
+    logger.info("Discovered %s in %s.", pluralize(len(mirrors), "Ubuntu mirror"), timer)
+    return mirrors
+
 def discover_mirror_selection():
     """Discover "geographically suitable" Ubuntu mirrors."""
     timer = Timer()
