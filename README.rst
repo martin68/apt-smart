@@ -1,4 +1,4 @@
-apt-mirror-updater: Automated Debian/Ubuntu mirror selection
+apt-smart: Automated Debian/Ubuntu mirror selection
 ============================================================
 
 .. image:: https://travis-ci.org/xolox/python-apt-mirror-updater.svg?branch=master
@@ -7,7 +7,7 @@ apt-mirror-updater: Automated Debian/Ubuntu mirror selection
 .. image:: https://coveralls.io/repos/xolox/python-apt-mirror-updater/badge.svg?branch=master
    :target: https://coveralls.io/r/xolox/python-apt-mirror-updater?branch=master
 
-The `apt-mirror-updater` package automates robust apt-get_ mirror selection for
+The `apt-smart` package automates robust apt-get_ mirror selection for
 Debian_ and Ubuntu_ by enabling discovery of available mirrors, ranking of
 available mirrors, automatic switching between mirrors and robust package list
 updating (see features_). It's currently tested on Python 2.6, 2.7, 3.4, 3.5,
@@ -38,7 +38,7 @@ Features
 
 **Robust package list updating**
  Several apt-get_ subcommands can fail if the current mirror is being updated
- (see `issues with mirror updates`_) and `apt-mirror-updater` tries to work
+ (see `issues with mirror updates`_) and `apt-smart` tries to work
  around this by wrapping ``apt-get update`` to retry on failures and
  automatically switch to a different mirror when it looks like the current
  mirror is being updated (because I've seen such updates take more than 15
@@ -50,13 +50,12 @@ Features
 Status
 ------
 
-On the one hand the `apt-mirror-updater` package was developed based on quite a
-few years of experience in using apt-get_ on Debian_ and Ubuntu_ systems and
-large scale automation of apt-get (working on 150+ remote systems). On the
+On the one hand the `apt-smart` package was developed based on quite a
+few years of experience in using apt-get_ on Debian_ and Ubuntu_ systems. On the
 other hand the Python package itself is relatively new: it was developed and
-published in March 2016. As such:
+published in Aug 2019. As such:
 
-.. warning:: Until `apt-mirror-updater` has been rigorously tested I consider
+.. warning:: Until `apt-smart` has been rigorously tested I consider
              it a proof of concept (beta software) so if it corrupts your
              system you can't complain that you weren't warned! I've already
              tested it on a variety of Ubuntu systems but haven't found the
@@ -74,12 +73,12 @@ writing a decent test suite requires a significant chunk of time :-).
 Installation
 ------------
 
-The `apt-mirror-updater` package is available on PyPI_ which means installation
+The `apt-smart` package is available on PyPI_ which means installation
 should be as simple as:
 
 .. code-block:: sh
 
-   $ pip install apt-mirror-updater
+   $ pip install apt-smart
 
 There's actually a multitude of ways to install Python packages (e.g. the `per
 user site-packages directory`_, `virtual environments`_ or just installing
@@ -90,24 +89,24 @@ instructions ;-).
 Usage
 -----
 
-There are two ways to use the `apt-mirror-updater` package: As the command line
-program ``apt-mirror-updater`` and as a Python API. For details about the
+There are two ways to use the `apt-smart` package: As the command line
+program ``apt-smart`` and as a Python API. For details about the
 Python API please refer to the API documentation available on `Read the Docs`_.
 The command line interface is described below.
 
 .. contents::
    :local:
 
-.. A DRY solution to avoid duplication of the `apt-mirror-updater --help' text:
+.. A DRY solution to avoid duplication of the `apt-smart --help' text:
 ..
 .. [[[cog
 .. from humanfriendly.usage import inject_usage
 .. inject_usage('apt_mirror_updater.cli')
 .. ]]]
 
-**Usage:** `apt-mirror-updater [OPTIONS]`
+**Usage:** `apt-smart [OPTIONS]`
 
-The apt-mirror-updater program automates robust apt-get mirror selection for
+The apt-smart program automates robust apt-get mirror selection for
 Debian and Ubuntu by enabling discovery of available mirrors, ranking of
 available mirrors, automatic switching between mirrors and robust package list
 updating.
@@ -154,13 +153,6 @@ updating.
 Issues with mirror updates
 --------------------------
 
-Over the past five years my team (`at work`_) and I have been managing a
-cluster of 150+ Ubuntu servers, initially using manual system administration
-but over time automating ``apt-get`` for a variety of use cases (provisioning,
-security updates, deployments, etc.). As we increased our automation we started
-running into various transient failure modes of ``apt-get``, primarily with
-``apt-get update`` but incidentally also with other subcommands.
-
 The most frequent failure that we run into is ``apt-get update`` crapping out
 with 'hash sum mismatch' errors (see also `Debian bug #624122`_). When this
 happens a file called ``Archive-Update-in-Progress-*`` can sometimes be found
@@ -172,11 +164,11 @@ caused by the fact that mirror updates aren't atomic, apparently causing
 ``apt-get update`` to download a package list whose datafiles aren't consistent
 with each other. If this assumption proves to be correct (and also assuming
 that different mirrors are updated at different times :-) then the command
-``apt-mirror-updater --update-package-lists`` should work around this annoying
+``apt-smart --update-package-lists`` should work around this annoying
 failure mode (by automatically switching to a different mirror when 'hash sum
 mismatch' errors are encountered).
 
-Publishing `apt-mirror-updater` to the world is my attempt to contribute to
+Publishing `apt-smart` to the world is my attempt to contribute to
 this situation instead of complaining in bug trackers (see above) where no
 robust and automated solution is emerging (at the time of writing). Who knows,
 maybe some day these issues will be resolved by moving logic similar to what
@@ -186,16 +178,16 @@ mirror updates were atomic...
 Contact
 -------
 
-The latest version of `apt-mirror-updater` is available on PyPI_ and GitHub_.
+The latest version of `apt-smart` is available on PyPI_ and GitHub_.
 The documentation is hosted on `Read the Docs`_ and includes a changelog_. For
-bug reports please create an issue on GitHub_. If you have questions,
-suggestions, etc. feel free to send me an e-mail at `peter@peterodding.com`_.
+bug reports please create an issue on GitHub_.
 
 License
 -------
 
 This software is licensed under the `MIT license`_.
 
+© 2019 martin68
 © 2018 Peter Odding.
 
 
@@ -207,11 +199,10 @@ This software is licensed under the `MIT license`_.
 .. _Debian bug #624122: https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=624122
 .. _Debian: https://en.wikipedia.org/wiki/Debian
 .. _documentation: https://apt-mirror-updater.readthedocs.io
-.. _GitHub: https://github.com/xolox/python-apt-mirror-updater
+.. _GitHub: https://github.com/martin68/apt-smart
 .. _MIT license: http://en.wikipedia.org/wiki/MIT_License
 .. _per user site-packages directory: https://www.python.org/dev/peps/pep-0370/
-.. _peter@peterodding.com: peter@peterodding.com
-.. _PyPI: https://pypi.python.org/pypi/apt-mirror-updater
+.. _PyPI: https://pypi.python.org/pypi/apt-smart
 .. _Read the Docs: https://apt-mirror-updater.readthedocs.io
 .. _Ubuntu: https://en.wikipedia.org/wiki/Ubuntu_(operating_system)
 .. _virtual environments: http://docs.python-guide.org/en/latest/dev/virtualenvs/
