@@ -857,7 +857,7 @@ class CandidateMirror(PropertyManager):
     @mutable_property
     def release_gpg_url(self):
         """
-        The URL of the ``Release.gpg`` file that will be used to test the mirror (a string or :data:`None`).
+        The URL of the ``InRelease`` file that will be used to test the mirror (a string or :data:`None`).
 
         The value of this property is based on :attr:`mirror_url` and the
         :attr:`~AptMirrorUpdater.distribution_codename` property of the
