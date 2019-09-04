@@ -257,8 +257,13 @@ class AptMirrorUpdater(PropertyManager):
         return self.backend.OLD_RELEASES_URL
 
     @mutable_property
+    def base_url(self):
+        """The actual official base URL according to :data:`.BASE_URL`"""
+        return self.backend.BASE_URL.replace('codename', self.distribution_codename)
+
+    @mutable_property
     def base_last_updated(self):
-        """The Unix timestamp gotten from :data:`.BASE_URL`'s update date as minuend to determine which mirrors are up-to-date (an int)"""
+        """The Unix timestamp gotten from :attr:`base_url`'s update date as minuend to determine which mirrors are up-to-date (an int)"""
 
     @cached_property
     def ranked_mirrors(self):
@@ -296,11 +301,11 @@ class AptMirrorUpdater(PropertyManager):
 
         logger.info("Start retrieving :attr:`base_last_updated` using is_available")
         self.base_last_updated = 0
-        if mapping[self.backend.BASE_URL].is_available:
+        if mapping[self.base_url].is_available:
             logger.info(":attr:`base_last_updated`: %i", self.base_last_updated)
-            mapping[self.backend.BASE_URL].last_updated = 0 # BASE_URL 's contents are up-to-date naturally, so set its last_updated 0
+            mapping[self.base_url].last_updated = 0 # base_url 's contents are up-to-date naturally, so set its last_updated 0
         else:
-            self.base_last_updated = int(time.time()) # BASE_URL not available, use time at the moment as base_last_updated.
+            self.base_last_updated = int(time.time()) # base_url not available, use time at the moment as base_last_updated.
             logger.info(":attr:`base_last_updated` using time.time(): %i", self.base_last_updated)
         # Concurrently check for Archive-Update-in-Progress markers.
         update_mapping = dict((c.archive_update_in_progress_url, c) for c in mirrors if c.is_available)
@@ -809,7 +814,7 @@ class CandidateMirror(PropertyManager):
                     date_string = date_string_raw[1].split("\n")[0] # Get only date string like "Sun, 25 Aug 2019 23:35:36 UTC", drop other data
                     if date_string.endswith("UTC"):
                         last_updated_time = calendar.timegm(time.strptime(date_string, "%a, %d %b %Y %H:%M:%S %Z")) # Convert it into UNIX timestamp
-                        if self.updater.base_last_updated == 0: # First time launch this method, must be BASE_URL
+                        if self.updater.base_last_updated == 0: # First time launch this method, must be base_url
                             self.updater.base_last_updated = last_updated_time
                             logger.debug("base_last_updated: %i", self.updater.base_last_updated)
                         else:
