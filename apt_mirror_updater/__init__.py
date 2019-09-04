@@ -864,9 +864,14 @@ class CandidateMirror(PropertyManager):
         :attr:`updater` object.
         """
         if self.updater and self.updater.distribution_codename:
-            return '%s/dists/%s-security/InRelease' % (
-                self.mirror_url, self.updater.distribution_codename,
-            )
+            if self.updater.distributor_id == 'ubuntu':
+                return '%s/dists/%s-security/InRelease' % (
+                    self.mirror_url, self.updater.distribution_codename,
+                )
+            elif self.updater.distributor_id == 'debian':
+                return '%s/dists/%s-updates/InRelease' % (
+                    self.mirror_url, self.updater.distribution_codename,
+                )
 
     @mutable_property
     def sort_key(self):
