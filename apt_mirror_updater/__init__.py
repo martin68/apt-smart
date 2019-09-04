@@ -118,14 +118,13 @@ class AptMirrorUpdater(PropertyManager):
         """
         A list of :class:`CandidateMirror` objects (ordered from best to worst).
 
-        On Ubuntu the mirrors will be ordered by the time since they were most
-        recently updated. On Debian this information isn't available and the
-        ordering of the list should be considered arbitrary.
         """
         mirrors = set()
         if self.release_is_eol:
             logger.debug("Skipping mirror discovery because %s is EOL.", self.release)
         else:
+            if self.distributor_id == 'debian': # For Debian, base_url typically is not in MIRRORS_URL, add it explicitly
+                mirrors.add(CandidateMirror(mirror_url=self.base_url, updater=self))
             for candidate in self.backend.discover_mirrors():
                 if any(fnmatch.fnmatch(candidate.mirror_url, pattern) for pattern in self.blacklist):
                     logger.warning("Ignoring blacklisted mirror %s.", candidate.mirror_url)
