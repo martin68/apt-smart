@@ -109,12 +109,12 @@ def discover_mirrors():
         logger.info("Found your location: %s by %s", country, url)
     except:
         url = 'http://ip-api.com/json'
-        response = fetch_url(url, timeout=2)
+        response = fetch_url(url, timeout=5)
         data = json.loads(response)
         country = data['country']
         logger.info("Found your location: %s by %s", country, url)
 
-    data = fetch_url(MIRRORS_URL, retry=True)
+    data = fetch_url(MIRRORS_URL, timeout=20, retry=True)
     soup = BeautifulSoup(data, 'html.parser')
     tables = soup.findAll('table')
     flag = False # flag is True when find the row's text is that country
