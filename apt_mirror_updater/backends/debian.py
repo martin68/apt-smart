@@ -17,6 +17,7 @@ working on this module:
 
 # Standard library modules.
 import logging
+import json
 
 # External dependencies.
 from bs4 import BeautifulSoup
@@ -99,12 +100,40 @@ def discover_mirrors():
     """
     timer = Timer()
     logger.info("Discovering Debian mirrors at %s ..", MIRRORS_URL)
+    # Find which country the user is in to get mirrors in that country
+    try:
+        url = 'https://ipapi.co/json'
+        response = fetch_url(url, timeout=2)
+        data = json.loads(response)
+        country = data['country_name']
+        logger.info("Found your location: %s by %s", country, url)
+    except:
+        url = 'http://ip-api.com/json'
+        response = fetch_url(url, timeout=2)
+        data = json.loads(response)
+        country = data['country']
+        logger.info("Found your location: %s by %s", country, url)
+
     data = fetch_url(MIRRORS_URL, retry=True)
     soup = BeautifulSoup(data, 'html.parser')
     tables = soup.findAll('table')
+    flag = False # flag is True when find the row's text is that country
+    mirrors = set()
     if not tables:
         raise Exception("Failed to locate <table> element in Debian mirror page! (%s)" % MIRRORS_URL)
-    mirrors = set(CandidateMirror(mirror_url=a['href']) for a in tables[0].findAll('a', href=True))
+    else:
+        for row in tables[1].findAll("tr"): # tables[1] organises mirrors by country.
+            if flag:
+                if not row.a: # End of mirrors located in that country
+                    break
+                else:
+                    mirrors.add(CandidateMirror(mirror_url=row.a['href']))
+            if row.get_text() == country:
+                flag = True
+
+    if len(mirrors) < 3:
+        mirrors.add(CandidateMirror(mirror_url=a['href']) for a in tables[0].findAll('a', href=True)) # tables[0] contains Primary
+        # Debian mirror sites all around the world.
     if not mirrors:
         raise Exception("Failed to discover any Debian mirrors! (using %s)" % MIRRORS_URL)
     logger.info("Discovered %s in %s.", pluralize(len(mirrors), "Debian mirror"), timer)
