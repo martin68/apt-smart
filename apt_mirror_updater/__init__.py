@@ -124,7 +124,7 @@ class AptMirrorUpdater(PropertyManager):
             logger.debug("Skipping mirror discovery because %s is EOL.", self.release)
         else:
             if self.distributor_id == 'debian': # For Debian, base_url typically is not in MIRRORS_URL, add it explicitly
-                mirrors.add(CandidateMirror(mirror_url=self.base_url.split('dists/codename-updates/InRelease')[0], updater=self))
+                mirrors.add(CandidateMirror(mirror_url=self.backend.BASE_URL.split('dists/codename-updates/InRelease')[0], updater=self))
             for candidate in self.backend.discover_mirrors():
                 if any(fnmatch.fnmatch(candidate.mirror_url, pattern) for pattern in self.blacklist):
                     logger.warning("Ignoring blacklisted mirror %s.", candidate.mirror_url)
