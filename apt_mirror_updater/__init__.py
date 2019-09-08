@@ -220,8 +220,12 @@ class AptMirrorUpdater(PropertyManager):
         return find_current_mirror(self.get_sources_list())
 
     @mutable_property
-    def distribution_codename(self):
+    def distribution_codename_old(self):
         """
+        This relies on :mod:`executor` which is not robust to detect codename when
+        neither /etc/lsb-release nor lsb_release command are available, e.g.
+        https://cdimage.debian.org/debian-cd/current-live/amd64/iso-hybrid/debian-live-10.0.0-amd64-xfce.iso
+
         The distribution codename (a lowercase string like 'trusty' or 'xenial').
 
         The value of this property defaults to the value of the
