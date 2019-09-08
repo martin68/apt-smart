@@ -45,6 +45,7 @@ from six.moves.urllib.parse import urlparse
 # Modules included in our package.
 from apt_mirror_updater.http import NotFoundError, fetch_concurrent, fetch_url, get_default_concurrency
 from apt_mirror_updater.releases import coerce_release
+from apt_mirror_updater.releases import discover_releases
 
 # Semi-standard module versioning.
 __version__ = '6.1'
@@ -233,6 +234,31 @@ class AptMirrorUpdater(PropertyManager):
         property which is the right choice 99% of the time.
         """
         return self.context.distribution_codename
+
+    @mutable_property
+    def distribution_codename(self):
+        """
+
+        The distribution codename (a lowercase string like 'trusty' or 'xenial'), which
+        is determined using APT sources.list and should be more robust.
+        Similar to :func:`find_current_mirror` but return token[2] instead.
+        Also refer code of :func:`coerce_release`.
+
+        """
+        for line in self.get_sources_list().splitlines():
+            # The first token should be `deb' or `deb-src', the second token is
+            # the mirror's URL, the third token is the `distribution' and any
+            # further tokens are `components'.
+            tokens = line.split()
+            if (len(tokens) >= 4 and
+                    tokens[0] in ('deb', 'deb-src') and
+                    tokens[1].startswith(('http://', 'https://', 'ftp://')) and
+                    'main' in tokens[3:]):
+                matches = [release for release in discover_releases() if tokens[2].lower() in release.codename.lower()]
+                if len(matches) != 1:
+                    continue
+                return tokens[2]
+        raise EnvironmentError("Failed to determine the distribution codename using apt's package resource list!")
 
     @mutable_property
     def distributor_id(self):
