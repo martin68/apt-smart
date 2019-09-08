@@ -235,7 +235,7 @@ class AptMirrorUpdater(PropertyManager):
         """
         return self.context.distribution_codename
 
-    @mutable_property
+    @lazy_property
     def distribution_codename(self):
         """
 
