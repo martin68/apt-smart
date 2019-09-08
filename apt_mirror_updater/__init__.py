@@ -945,7 +945,7 @@ def find_current_mirror(sources_list):
         tokens = line.split()
         if (len(tokens) >= 4 and
                 tokens[0] in ('deb', 'deb-src') and
-                tokens[1].startswith(('http://', 'ftp://')) and
+                tokens[1].startswith(('http://', 'https://','ftp://')) and
                 'main' in tokens[3:]):
             return tokens[1]
     raise EnvironmentError("Failed to determine current mirror in apt's package resource list!")
