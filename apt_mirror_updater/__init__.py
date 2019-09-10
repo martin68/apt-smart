@@ -243,7 +243,7 @@ class AptMirrorUpdater(PropertyManager):
         """
         return self.context.distribution_codename
 
-    @lazy_property
+    @mutable_property(cached=True)
     def distribution_codename(self):
         """
 
@@ -268,7 +268,7 @@ class AptMirrorUpdater(PropertyManager):
                 return tokens[2]
         raise EnvironmentError("Failed to determine the distribution codename using apt's package resource list!")
 
-    @mutable_property
+    @mutable_property(cached=True)
     def distributor_id(self):
         """
         The distributor ID (a lowercase string like 'debian' or 'ubuntu').
