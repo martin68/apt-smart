@@ -126,7 +126,8 @@ class AptMirrorUpdater(PropertyManager):
         else:
             if self.distributor_id == 'debian': # For Debian, base_url typically is not in MIRRORS_URL, add it explicitly
                 mirrors.add(CandidateMirror(mirror_url=self.backend.BASE_URL.split('dists/codename-updates/InRelease')[0], updater=self))
-            if self.distributor_id == 'ubuntu': # For Ubuntu, base_url is not in MIRRORS_URL for some country e.g. US (found it in Travis CI), add it explicitly
+            if self.distributor_id == 'ubuntu': # For Ubuntu, base_url is not in MIRRORS_URL for some countries e.g. US
+                # (found it in Travis CI), add it explicitly
                 mirrors.add(CandidateMirror(mirror_url=self.backend.BASE_URL.split('dists/codename-security/InRelease')[0], updater=self))
             for candidate in self.backend.discover_mirrors():
                 if any(fnmatch.fnmatch(candidate.mirror_url, pattern) for pattern in self.blacklist):
@@ -229,7 +230,7 @@ class AptMirrorUpdater(PropertyManager):
         """
         This relies on :mod:`executor` which is not robust to detect codename when
         neither /etc/lsb-release nor lsb_release command are available, e.g. the official
-        Debian docker image (see https://github.com/xolox/python-executor/issues/17 ）
+        Debian docker image (see https://github.com/xolox/python-executor/issues/17 )
 
         The distribution codename (a lowercase string like 'trusty' or 'xenial').
 
