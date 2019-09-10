@@ -228,8 +228,8 @@ class AptMirrorUpdater(PropertyManager):
     def distribution_codename_old(self):
         """
         This relies on :mod:`executor` which is not robust to detect codename when
-        neither /etc/lsb-release nor lsb_release command are available, e.g.
-        https://cdimage.debian.org/debian-cd/current-live/amd64/iso-hybrid/debian-live-10.0.0-amd64-xfce.iso
+        neither /etc/lsb-release nor lsb_release command are available, e.g. the official
+        Debian docker image (see https://github.com/xolox/python-executor/issues/17 ）
 
         The distribution codename (a lowercase string like 'trusty' or 'xenial').
 
