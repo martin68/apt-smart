@@ -126,6 +126,8 @@ class AptMirrorUpdater(PropertyManager):
         else:
             if self.distributor_id == 'debian': # For Debian, base_url typically is not in MIRRORS_URL, add it explicitly
                 mirrors.add(CandidateMirror(mirror_url=self.backend.BASE_URL.split('dists/codename-updates/InRelease')[0], updater=self))
+            if self.distributor_id == 'ubuntu': # For Ubuntu, base_url is not in MIRRORS_URL for some country e.g. US (found it in Travis CI), add it explicitly
+                mirrors.add(CandidateMirror(mirror_url=self.backend.BASE_URL.split('dists/codename-security/InRelease')[0], updater=self))
             for candidate in self.backend.discover_mirrors():
                 if any(fnmatch.fnmatch(candidate.mirror_url, pattern) for pattern in self.blacklist):
                     logger.warning("Ignoring blacklisted mirror %s.", candidate.mirror_url)
