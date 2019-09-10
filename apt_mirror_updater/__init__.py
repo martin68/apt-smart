@@ -138,8 +138,10 @@ class AptMirrorUpdater(PropertyManager):
             # Gotcha: We should never include the system's current mirror in
             # the candidates when we're bootstrapping a chroot for a different
             # platform.
-            if self.distributor_id == self.context.distributor_id:
-                mirrors.add(CandidateMirror(mirror_url=self.current_mirror, updater=self))
+            # if self.distributor_id == self.context.distributor_id: # We don't need to check this since
+            # 60850cc2 commint (Reimplement more robust :attr:`distribution_codename` using APT sources.list)
+            # already using :attr:`context` and self.context.distributor_id has issue https://github.com/xolox/python-executor/issues/17
+            mirrors.add(CandidateMirror(mirror_url=self.current_mirror, updater=self))
         except Exception as e:
             logger.warning("Failed to add current mirror to set of available mirrors! (%s)", e)
         # Sort the mirrors based on the currently available information.
