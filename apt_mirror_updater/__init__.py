@@ -232,7 +232,7 @@ class AptMirrorUpdater(PropertyManager):
     @mutable_property
     def distribution_codename_old(self):
         """
-        deprecated： The distribution codename (a lowercase string like 'trusty' or 'xenial').
+        deprecated: The distribution codename (a lowercase string like 'trusty' or 'xenial').
 
         This relies on :mod:`executor` which is not robust to detect codename when
         neither /etc/lsb-release nor lsb_release command are available, e.g. the official
@@ -328,8 +328,11 @@ class AptMirrorUpdater(PropertyManager):
         # (and transform the input argument into a list in the process).
         mirrors = sorted(self.available_mirrors, key=lambda c: c.sort_key, reverse=True)
         # Limit the number of candidates to a reasonable number?
-        if self.max_mirrors and len(mirrors) > self.max_mirrors:
-            mirrors = mirrors[:self.max_mirrors]
+        # NO, we don't need to now since the backends.debian can smartly get mirrors within a country.
+        # Without max_mirrors limit we can fix errors within United States (Travis CI reported) where
+        # where we can get 80+ mirrors. If limit applies, base_url mirror may be deleted, then error occurs.
+        # if self.max_mirrors and len(mirrors) > self.max_mirrors:
+            # mirrors = mirrors[:self.max_mirrors]
         # Prepare the Release.gpg URLs to fetch.
         mapping = dict((c.release_gpg_url, c) for c in mirrors)
         num_mirrors = pluralize(len(mapping), "mirror")
