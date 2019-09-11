@@ -57,7 +57,8 @@ OLD_RELEASES_URL = 'http://archive.debian.org/debian-archive/debian/'
 """The URL where EOL (end of life) Debian releases are hosted (a string)."""
 
 BASE_URL = 'http://ftp.debian.org/debian/dists/codename-updates/InRelease'
-"""The URL where official repo treated as base are hosted (a string). The InRelease file contains `Date:` which can be gotten as :attr:`.base_last_updated`
+"""The URL where official repo treated as base are hosted (a string).
+The InRelease file contains `Date:` which can be gotten as :attr:`.base_last_updated`
 to determine which mirrors are up-to-date"""
 
 DEFAULT_SUITES = 'release', 'security', 'updates'
@@ -107,7 +108,7 @@ def discover_mirrors():
         data = json.loads(response)
         country = data['country_name']
         logger.info("Found your location: %s by %s", country, url)
-    except:
+    except Exception:
         url = 'http://ip-api.com/json'
         response = fetch_url(url, timeout=5)
         data = json.loads(response)
@@ -117,23 +118,22 @@ def discover_mirrors():
     data = fetch_url(MIRRORS_URL, timeout=20, retry=True)
     soup = BeautifulSoup(data, 'html.parser')
     tables = soup.findAll('table')
-    flag = False # flag is True when find the row's text is that country
+    flag = False  # flag is True when find the row's text is that country
     mirrors = set()
     if not tables:
         raise Exception("Failed to locate <table> element in Debian mirror page! (%s)" % MIRRORS_URL)
     else:
-        for row in tables[1].findAll("tr"): # tables[1] organises mirrors by country.
+        for row in tables[1].findAll("tr"):  # tables[1] organises mirrors by country.
             if flag:
-                if not row.a: # End of mirrors located in that country
+                if not row.a:  # End of mirrors located in that country
                     break
                 else:
                     mirrors.add(CandidateMirror(mirror_url=row.a['href']))
             if row.get_text() == country:
                 flag = True
 
-    if len(mirrors) < 3:
-        mirrors.add(CandidateMirror(mirror_url=a['href']) for a in tables[0].findAll('a', href=True)) # tables[0] contains Primary
-        # Debian mirror sites all around the world.
+    if len(mirrors) < 3:  # Too few, add tables[0] which contains Primary Debian mirror sites all around the world.
+        mirrors.add(CandidateMirror(mirror_url=a['href']) for a in tables[0].findAll('a', href=True))
     if not mirrors:
         raise Exception("Failed to discover any Debian mirrors! (using %s)" % MIRRORS_URL)
     logger.info("Discovered %s in %s.", pluralize(len(mirrors), "Debian mirror"), timer)

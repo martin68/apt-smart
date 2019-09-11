@@ -30,7 +30,8 @@ SECURITY_URL = 'http://security.ubuntu.com/ubuntu'
 """The URL where Ubuntu security updates are hosted (a string)."""
 
 BASE_URL = 'http://archive.ubuntu.com/ubuntu/dists/codename-security/InRelease'
-"""The URL where official repo treated as base are hosted (a string). The InRelease file contains `Date:` which can be gotten as :attr:`.base_last_updated`
+"""The URL where official repo treated as base are hosted (a string). 
+The InRelease file contains `Date:` which can be gotten as :attr:`.base_last_updated`
 to determine which mirrors are up-to-date"""
 
 DEFAULT_SUITES = 'release', 'updates', 'backports', 'security'
@@ -119,7 +120,10 @@ def discover_mirrors_old():
     """
     timer = Timer()
     mirrors = set()
-    """ It may be super-slow somewhere ( with 100Mbps fibre though ) in the world to access launchpad.net (see below), so we have to no longer rely on  MIRRORS_URL
+    """ 
+    It may be super-slow somewhere ( with 100Mbps fibre though ) in the world to access launchpad.net (see below),
+    so we have to no longer rely on MIRRORS_URL .
+    
     time curl -o/dev/null 'https://launchpad.net/ubuntu/+archivemirrors'
   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
                                  Dload  Upload   Total   Spent    Left  Speed
@@ -193,6 +197,7 @@ def discover_mirrors():
         raise Exception("Failed to discover any Ubuntu mirrors! (using %s)" % MIRROR_SELECTION_URL)
     logger.info("Discovered %s in %s.", pluralize(len(mirrors), "Ubuntu mirror"), timer)
     return mirrors
+
 
 def discover_mirror_selection():
     """Discover "geographically suitable" Ubuntu mirrors."""

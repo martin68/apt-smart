@@ -116,20 +116,20 @@ class AptMirrorUpdater(PropertyManager):
 
     @cached_property
     def available_mirrors(self):
-        """
-        A list of :class:`CandidateMirror` objects (ordered from best to worst).
-
-        """
+        """A list of :class:`CandidateMirror` objects (ordered from best to worst)"""
         mirrors = set()
         if self.release_is_eol:
             logger.debug("Skipping mirror discovery because %s is EOL.", self.release)
         else:
             logger.info("Adding BASE_URL mirror:")
-            if self.distributor_id == 'debian': # For Debian, base_url typically is not in MIRRORS_URL, add it explicitly
-                mirrors.add(CandidateMirror(mirror_url=self.backend.BASE_URL.split('dists/codename-updates/InRelease')[0], updater=self))
-            elif self.distributor_id == 'ubuntu': # For Ubuntu, base_url is not in MIRRORS_URL for some countries e.g. US
-                # (found it in Travis CI), add it explicitly
-                mirrors.add(CandidateMirror(mirror_url=self.backend.BASE_URL.split('dists/codename-security/InRelease')[0], updater=self))
+            if self.distributor_id == 'debian':  # For Debian, base_url typically is not in MIRRORS_URL,
+                # add it explicitly
+                base_url_prefix = self.backend.BASE_URL.split('dists/codename-updates/InRelease')[0]
+                mirrors.add(CandidateMirror(mirror_url=base_url_prefix, updater=self))
+            elif self.distributor_id == 'ubuntu':  # For Ubuntu, base_url is not in MIRRORS_URL for
+                # some countries e.g. US (found it in Travis CI), add it explicitly
+                base_url_prefix = self.backend.BASE_URL.split('dists/codename-security/InRelease')[0]
+                mirrors.add(CandidateMirror(mirror_url=base_url_prefix, updater=self))
             for mirror in mirrors:
                 logger.info(mirror.mirror_url)
             for candidate in self.backend.discover_mirrors():
@@ -146,7 +146,8 @@ class AptMirrorUpdater(PropertyManager):
             # platform.
             # if self.distributor_id == self.context.distributor_id: # We don't need to check this since
             # 60850cc2 commint (Reimplement more robust :attr:`distribution_codename` using APT sources.list)
-            # already using :attr:`context` and self.context.distributor_id has issue https://github.com/xolox/python-executor/issues/17
+            # already using :attr:`context` and self.context.distributor_id has issue：
+            # https://github.com/xolox/python-executor/issues/17
             mirrors.add(CandidateMirror(mirror_url=self.current_mirror, updater=self))
         except Exception as e:
             logger.warning("Failed to add current mirror to set of available mirrors! (%s)", e)
@@ -231,11 +232,11 @@ class AptMirrorUpdater(PropertyManager):
     @mutable_property
     def distribution_codename_old(self):
         """
+        deprecated： The distribution codename (a lowercase string like 'trusty' or 'xenial').
+
         This relies on :mod:`executor` which is not robust to detect codename when
         neither /etc/lsb-release nor lsb_release command are available, e.g. the official
         Debian docker image (see https://github.com/xolox/python-executor/issues/17 )
-
-        The distribution codename (a lowercase string like 'trusty' or 'xenial').
 
         The value of this property defaults to the value of the
         :attr:`executor.contexts.AbstractContext.distribution_codename`
@@ -246,9 +247,9 @@ class AptMirrorUpdater(PropertyManager):
     @mutable_property(cached=True)
     def distribution_codename(self):
         """
+        The distribution codename (a lowercase string like 'trusty' or 'xenial')
 
-        The distribution codename (a lowercase string like 'trusty' or 'xenial'), which
-        is determined using APT sources.list and should be more robust.
+        The value of this property is determined using APT sources.list and should be more robust.
         Similar to :func:`find_current_mirror` but return token[2] instead.
         Also refer code of :func:`coerce_release`.
 
@@ -300,7 +301,11 @@ class AptMirrorUpdater(PropertyManager):
 
     @mutable_property
     def base_last_updated(self):
-        """The Unix timestamp gotten from :attr:`base_url`'s update date as minuend to determine which mirrors are up-to-date (an int)"""
+        """
+        The Unix timestamp to determine which mirrors are up-to-date (an int)
+
+        The value of this property is gotten from :attr:`base_url`'s update date as minuend
+        """
 
     @cached_property
     def ranked_mirrors(self):
@@ -340,9 +345,10 @@ class AptMirrorUpdater(PropertyManager):
         self.base_last_updated = 0
         if mapping[self.base_url].is_available:
             logger.info(":attr:`base_last_updated`: %i", self.base_last_updated)
-            mapping[self.base_url].last_updated = 0 # base_url 's contents are up-to-date naturally, so set its last_updated 0
-        else:
-            self.base_last_updated = int(time.time()) # base_url not available, use time at the moment as base_last_updated.
+            # base_url 's contents are up-to-date naturally,so set its last_updated 0
+            mapping[self.base_url].last_updated = 0
+        else:  # base_url not available, use time at the moment as base_last_updated.
+            self.base_last_updated = int(time.time())
             logger.info(":attr:`base_last_updated` using time.time(): %i", self.base_last_updated)
         # Concurrently check for Archive-Update-in-Progress markers.
         update_mapping = dict((c.archive_update_in_progress_url, c) for c in mirrors if c.is_available)
@@ -846,16 +852,20 @@ class CandidateMirror(PropertyManager):
             if not value:
                 logger.debug("Missing GPG header, considering mirror unavailable (%s).", self.release_gpg_url)
             else:
-                date_string_raw = self.release_gpg_contents.decode().split("Date: ", 1) # Get all data following "Date: "
-                if len(date_string_raw) == 2: # split succussfully using "Date: "
-                    date_string = date_string_raw[1].split("\n")[0] # Get only date string like "Sun, 25 Aug 2019 23:35:36 UTC", drop other data
+                # Get all data following "Date: "
+                date_string_raw = self.release_gpg_contents.decode().split("Date: ", 1)
+                if len(date_string_raw) == 2:  # split succussfully using "Date: "
+                    # Get only date string like "Sun, 25 Aug 2019 23:35:36 UTC", drop other data
+                    date_string = date_string_raw[1].split("\n")[0]
                     if date_string.endswith("UTC"):
-                        last_updated_time = calendar.timegm(time.strptime(date_string, "%a, %d %b %Y %H:%M:%S %Z")) # Convert it into UNIX timestamp
+                        # Convert it into UNIX timestamp
+                        last_updated_time = calendar.timegm(time.strptime(date_string, "%a, %d %b %Y %H:%M:%S %Z"))
                         if self.updater.base_last_updated == 0: # First time launch this method, must be base_url
                             self.updater.base_last_updated = last_updated_time
                             logger.debug("base_last_updated: %i", self.updater.base_last_updated)
                         else:
-                            self.last_updated = self.updater.base_last_updated - last_updated_time # if last_updated is 0 means this mirror is up-to-date
+                            # if last_updated is 0 means this mirror is up-to-date
+                            self.last_updated = self.updater.base_last_updated - last_updated_time
                             logger.debug("last_updated: %i", self.last_updated)
                     else:
                         logger.debug("Not UTC? Correct me. " + date_string)
@@ -983,7 +993,7 @@ def find_current_mirror(sources_list):
         tokens = line.split()
         if (len(tokens) >= 4 and
                 tokens[0] in ('deb', 'deb-src') and
-                tokens[1].startswith(('http://', 'https://','ftp://')) and
+                tokens[1].startswith(('http://', 'https://', 'ftp://')) and
                 'main' in tokens[3:]):
             return tokens[1]
     raise EnvironmentError("Failed to determine current mirror in apt's package resource list!")
