@@ -146,7 +146,7 @@ class AptMirrorUpdater(PropertyManager):
             # platform.
             # if self.distributor_id == self.context.distributor_id: # We don't need to check this since
             # 60850cc2 commint (Reimplement more robust :attr:`distribution_codename` using APT sources.list)
-            # already using :attr:`context` and self.context.distributor_id has issue：
+            # already using :attr:`context` and self.context.distributor_id has issue:
             # https://github.com/xolox/python-executor/issues/17
             mirrors.add(CandidateMirror(mirror_url=self.current_mirror, updater=self))
         except Exception as e:
