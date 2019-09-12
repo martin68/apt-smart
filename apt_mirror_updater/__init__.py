@@ -331,10 +331,10 @@ class AptMirrorUpdater(PropertyManager):
         # NO, we don't need to now since the backends.debian can smartly get mirrors within a country.
         # Without max_mirrors limit we can fix errors within United States (Travis CI reported) where
         # where we can get 80+ mirrors. If limit applies, base_url mirror may be deleted, then error occurs.
-        '''
+        """
         if self.max_mirrors and len(mirrors) > self.max_mirrors:
             mirrors = mirrors[:self.max_mirrors]
-        '''
+        """
         # Prepare the Release.gpg URLs to fetch.
         mapping = dict((c.release_gpg_url, c) for c in mirrors)
         num_mirrors = pluralize(len(mapping), "mirror")
