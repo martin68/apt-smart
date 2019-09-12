@@ -20,6 +20,7 @@ import logging
 import json
 
 # External dependencies.
+import six
 from bs4 import BeautifulSoup
 from humanfriendly import Timer, format, pluralize
 
@@ -105,12 +106,18 @@ def discover_mirrors():
     try:
         url = 'https://ipapi.co/json'
         response = fetch_url(url, timeout=2)
+        # On py3 response is bytes and json.loads throws TypeError in py3.4 and 3.5,
+        # so decode it to str
+        if isinstance(response, six.binary_type):
+            response = response.decode('utf-8')
         data = json.loads(response)
         country = data['country_name']
         logger.info("Found your location: %s by %s", country, url)
     except Exception:
         url = 'http://ip-api.com/json'
         response = fetch_url(url, timeout=5)
+        if isinstance(response, six.binary_type):
+            response = response.decode('utf-8')
         data = json.loads(response)
         country = data['country']
         logger.info("Found your location: %s by %s", country, url)
