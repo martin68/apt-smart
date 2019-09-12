@@ -259,10 +259,10 @@ class AptMirrorUpdater(PropertyManager):
             # the mirror's URL, the third token is the `distribution' and any
             # further tokens are `components'.
             tokens = line.split()
-            if (len(tokens) >= 4 and
-                    tokens[0] in ('deb', 'deb-src') and
-                    tokens[1].startswith(('http://', 'https://', 'ftp://')) and
-                    'main' in tokens[3:]):
+            if (len(tokens) >= 4
+                    and tokens[0] in ('deb', 'deb-src')
+                    and tokens[1].startswith(('http://', 'https://', 'ftp://'))
+                    and 'main' in tokens[3:]):
                 matches = [release for release in discover_releases() if tokens[2].lower() in release.codename.lower()]
                 if len(matches) != 1:
                     continue
@@ -494,9 +494,9 @@ class AptMirrorUpdater(PropertyManager):
             # the mirror's URL, the third token is the `distribution' and any
             # further tokens are `components'.
             tokens = line.split()
-            if (len(tokens) >= 4 and
-                    tokens[0] in ('deb', 'deb-src') and
-                    normalize_mirror_url(tokens[1]) in mirrors_to_replace):
+            if (len(tokens) >= 4
+                    and tokens[0] in ('deb', 'deb-src')
+                    and normalize_mirror_url(tokens[1]) in mirrors_to_replace):
                 tokens[1] = new_mirror
                 lines[i] = u' '.join(tokens)
         # Install the modified package resource list.
@@ -863,7 +863,7 @@ class CandidateMirror(PropertyManager):
                     if date_string.endswith("UTC"):
                         # Convert it into UNIX timestamp
                         last_updated_time = calendar.timegm(time.strptime(date_string, "%a, %d %b %Y %H:%M:%S %Z"))
-                        if self.updater.base_last_updated == 0: # First time launch this method, must be base_url
+                        if self.updater.base_last_updated == 0:  # First time launch this method, must be base_url
                             self.updater.base_last_updated = last_updated_time
                             logger.debug("base_last_updated: %i", self.updater.base_last_updated)
                         else:
@@ -873,7 +873,7 @@ class CandidateMirror(PropertyManager):
                     else:
                         logger.debug("Not UTC? Correct me. " + date_string)
                     logger.debug("Looks good, %s is_available return True", self.release_gpg_url)
-                else: # split fails because lacking "Date: "
+                else:  # split fails because lacking "Date: "
                     logger.debug("Missing Date, considering mirror unavailable (%s).", self.release_gpg_url)
                     value = False
             set_property(self, 'is_available', value)
@@ -994,10 +994,10 @@ def find_current_mirror(sources_list):
         # the mirror's URL, the third token is the `distribution' and any
         # further tokens are `components'.
         tokens = line.split()
-        if (len(tokens) >= 4 and
-                tokens[0] in ('deb', 'deb-src') and
-                tokens[1].startswith(('http://', 'https://', 'ftp://')) and
-                'main' in tokens[3:]):
+        if (len(tokens) >= 4
+                and tokens[0] in ('deb', 'deb-src')
+                and tokens[1].startswith(('http://', 'https://', 'ftp://'))
+                and 'main' in tokens[3:]):
             return tokens[1]
     raise EnvironmentError("Failed to determine current mirror in apt's package resource list!")
 

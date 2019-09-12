@@ -30,7 +30,7 @@ SECURITY_URL = 'http://security.ubuntu.com/ubuntu'
 """The URL where Ubuntu security updates are hosted (a string)."""
 
 BASE_URL = 'http://archive.ubuntu.com/ubuntu/dists/codename-security/InRelease'
-"""The URL where official repo treated as base are hosted (a string). 
+"""The URL where official repo treated as base are hosted (a string).
 The InRelease file contains `Date:` which can be gotten as :attr:`.base_last_updated`
 to determine which mirrors are up-to-date"""
 
@@ -120,10 +120,10 @@ def discover_mirrors_old():
     """
     timer = Timer()
     mirrors = set()
-    """ 
+    """
     It may be super-slow somewhere ( with 100Mbps fibre though ) in the world to access launchpad.net (see below),
     so we have to no longer rely on MIRRORS_URL .
-    
+
     time curl -o/dev/null 'https://launchpad.net/ubuntu/+archivemirrors'
   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
                                  Dload  Upload   Total   Spent    Left  Speed
@@ -140,8 +140,8 @@ sys     0m0.039s
         for tr in table.findAll('tr'):
             for a in tr.findAll('a', href=True):
                 # Check if the link looks like a mirror URL.
-                if (a['href'].startswith(('http://', 'https://')) and
-                        a['href'].endswith('/ubuntu/')):
+                if (a['href'].startswith(('http://', 'https://'))
+                        and a['href'].endswith('/ubuntu/')):
                     # Try to figure out the mirror's reported latency.
                     last_updated = None
                     text = u''.join(tr.findAll(text=True))

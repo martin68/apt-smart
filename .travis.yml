@@ -10,7 +10,7 @@ python:
 install:
   - scripts/install-on-travis.sh
 script:
-#  - make check
+  - make check
   - make full-coverage
 after_success:
   - coveralls

@@ -14,7 +14,7 @@ import signal
 # External dependencies.
 from humanfriendly import Timer, format_size
 from six.moves.urllib.request import urlopen
-from stopit import SignalTimeout, TimeoutException
+from stopit import SignalTimeout  # , TimeoutException
 
 # Initialize a logger for this module.
 logger = logging.getLogger(__name__)
@@ -58,7 +58,7 @@ def fetch_url(url, timeout=10, retry=False, max_attempts=3):
                 response_body = response.read()
                 logger.debug("Took %s to fetch %s.", timer, url)
                 return response_body
-        except (NotFoundError):
+        except NotFoundError:
             # We never retry 404 responses but retry timeouts.
             raise
         except Exception as e:

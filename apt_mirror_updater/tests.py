@@ -15,7 +15,7 @@ import time
 # External dependencies.
 from executor import execute
 from humanfriendly.testing import TestCase, run_cli
-from humanfriendly.text import split
+# from humanfriendly.text import split
 
 # Modules included in our package.
 from apt_mirror_updater import AptMirrorUpdater, normalize_mirror_url
