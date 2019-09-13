@@ -124,17 +124,16 @@ def discover_mirrors_old():
     so we have to no longer rely on MIRRORS_URL .
 
     time curl -o/dev/null 'https://launchpad.net/ubuntu/+archivemirrors'
-  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+    % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
                                  Dload  Upload   Total   Spent    Left  Speed
-100  263k  100  263k    0     0   5316      0  0:00:50  0:00:50 --:--:--  6398
+    100  263k  100  263k    0     0   5316      0  0:00:50  0:00:50 --:--:--  6398
 
-real    0m50.869s
-user    0m0.045s
-sys     0m0.039s
+    real    0m50.869s
+    user    0m0.045s
+    sys     0m0.039s
 
-But it can be a fallback when MIRROR_SELECTION_URL is down.
+    But it can be a fallback when MIRROR_SELECTION_URL is down.
 """
-    timer = Timer()
     mirrors = set()
     logger.info("Discovering Ubuntu mirrors at %s ..", MIRRORS_URL)
     # Find which country the user is in to get mirrors in that country
