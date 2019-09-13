@@ -7,9 +7,11 @@
 """Discovery of Ubuntu package archive mirrors."""
 
 # Standard library modules.
+import json
 import logging
 
 # External dependencies.
+import six
 from bs4 import BeautifulSoup, UnicodeDammit
 from humanfriendly import Timer, format, pluralize
 
@@ -93,15 +95,15 @@ logger = logging.getLogger(__name__)
 
 def discover_mirrors_old():
     """
-    Discover available Ubuntu mirrors.
+    Discover available Ubuntu mirrors. (fallback)
 
     :returns: A set of :class:`.CandidateMirror` objects that have their
               :attr:`~.CandidateMirror.mirror_url` property set and may have
               the :attr:`~.CandidateMirror.last_updated` property set.
     :raises: If no mirrors are discovered an exception is raised.
 
-    This queries :data:`MIRRORS_URL` and :data:`MIRROR_SELECTION_URL` to
-    discover available Ubuntu mirrors. Here's an example run:
+    This queries :data:`MIRRORS_URL`to discover available Ubuntu mirrors.
+    Here's an example run:
 
     >>> from apt_mirror_updater.backends.ubuntu import discover_mirrors_old
     >>> from pprint import pprint
@@ -117,10 +119,7 @@ def discover_mirrors_old():
          CandidateMirror(mirror_url='http://mirror.nl.leaseweb.net/ubuntu/'),
          CandidateMirror(mirror_url='http://mirror.transip.net/ubuntu/ubuntu/'),
          ...])
-    """
-    timer = Timer()
-    mirrors = set()
-    """
+
     It may be super-slow somewhere ( with 100Mbps fibre though ) in the world to access launchpad.net (see below),
     so we have to no longer rely on MIRRORS_URL .
 
@@ -132,45 +131,53 @@ def discover_mirrors_old():
 real    0m50.869s
 user    0m0.045s
 sys     0m0.039s
+
+But it can be a fallback when MIRROR_SELECTION_URL is down.
 """
+    timer = Timer()
+    mirrors = set()
     logger.info("Discovering Ubuntu mirrors at %s ..", MIRRORS_URL)
-    data = fetch_url(MIRRORS_URL, retry=True)
+    # Find which country the user is in to get mirrors in that country
+    try:
+        url = 'https://ipapi.co/json'
+        response = fetch_url(url, timeout=2)
+        # On py3 response is bytes and json.loads throws TypeError in py3.4 and 3.5,
+        # so decode it to str
+        if isinstance(response, six.binary_type):
+            response = response.decode('utf-8')
+        data = json.loads(response)
+        country = data['country_name']
+        logger.info("Found your location: %s by %s", country, url)
+    except Exception:
+        url = 'http://ip-api.com/json'
+        response = fetch_url(url, timeout=5)
+        if isinstance(response, six.binary_type):
+            response = response.decode('utf-8')
+        data = json.loads(response)
+        country = data['country']
+        logger.info("Found your location: %s by %s", country, url)
+
+    data = fetch_url(MIRRORS_URL, timeout=70, retry=True)
     soup = BeautifulSoup(data, 'html.parser')
-    for table in soup.findAll('table'):
-        for tr in table.findAll('tr'):
-            for a in tr.findAll('a', href=True):
-                # Check if the link looks like a mirror URL.
-                if (a['href'].startswith(('http://', 'https://'))
-                        and a['href'].endswith('/ubuntu/')):
-                    # Try to figure out the mirror's reported latency.
-                    last_updated = None
-                    text = u''.join(tr.findAll(text=True))
-                    for status_label, num_seconds in MIRROR_STATUSES:
-                        if status_label in text:
-                            last_updated = num_seconds
-                            break
-                    # Add the mirror to our overview.
-                    mirrors.add(CandidateMirror(
-                        mirror_url=a['href'],
-                        last_updated=last_updated,
-                    ))
-                    # Skip to the next row.
+    tables = soup.findAll('table')
+    flag = False  # flag is True when find the row's text is that country
+    if not tables:
+        raise Exception("Failed to locate <table> element in Ubuntu mirror page! (%s)" % MIRRORS_URL)
+    else:
+        for row in tables[0].findAll("tr"):
+            if flag:
+                if not row.a:  # End of mirrors located in that country
                     break
+                else:
+                    for a in row.findAll('a', href=True):
+                        # Check if the link looks like a mirror URL.
+                        if a['href'].startswith(('http://', 'https://')):
+                            mirrors.add(CandidateMirror(mirror_url=a['href']))
+            if row.th and row.th.get_text() == country:
+                flag = True
+
     if not mirrors:
         raise Exception("Failed to discover any Ubuntu mirrors! (using %s)" % MIRRORS_URL)
-    # Discover fast (geographically suitable) mirrors to speed up ranking.
-    # See also https://github.com/xolox/python-apt-mirror-updater/issues/6.
-    selected_mirrors = discover_mirror_selection()
-    slow_mirrors = mirrors ^ selected_mirrors
-    fast_mirrors = mirrors ^ slow_mirrors
-    if len(fast_mirrors) > 10:
-        # Narrow down the list of candidate mirrors to fast mirrors.
-        logger.info("Discovered %s in %s (narrowed down from %s).",
-                    pluralize(len(fast_mirrors), "Ubuntu mirror"),
-                    timer, pluralize(len(mirrors), "mirror"))
-        mirrors = fast_mirrors
-    else:
-        logger.info("Discovered %s in %s.", pluralize(len(mirrors), "Ubuntu mirror"), timer)
     return mirrors
 
 
@@ -194,7 +201,12 @@ def discover_mirrors():
     mirrors = set()
     mirrors = discover_mirror_selection()
     if not mirrors:
-        raise Exception("Failed to discover any Ubuntu mirrors! (using %s)" % MIRROR_SELECTION_URL)
+        logger.warning("Failed to discover any Ubuntu mirrors! (using %s)" % MIRROR_SELECTION_URL)
+        logger.info("Trying to use %s as fallback" % MIRRORS_URL)
+        mirrors = discover_mirrors_old()
+    elif len(mirrors) < 2:
+        logger.warning("Too few mirrors, trying to use %s to find more" % MIRRORS_URL)
+        mirrors |= discover_mirrors_old()  # add mirrors from discover_mirrors_old()
     logger.info("Discovered %s in %s.", pluralize(len(mirrors), "Ubuntu mirror"), timer)
     return mirrors
 
@@ -209,7 +221,7 @@ def discover_mirror_selection():
     mirrors = set(
         CandidateMirror(mirror_url=mirror_url.strip())
         for mirror_url in dammit.unicode_markup.splitlines()
-        if mirror_url and not mirror_url.isspace()
+        if mirror_url and not mirror_url.isspace() and mirror_url.startswith(('http://', 'https://'))
     )
     logger.debug("Found %s in %s.", pluralize(len(mirrors), "fast Ubuntu mirror"), timer)
     return mirrors
