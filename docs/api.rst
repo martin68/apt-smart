@@ -7,38 +7,38 @@ the `apt-mirror-updater` package. The following modules are available:
 .. contents::
    :local:
 
-:mod:`apt_mirror_updater`
+:mod:`apt_smart`
 -------------------------
 
-.. automodule:: apt_mirror_updater
+.. automodule:: apt_smart
    :members:
 
-:mod:`apt_mirror_updater.backends.debian`
+:mod:`apt_smart.backends.debian`
 -----------------------------------------
 
-.. automodule:: apt_mirror_updater.backends.debian
+.. automodule:: apt_smart.backends.debian
    :members:
 
-:mod:`apt_mirror_updater.backends.ubuntu`
+:mod:`apt_smart.backends.ubuntu`
 -----------------------------------------
 
-.. automodule:: apt_mirror_updater.backends.ubuntu
+.. automodule:: apt_smart.backends.ubuntu
    :members:
 
-:mod:`apt_mirror_updater.cli`
+:mod:`apt_smart.cli`
 -----------------------------
 
-.. automodule:: apt_mirror_updater.cli
+.. automodule:: apt_smart.cli
    :members:
 
-:mod:`apt_mirror_updater.http`
+:mod:`apt_smart.http`
 ------------------------------
 
-.. automodule:: apt_mirror_updater.http
+.. automodule:: apt_smart.http
    :members:
 
-:mod:`apt_mirror_updater.releases`
+:mod:`apt_smart.releases`
 ----------------------------------
 
-.. automodule:: apt_mirror_updater.releases
+.. automodule:: apt_smart.releases
    :members:

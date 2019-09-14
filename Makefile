@@ -21,7 +21,7 @@ default:
 	@echo '    make check      check coding style (PEP-8, PEP-257)'
 	@echo '    make test       run the test suite, report coverage'
 	@echo '    make tox        run the tests on all Python versions'
-	@echo '    make eol        update apt_mirror_updater.eol module'
+	@echo '    make eol        update apt_smart.eol module'
 	@echo '    make readme     update usage in readme'
 	@echo '    make docs       update documentation using Sphinx'
 	@echo '    make publish    publish changes to GitHub/PyPI'
@@ -66,7 +66,7 @@ cog: install
 	@pip-accel install --quiet cogapp
 
 releases: cog
-	@cog.py -r apt_mirror_updater/releases.py
+	@cog.py -r apt_smart/releases.py
 
 readme: cog
 	@cog.py -r README.rst

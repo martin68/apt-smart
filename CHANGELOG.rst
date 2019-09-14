@@ -32,8 +32,8 @@ the wrong keyring when setting up chroots of old releases. For more information
 refer to issue `#8`_.
 
 I've bumped the major version number for this release because the highly
-specific ``apt_mirror_updater.eol`` module changed into the much more generic
-``apt_mirror_updater.releases`` module. Also the ``release_label`` property was
+specific ``apt_smart.eol`` module changed into the much more generic
+``apt_smart.releases`` module. Also the ``release_label`` property was
 removed.
 
 .. _Release 6.0: https://github.com/xolox/python-apt-mirror-updater/compare/5.2...6.0
@@ -170,9 +170,9 @@ This release includes pull requests `#2`_ and `#4`_,  fixing issues `#1`_ and
 - Refactoring: Improve HTTP request exception handling:
 
   - 404 responses and timeouts are no longer subject to retrying.
-  - The exception ``apt_mirror_updater.http.NotFoundError`` is now raised on
+  - The exception ``apt_smart.http.NotFoundError`` is now raised on
     HTTP 404 responses. Other unexpected HTTP response codes raise
-    ``apt_mirror_updater.http.InvalidResponseError``.
+    ``apt_smart.http.InvalidResponseError``.
   - The specific distinction between 404 and !200 was made because the 404
     response has become significant in checking for EOL status.
 

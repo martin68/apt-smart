@@ -101,7 +101,7 @@ The command line interface is described below.
 ..
 .. [[[cog
 .. from humanfriendly.usage import inject_usage
-.. inject_usage('apt_mirror_updater.cli')
+.. inject_usage('apt_smart.cli')
 .. ]]]
 
 **Usage:** `apt-smart [OPTIONS]`
