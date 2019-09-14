@@ -1,4 +1,4 @@
-# Installation requirements for apt-mirror-updater.
+# Installation requirements for apt-smart.
 
 beautifulsoup4 >= 4.4.1
 capturer >= 2.1.1

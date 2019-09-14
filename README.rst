@@ -194,15 +194,15 @@ This software is licensed under the `MIT license`_.
 .. External references:
 .. _apt-get: https://en.wikipedia.org/wiki/Advanced_Packaging_Tool
 .. _at work: http://www.paylogic.com/
-.. _changelog: https://apt-mirror-updater.readthedocs.io/changelog.html
+.. _changelog: https://apt-smart.readthedocs.io/changelog.html
 .. _Debian bug #110837: https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=110837
 .. _Debian bug #624122: https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=624122
 .. _Debian: https://en.wikipedia.org/wiki/Debian
-.. _documentation: https://apt-mirror-updater.readthedocs.io
+.. _documentation: https://apt-smart.readthedocs.io
 .. _GitHub: https://github.com/martin68/apt-smart
 .. _MIT license: http://en.wikipedia.org/wiki/MIT_License
 .. _per user site-packages directory: https://www.python.org/dev/peps/pep-0370/
 .. _PyPI: https://pypi.python.org/pypi/apt-smart
-.. _Read the Docs: https://apt-mirror-updater.readthedocs.io
+.. _Read the Docs: https://apt-smart.readthedocs.io
 .. _Ubuntu: https://en.wikipedia.org/wiki/Ubuntu_(operating_system)
 .. _virtual environments: http://docs.python-guide.org/en/latest/dev/virtualenvs/

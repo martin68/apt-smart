@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 
-# Setup script for the `apt-mirror-updater' package.
+# Setup script for the `apt-smart' package.
 #
 # Author: Peter Odding <peter@peterodding.com>
 # Last Change: June 22, 2018
-# URL: https://apt-mirror-updater.readthedocs.io
+# URL: https://apt-smart.readthedocs.io
 
 """
-Setup script for the `apt-mirror-updater` package.
+Setup script for the `apt-smart` package.
 
 **python setup.py install**
   Install from the working directory into the current Python environment.
@@ -106,11 +106,11 @@ def have_environment_marker_support():
 
 
 setup(
-    name='apt-mirror-updater',
+    name='apt-smart',
     version=get_version('apt_smart', '__init__.py'),
     description="Automated, robust apt-get mirror selection for Debian and Ubuntu",
     long_description=get_contents('README.rst'),
-    url='https://apt-mirror-updater.readthedocs.io',
+    url='https://apt-smart.readthedocs.io',
     author='Peter Odding',
     author_email='peter@peterodding.com',
     license='MIT',
@@ -118,7 +118,7 @@ setup(
     install_requires=get_install_requires(),
     extras_require=get_extras_require(),
     entry_points=dict(console_scripts=[
-        'apt-mirror-updater = apt_smart.cli:main',
+        'apt-smart = apt_smart.cli:main',
     ]),
     classifiers=[
         'Development Status :: 4 - Beta',

@@ -2,7 +2,7 @@ API documentation
 =================
 
 The following documentation is based on the source code of version |release| of
-the `apt-mirror-updater` package. The following modules are available:
+the `apt-smart` package. The following modules are available:
 
 .. contents::
    :local:

@@ -1,10 +1,10 @@
-# Makefile for the 'apt-mirror-updater' package.
+# Makefile for the 'apt-smart' package.
 #
 # Author: Peter Odding <peter@peterodding.com>
 # Last Change: October 14, 2018
-# URL: https://apt-mirror-updater.readthedocs.io
+# URL: https://apt-smart.readthedocs.io
 
-PACKAGE_NAME = apt-mirror-updater
+PACKAGE_NAME = apt-smart
 WORKON_HOME ?= $(HOME)/.virtualenvs
 VIRTUAL_ENV ?= $(WORKON_HOME)/$(PACKAGE_NAME)
 PATH := $(VIRTUAL_ENV)/bin:$(PATH)

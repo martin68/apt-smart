@@ -2,7 +2,7 @@
 #
 # Author: Peter Odding <peter@peterodding.com>
 # Last Change: October 31, 2017
-# URL: https://apt-mirror-updater.readthedocs.io
+# URL: https://apt-smart.readthedocs.io
 
 """Simple, robust and concurrent HTTP requests (designed for one very narrow use case)."""
 

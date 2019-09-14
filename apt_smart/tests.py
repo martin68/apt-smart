@@ -2,9 +2,9 @@
 #
 # Author: Peter Odding <peter@peterodding.com>
 # Last Change: October 19, 2018
-# URL: https://apt-mirror-updater.readthedocs.io
+# URL: https://apt-smart.readthedocs.io
 
-"""Test suite for the ``apt-mirror-updater`` package."""
+"""Test suite for the ``apt-smart`` package."""
 
 # Standard library modules.
 import decimal

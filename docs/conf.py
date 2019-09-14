@@ -2,14 +2,14 @@
 #
 # Author: Peter Odding <peter@peterodding.com>
 # Last Change: June 22, 2018
-# URL: https://apt-mirror-updater.readthedocs.io
+# URL: https://apt-smart.readthedocs.io
 
-"""Sphinx documentation configuration for the `apt-mirror-updater` package."""
+"""Sphinx documentation configuration for the `apt-smart` package."""
 
 import os
 import sys
 
-# Add the 'apt-mirror-updater' source distribution's root directory to the module path.
+# Add the 'apt-smart' source distribution's root directory to the module path.
 sys.path.insert(0, os.path.abspath(os.pardir))
 
 # -- General configuration -----------------------------------------------------
@@ -35,7 +35,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = 'apt-mirror-updater'
+project = 'apt-smart'
 copyright = '2018, Peter Odding'
 
 # The version info for the project you're documenting, acts as replacement for

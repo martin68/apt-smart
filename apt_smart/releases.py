@@ -2,7 +2,7 @@
 #
 # Author: Peter Odding <peter@peterodding.com>
 # Last Change: October 20, 2018
-# URL: https://apt-mirror-updater.readthedocs.io
+# URL: https://apt-smart.readthedocs.io
 
 """
 Easy to use metadata on Debian and Ubuntu releases.
@@ -18,7 +18,7 @@ updates and some time after package mirrors stop serving the release.
 
 The distro-info-data_ package contains CSV files with metadata about Debian and
 Ubuntu releases. This module parses those CSV files to make this metadata
-available in Python. This enables `apt-mirror-updater` to make an informed
+available in Python. This enables `apt-smart` to make an informed
 decision about the following questions:
 
 1. Is a given Debian or Ubuntu release expected to be available on mirrors or
@@ -28,7 +28,7 @@ decision about the following questions:
    main keyring (:data:`UBUNTU_KEYRING_CURRENT`) or should the keyring with
    removed keys (:data:`UBUNTU_KEYRING_REMOVED`) be used?
 
-To make it possible to run `apt-mirror-updater` without direct access to the
+To make it possible to run `apt-smart` without direct access to the
 CSV files, a copy of the relevant information has been embedded in the source
 code.
 
@@ -132,14 +132,14 @@ def discover_releases():
     only the embedded releases will be returned.
     """
     # Discover the known releases on the first call to discover_releases().
-    # First we check the CSV files on the system where apt-mirror-updater
+    # First we check the CSV files on the system where apt-smart
     # is running, because those files may be more up-to-date than the
     # bundled information is.
     result = set()
     for filename in glob.glob(os.path.join(DISTRO_INFO_DIRECTORY, '*.csv')):
         for release in parse_csv_file(filename):
             result.add(release)
-    # Add the releases bundled with apt-mirror-updater to the result
+    # Add the releases bundled with apt-smart to the result
     # without causing duplicate entries (due to the use of a set and key
     # properties).
     result.update(BUNDLED_RELEASES)

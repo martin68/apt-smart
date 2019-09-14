@@ -43,11 +43,11 @@ removed.
 ---------------------------
 
 Use `mirrors.ubuntu.com/mirrors.txt`_ without placing our full trust in it like
-older versions of ``apt-mirror-updater`` did 😇.
+older versions of ``apt-smart`` did 😇.
 
 Feedback in issue `#6`_ suggested that `mirrors.ubuntu.com/mirrors.txt`_ is
 working properly (again) and should be preferred over scraping Launchpad.
-However I prefer for ``apt-mirror-updater`` to be a reliable "do what I mean"
+However I prefer for ``apt-smart`` to be a reliable "do what I mean"
 program and `mirrors.ubuntu.com/mirrors.txt`_ has proven to be unreliable in
 the past (see the discussion in `#6`_). As a compromise I've changed the Ubuntu
 mirror discovery as follows:
@@ -132,7 +132,7 @@ http://security.ubuntu.com/ubuntu/dists/precise/Release.gpg
 
 At the same time issue `#1`_ and pull request `#2`_ were also indications that
 the EOL detection was fragile and error prone. This potential fragility had
-bugged me ever since publishing `apt-mirror-updater` and this week I finally
+bugged me ever since publishing `apt-smart` and this week I finally
 finished a more robust and deterministic EOL detection scheme.
 
 This release includes pull requests `#2`_ and `#4`_,  fixing issues `#1`_ and
@@ -164,7 +164,7 @@ This release includes pull requests `#2`_ and `#4`_,  fixing issues `#1`_ and
   - Because ``validate_mirror()`` previously returned a boolean but now returns
     an enumeration member this change is technically backwards incompatible,
     then again ``validate_mirror()`` isn't specifically intended for callers
-    because it concerns internal logic of apt-mirror-updater. I'm nevertheless
+    because it concerns internal logic of apt-smart. I'm nevertheless
     bumping the major version number.
 
 - Refactoring: Improve HTTP request exception handling:

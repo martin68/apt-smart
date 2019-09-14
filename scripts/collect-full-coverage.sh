@@ -1,7 +1,7 @@
 #!/bin/bash -e
 
 # This shell script is used by the makefile and Travis CI to run the
-# apt-mirror-updater test suite as root, allowing it to make changes
+# apt-smart test suite as root, allowing it to make changes
 # to the system that's running the test suite (one of my laptops
 # or a Travis CI worker).
 

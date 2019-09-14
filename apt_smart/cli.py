@@ -2,12 +2,12 @@
 #
 # Author: Peter Odding <peter@peterodding.com>
 # Last Change: June 14, 2017
-# URL: https://apt-mirror-updater.readthedocs.io
+# URL: https://apt-smart.readthedocs.io
 
 """
-Usage: apt-mirror-updater [OPTIONS]
+Usage: apt-smart [OPTIONS]
 
-The apt-mirror-updater program automates robust apt-get mirror selection for
+The apt-smart program automates robust apt-get mirror selection for
 Debian and Ubuntu by enabling discovery of available mirrors, ranking of
 available mirrors, automatic switching between mirrors and robust package list
 updating.
@@ -98,7 +98,7 @@ logger = logging.getLogger(__name__)
 
 
 def main():
-    """Command line interface for the ``apt-mirror-updater`` program."""
+    """Command line interface for the ``apt-smart`` program."""
     # Initialize logging to the terminal and system log.
     coloredlogs.install(syslog=True)
     # Command line option defaults.

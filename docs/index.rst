@@ -1,7 +1,7 @@
-apt-mirror-updater: Automated Debian/Ubuntu mirror selection
+apt-smart: Automated Debian/Ubuntu mirror selection
 ============================================================
 
-Welcome to the documentation of `apt-mirror-updater` version |release|!
+Welcome to the documentation of `apt-smart` version |release|!
 The following sections are available:
 
 .. contents::

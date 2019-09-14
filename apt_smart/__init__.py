@@ -2,7 +2,7 @@
 #
 # Author: Peter Odding <peter@peterodding.com>
 # Last Change: October 19, 2018
-# URL: https://apt-mirror-updater.readthedocs.io
+# URL: https://apt-smart.readthedocs.io
 
 """
 Automated, robust ``apt-get`` mirror selection for Debian and Ubuntu.
@@ -68,7 +68,7 @@ logger = logging.getLogger(__name__)
 
 class AptMirrorUpdater(PropertyManager):
 
-    """Python API for the `apt-mirror-updater` program."""
+    """Python API for the `apt-smart` program."""
 
     repr_properties = (
         'architecture',
@@ -89,7 +89,7 @@ class AptMirrorUpdater(PropertyManager):
     :class:`~property_manager.PropertyManager.__repr__()` method that includes
     the values of computed properties in its output.
 
-    In the case of `apt-mirror-updater` this behavior would trigger external
+    In the case of `apt-smart` this behavior would trigger external
     command execution and (lots of) HTTP calls, sometimes with unintended side
     effects, namely `infinite recursion`_.
 
@@ -391,7 +391,7 @@ class AptMirrorUpdater(PropertyManager):
             module does at the time of writing) then it is called and if it
             returns a number, this number is the EOL date for the release.
 
-            This function was added to enable apt-mirror-updater backend
+            This function was added to enable apt-smart backend
             modules to override the default EOL dates, more specifically to
             respect the `Debian LTS`_ release schedule (see also `issue #5`_).
 
@@ -671,7 +671,7 @@ class AptMirrorUpdater(PropertyManager):
         with self.context:
             # Write the sources.list contents to a temporary file. We make sure
             # the file always ends in a newline to adhere to UNIX conventions.
-            temporary_file = '/tmp/apt-mirror-updater-sources-list-%i.txt' % os.getpid()
+            temporary_file = '/tmp/apt-smart-sources-list-%i.txt' % os.getpid()
             self.context.write_file(temporary_file, b'%s\n' % contents.rstrip())
             # Make sure the temporary file is cleaned up when we're done with it.
             self.context.cleanup('rm', '--force', temporary_file)
