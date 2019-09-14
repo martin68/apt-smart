@@ -9,7 +9,7 @@ Automated, robust ``apt-get`` mirror selection for Debian and Ubuntu.
 
 The main entry point for this module is the :class:`AptMirrorUpdater` class, so
 if you don't know where to start that would be a good place :-). You can also
-take a look at the source code of the :mod:`apt_mirror_updater.cli` module for
+take a look at the source code of the :mod:`apt_smart.cli` module for
 an example that uses the :class:`AptMirrorUpdater` class.
 """
 
@@ -43,9 +43,9 @@ from six import text_type
 from six.moves.urllib.parse import urlparse
 
 # Modules included in our package.
-from apt_mirror_updater.http import NotFoundError, fetch_concurrent, fetch_url, get_default_concurrency
-from apt_mirror_updater.releases import coerce_release
-from apt_mirror_updater.releases import discover_releases
+from apt_smart.http import NotFoundError, fetch_concurrent, fetch_url, get_default_concurrency
+from apt_smart.releases import coerce_release
+from apt_smart.releases import discover_releases
 
 # Semi-standard module versioning.
 __version__ = '6.1'
@@ -275,7 +275,7 @@ class AptMirrorUpdater(PropertyManager):
         The distributor ID (a lowercase string like 'debian' or 'ubuntu').
 
         The default value of this property is based on the
-        :attr:`~apt_mirror_updater.releases.Release.distributor_id` property of
+        :attr:`~apt_smart.releases.Release.distributor_id` property of
         :attr:`release` (which in turn is based on :attr:`distribution_codename`).
 
         Because Debian and Ubuntu code names are unambiguous this means that in
@@ -387,7 +387,7 @@ class AptMirrorUpdater(PropertyManager):
           against the current date to determine whether the release is EOL:
 
           - If the :attr:`backend` module contains a ``get_eol_date()``
-            function (only the :mod:`~apt_mirror_updater.backends.debian`
+            function (only the :mod:`~apt_smart.backends.debian`
             module does at the time of writing) then it is called and if it
             returns a number, this number is the EOL date for the release.
 
@@ -395,7 +395,7 @@ class AptMirrorUpdater(PropertyManager):
             modules to override the default EOL dates, more specifically to
             respect the `Debian LTS`_ release schedule (see also `issue #5`_).
 
-          - Otherwise the :attr:`~apt_mirror_updater.releases.Release.eol_date`
+          - Otherwise the :attr:`~apt_smart.releases.Release.eol_date`
             of :attr:`release` is used.
 
         - As a fall back :func:`validate_mirror()` is used to check whether
@@ -611,8 +611,8 @@ class AptMirrorUpdater(PropertyManager):
         is used as a default.
 
         Please refer to the documentation of the Debian
-        (:func:`apt_mirror_updater.backends.debian.generate_sources_list()`)
-        and Ubuntu (:func:`apt_mirror_updater.backends.ubuntu.generate_sources_list()`)
+        (:func:`apt_smart.backends.debian.generate_sources_list()`)
+        and Ubuntu (:func:`apt_smart.backends.ubuntu.generate_sources_list()`)
         backend implementations of this method for details on argument handling
         and the return value.
         """

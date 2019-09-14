@@ -16,8 +16,8 @@ from bs4 import BeautifulSoup, UnicodeDammit
 from humanfriendly import Timer, format, pluralize
 
 # Modules included in our package.
-from apt_mirror_updater import CandidateMirror, mirrors_are_equal
-from apt_mirror_updater.http import fetch_url
+from apt_smart import CandidateMirror, mirrors_are_equal
+from apt_smart.http import fetch_url
 
 MIRRORS_URL = 'https://launchpad.net/ubuntu/+archivemirrors'
 """The URL of the HTML page listing official Ubuntu mirrors (a string)."""
@@ -105,7 +105,7 @@ def discover_mirrors_old():
     This queries :data:`MIRRORS_URL`to discover available Ubuntu mirrors.
     Here's an example run:
 
-    >>> from apt_mirror_updater.backends.ubuntu import discover_mirrors_old
+    >>> from apt_smart.backends.ubuntu import discover_mirrors_old
     >>> from pprint import pprint
     >>> pprint(discover_mirrors_old())
     set([CandidateMirror(mirror_url='http://archive.ubuntu.com/ubuntu/'),
@@ -191,7 +191,7 @@ def discover_mirrors():
 
     This only queries :data:`MIRROR_SELECTION_URL` to
     discover available Ubuntu mirrors. Here's an example run:
-    >>> from apt_mirror_updater.backends.ubuntu import discover_mirrors
+    >>> from apt_smart.backends.ubuntu import discover_mirrors
     >>> from pprint import pprint
     >>> pprint(discover_mirrors())
 

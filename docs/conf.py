@@ -43,7 +43,7 @@ copyright = '2018, Peter Odding'
 # built documents.
 
 # Find the package version and make it the release.
-from apt_mirror_updater import __version__ as updater_version  # noqa
+from apt_smart import __version__ as updater_version  # noqa
 
 # The short X.Y version.
 version = '.'.join(updater_version.split('.')[:2])

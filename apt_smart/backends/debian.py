@@ -25,9 +25,9 @@ from bs4 import BeautifulSoup
 from humanfriendly import Timer, format, pluralize
 
 # Modules included in our package.
-from apt_mirror_updater import CandidateMirror, mirrors_are_equal
+from apt_smart import CandidateMirror, mirrors_are_equal
 
-from apt_mirror_updater.http import fetch_url
+from apt_smart.http import fetch_url
 
 LTS_ARCHITECTURES = ('i386', 'amd64', 'armel', 'armhf')
 """The names of the architectures supported by the Debian LTS team (a tuple of strings)."""
@@ -85,7 +85,7 @@ def discover_mirrors():
 
     An example run:
 
-    >>> from apt_mirror_updater.backends.debian import discover_mirrors
+    >>> from apt_smart.backends.debian import discover_mirrors
     >>> from pprint import pprint
     >>> pprint(discover_mirrors())
     set([CandidateMirror(mirror_url='http://ftp.at.debian.org/debian/'),
@@ -198,7 +198,7 @@ def get_eol_date(updater):
     """
     Override the EOL date for `Debian LTS`_ releases.
 
-    :param updater: The :class:`~apt_mirror_updater.AptMirrorUpdater` object.
+    :param updater: The :class:`~apt_smart.AptMirrorUpdater` object.
     :returns: The overridden EOL date (a number) or :data:`None`.
     """
     if updater.architecture in LTS_ARCHITECTURES:

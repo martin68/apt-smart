@@ -18,9 +18,9 @@ from humanfriendly.testing import TestCase, run_cli
 # from humanfriendly.text import split
 
 # Modules included in our package.
-from apt_mirror_updater import AptMirrorUpdater, normalize_mirror_url
-from apt_mirror_updater.cli import main
-from apt_mirror_updater.releases import (
+from apt_smart import AptMirrorUpdater, normalize_mirror_url
+from apt_smart.cli import main
+from apt_smart.releases import (
     DEBIAN_KEYRING_CURRENT,
     UBUNTU_KEYRING_CURRENT,
     UBUNTU_KEYRING_REMOVED,
@@ -35,11 +35,11 @@ logger = logging.getLogger(__name__)
 
 class AptMirrorUpdaterTestCase(TestCase):
 
-    """:mod:`unittest` compatible container for the :mod:`apt_mirror_updater` test suite."""
+    """:mod:`unittest` compatible container for the :mod:`apt_smart` test suite."""
 
     def test_debian_mirror_discovery(self):
         """Test the discovery of Debian mirror URLs."""
-        from apt_mirror_updater.backends.debian import discover_mirrors
+        from apt_smart.backends.debian import discover_mirrors
         mirrors = discover_mirrors()
         assert len(mirrors) > 10
         for candidate in mirrors:
@@ -47,7 +47,7 @@ class AptMirrorUpdaterTestCase(TestCase):
 
     def test_ubuntu_mirror_discovery(self):
         """Test the discovery of Ubuntu mirror URLs."""
-        from apt_mirror_updater.backends.ubuntu import discover_mirrors
+        from apt_smart.backends.ubuntu import discover_mirrors
         mirrors = discover_mirrors()
         assert len(mirrors) > 10
         for candidate in mirrors:

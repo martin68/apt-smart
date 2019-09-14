@@ -107,7 +107,7 @@ def have_environment_marker_support():
 
 setup(
     name='apt-mirror-updater',
-    version=get_version('apt_mirror_updater', '__init__.py'),
+    version=get_version('apt_smart', '__init__.py'),
     description="Automated, robust apt-get mirror selection for Debian and Ubuntu",
     long_description=get_contents('README.rst'),
     url='https://apt-mirror-updater.readthedocs.io',
@@ -118,7 +118,7 @@ setup(
     install_requires=get_install_requires(),
     extras_require=get_extras_require(),
     entry_points=dict(console_scripts=[
-        'apt-mirror-updater = apt_mirror_updater.cli:main',
+        'apt-mirror-updater = apt_smart.cli:main',
     ]),
     classifiers=[
         'Development Status :: 4 - Beta',

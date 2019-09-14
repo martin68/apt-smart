@@ -91,7 +91,7 @@ from humanfriendly import format_size, format_table, format_timespan
 from humanfriendly.terminal import connected_to_terminal, output, usage, warning
 
 # Modules included in our package.
-from apt_mirror_updater import MAX_MIRRORS, AptMirrorUpdater
+from apt_smart import MAX_MIRRORS, AptMirrorUpdater
 
 # Initialize a logger for this module.
 logger = logging.getLogger(__name__)

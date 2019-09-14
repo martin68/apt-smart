@@ -163,7 +163,7 @@ def parse_csv_file(filename):
     :returns: A generator of :class:`Release` objects.
     """
     # We import this here to avoid a circular import.
-    from apt_mirror_updater.backends.debian import LTS_RELEASES
+    from apt_smart.backends.debian import LTS_RELEASES
     basename, extension = os.path.splitext(os.path.basename(filename))
     distributor_id = basename.lower()
     with open(filename) as handle:
@@ -339,7 +339,7 @@ class Release(PropertyManager):
 #
 # import cog
 # import decimal
-# from apt_mirror_updater.releases import discover_releases
+# from apt_smart.releases import discover_releases
 #
 # indent = " " * 4
 # cog.out("\nBUNDLED_RELEASES = [\n")
