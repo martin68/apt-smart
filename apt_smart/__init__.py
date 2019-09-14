@@ -349,12 +349,13 @@ class AptMirrorUpdater(PropertyManager):
         logger.info("Start retrieving :attr:`base_last_updated` using is_available")
         self.base_last_updated = 0
         if mapping[self.base_url].is_available:
-            logger.info(":attr:`base_last_updated`: %i", self.base_last_updated)
+            logger.debug(":attr:`base_last_updated`: %i", self.base_last_updated)
             # base_url 's contents are up-to-date naturally,so set its last_updated 0
             mapping[self.base_url].last_updated = 0
         else:  # base_url not available, use time at the moment as base_last_updated.
             self.base_last_updated = int(time.time())
-            logger.info(":attr:`base_last_updated` using time.time(): %i", self.base_last_updated)
+            logger.warning("%s is not available, so using time.time() as :attr:`base_last_updated`: %i",
+                           self.base_url, self.base_last_updated)
         # Concurrently check for Archive-Update-in-Progress markers.
         update_mapping = dict((c.archive_update_in_progress_url, c) for c in mirrors if c.is_available)
         logger.info("Checking %s for Archive-Update-in-Progress marker ..",
