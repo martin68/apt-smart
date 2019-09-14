@@ -2,7 +2,7 @@
 
 # Setup script for the `apt-smart' package.
 #
-# Author: Peter Odding <peter@peterodding.com>
+# Author: martin68 and Peter Odding
 # Last Change: June 22, 2018
 # URL: https://apt-smart.readthedocs.io
 
@@ -111,8 +111,8 @@ setup(
     description="Automated, robust apt-get mirror selection for Debian and Ubuntu",
     long_description=get_contents('README.rst'),
     url='https://apt-smart.readthedocs.io',
-    author='Peter Odding',
-    author_email='peter@peterodding.com',
+    author='martin68',
+    author_email=' ',
     license='MIT',
     packages=find_packages(),
     install_requires=get_install_requires(),

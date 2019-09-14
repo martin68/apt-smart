@@ -1,6 +1,6 @@
 # Makefile for the 'apt-smart' package.
 #
-# Author: Peter Odding <peter@peterodding.com>
+# Author: martin68 and Peter Odding
 # Last Change: October 14, 2018
 # URL: https://apt-smart.readthedocs.io
 

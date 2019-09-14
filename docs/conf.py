@@ -1,6 +1,6 @@
 # Automated, robust apt-get mirror selection for Debian and Ubuntu.
 #
-# Author: Peter Odding <peter@peterodding.com>
+# Author: martin68 and Peter Odding
 # Last Change: June 22, 2018
 # URL: https://apt-smart.readthedocs.io
 
@@ -36,7 +36,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'apt-smart'
-copyright = '2018, Peter Odding'
+copyright = '2019 martin68, 2018 Peter Odding'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
