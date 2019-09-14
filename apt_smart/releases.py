@@ -1,7 +1,7 @@
 # Easy to use metadata on Debian and Ubuntu releases.
 #
 # Author: martin68 and Peter Odding
-# Last Change: October 20, 2018
+# Last Change: September 15, 2019
 # URL: https://apt-smart.readthedocs.io
 
 """

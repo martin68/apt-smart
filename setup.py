@@ -3,7 +3,7 @@
 # Setup script for the `apt-smart' package.
 #
 # Author: martin68 and Peter Odding
-# Last Change: June 22, 2018
+# Last Change: September 15, 2019
 # URL: https://apt-smart.readthedocs.io
 
 """

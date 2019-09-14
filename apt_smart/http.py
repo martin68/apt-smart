@@ -1,7 +1,7 @@
 # Automated, robust apt-get mirror selection for Debian and Ubuntu.
 #
 # Author: martin68 and Peter Odding
-# Last Change: October 31, 2017
+# Last Change: September 15, 2019
 # URL: https://apt-smart.readthedocs.io
 
 """Simple, robust and concurrent HTTP requests (designed for one very narrow use case)."""

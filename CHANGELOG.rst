@@ -11,6 +11,20 @@ to `semantic versioning`_.
 .. _Keep a Changelog: http://keepachangelog.com/
 .. _semantic versioning: http://semver.org/
 
+`Release 7.0`_ (2019-9-15)
+---------------------------
+
+- Rename the project and module to ``apt-smart``
+- For Ubuntu, new mirrors discovery mechanism: at first it queries ``MIRROR_SELECTION_URL``, and ``MIRRORS_URL`` as fallback.
+- For Debian, new mirrors discovery mechanism: get mirrors within the country which the user is in.
+- New mechanism of determining whether a mirror is up-to-date: download the InRelease file and parse the ``Date`` value in it.
+- New and more robust ``distribution_codename`` using APT sources.list
+- Enable retry when ``fetch_url`` is timeout for bad connections.
+- Drop Python 2.6 support and add Python 3.7
+- Drop max_mirrors limit since we can smartly get mirrors within the user's country.
+
+.. _Release 7.0: https://github.com/martin68/apt-smart/compare/6.1...7.0
+
 `Release 6.1`_ (2018-10-19)
 ---------------------------
 
