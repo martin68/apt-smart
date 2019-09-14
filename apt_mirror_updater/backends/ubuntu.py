@@ -133,7 +133,7 @@ def discover_mirrors_old():
     sys     0m0.039s
 
     But it can be a fallback when MIRROR_SELECTION_URL is down.
-"""
+    """
     mirrors = set()
     logger.info("Discovering Ubuntu mirrors at %s ..", MIRRORS_URL)
     # Find which country the user is in to get mirrors in that country
