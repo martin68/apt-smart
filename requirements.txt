@@ -1,5 +1,6 @@
 # Installation requirements for apt-smart.
 
+wheel >= 0.26.0
 beautifulsoup4 >= 4.4.1
 capturer >= 2.1.1
 coloredlogs >= 5.0

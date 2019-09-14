@@ -117,7 +117,7 @@ def main():
             'remote-host=', 'find-current-mirror', 'find-best-mirror',
             'list-mirrors', 'change-mirror', 'auto-change-mirror', 'update',
             'update-package-lists', 'exclude=', 'max=', 'verbose', 'version',
-            'quiet','help',
+            'quiet', 'help',
         ])
         for option, value in options:
             if option in ('-r', '--remote-host'):
