@@ -1,7 +1,7 @@
 # Automated, robust apt-get mirror selection for Debian and Ubuntu.
 #
 # Author: martin68 and Peter Odding
-# Last Change: June 14, 2017
+# Last Change: September 15, 2019
 # URL: https://apt-smart.readthedocs.io
 
 """
@@ -69,6 +69,10 @@ Supported options:
 
     Increase logging verbosity (can be repeated).
 
+  -V, --version
+
+    Show version number and Python version.
+
   -q, --quiet
 
     Decrease logging verbosity (can be repeated).
@@ -92,6 +96,7 @@ from humanfriendly.terminal import connected_to_terminal, output, usage, warning
 
 # Modules included in our package.
 from apt_smart import MAX_MIRRORS, AptMirrorUpdater
+from apt_smart import __version__ as updater_version
 
 # Initialize a logger for this module.
 logger = logging.getLogger(__name__)
@@ -108,11 +113,11 @@ def main():
     actions = []
     # Parse the command line arguments.
     try:
-        options, arguments = getopt.getopt(sys.argv[1:], 'r:fblc:aux:m:vqh', [
+        options, arguments = getopt.getopt(sys.argv[1:], 'r:fblc:aux:m:vVqh', [
             'remote-host=', 'find-current-mirror', 'find-best-mirror',
             'list-mirrors', 'change-mirror', 'auto-change-mirror', 'update',
-            'update-package-lists', 'exclude=', 'max=', 'verbose', 'quiet',
-            'help',
+            'update-package-lists', 'exclude=', 'max=', 'verbose', 'version',
+            'quiet','help',
         ])
         for option, value in options:
             if option in ('-r', '--remote-host'):
@@ -139,6 +144,9 @@ def main():
                 limit = int(value)
             elif option in ('-v', '--verbose'):
                 coloredlogs.increase_verbosity()
+            elif option in ('-V', '--version'):
+                output("Version: %s on Python %i.%i", updater_version, sys.version_info[0], sys.version_info[1])
+                return
             elif option in ('-q', '--quiet'):
                 coloredlogs.decrease_verbosity()
             elif option in ('-h', '--help'):

@@ -144,6 +144,7 @@ updating.
    ranking of mirrors will take a long time (because over 300 connections
    need to be established)."
    "``-v``, ``--verbose``",Increase logging verbosity (can be repeated).
+   "``-V``, ``--version``",Show version number and Python version.
    "``-q``, ``--quiet``",Decrease logging verbosity (can be repeated).
    "``-h``, ``--help``",Show this message and exit.
 
