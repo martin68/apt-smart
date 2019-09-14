@@ -1,17 +1,17 @@
-apt-smart: Automated Debian/Ubuntu mirror selection
+apt-smart: Smart, automated Debian/Ubuntu mirror selection
 ============================================================
 
-.. image:: https://travis-ci.org/xolox/python-apt-mirror-updater.svg?branch=master
-   :target: https://travis-ci.org/xolox/python-apt-mirror-updater
+.. image:: https://travis-ci.org/martin68/apt-smart.svg?branch=master
+   :target: https://travis-ci.org/martin68/apt-smart
 
-.. image:: https://coveralls.io/repos/xolox/python-apt-mirror-updater/badge.svg?branch=master
-   :target: https://coveralls.io/r/xolox/python-apt-mirror-updater?branch=master
+.. image:: https://coveralls.io/repos/martin68/apt-smart/badge.svg?branch=master
+   :target: https://coveralls.io/r/martin68/apt-smart?branch=master
 
 The `apt-smart` package automates robust apt-get_ mirror selection for
-Debian_ and Ubuntu_ by enabling discovery of available mirrors, ranking of
+Debian_ and Ubuntu_ by enabling smart discovery of available mirrors, smart ranking of
 available mirrors, automatic switching between mirrors and robust package list
-updating (see features_). It's currently tested on Python 2.6, 2.7, 3.4, 3.5,
-3.6 and PyPy (although test coverage is still rather low, see status_).
+updating (see features_). It's currently tested on Python 2.7, 3.4, 3.5,
+3.6, 3.7 and PyPy (although test coverage is still rather low, see status_).
 
 .. contents::
    :local:
@@ -21,14 +21,15 @@ updating (see features_). It's currently tested on Python 2.6, 2.7, 3.4, 3.5,
 Features
 --------
 
-**Discovery of available mirrors**
+**Smart discovery of available mirrors**
  Debian_ and Ubuntu_ mirrors are discovered automatically by querying the
  `Debian mirror list <https://www.debian.org/mirror/list>`_ or the `Ubuntu
- mirror list <https://launchpad.net/ubuntu/+archivemirrors>`_ (the applicable
- mirror list is automatically selected based on the current platform).
+ mirror list1 <http://mirrors.ubuntu.com/mirrors.txt>`_  or the `Ubuntu
+ mirror list2 <https://launchpad.net/ubuntu/+archivemirrors>`_ (the applicable
+ mirror list is automatically selected based on the current platform). It can smartly get mirrors within the country which the user is in.
 
-**Ranking of available mirrors**
- Discovered mirrors are ranked by bandwidth (to pick the fastest mirror) and
+**Smart ranking of available mirrors**
+ Discovered mirrors are ranked by bandwidth (to pick the fastest mirror) and whether they're up-to-date and
  excluded if they're being updated (see `issues with mirror updates`_).
 
 **Automatic switching between mirrors**
@@ -53,7 +54,7 @@ Status
 On the one hand the `apt-smart` package was developed based on quite a
 few years of experience in using apt-get_ on Debian_ and Ubuntu_ systems. On the
 other hand the Python package itself is relatively new: it was developed and
-published in Aug 2019. As such:
+published in Sep 2019. As such:
 
 .. warning:: Until `apt-smart` has been rigorously tested I consider
              it a proof of concept (beta software) so if it corrupts your
