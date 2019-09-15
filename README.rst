@@ -7,6 +7,8 @@ apt-smart: Smart, automated Debian/Ubuntu mirror selection
 .. image:: https://coveralls.io/repos/martin68/apt-smart/badge.svg?branch=master
    :target: https://coveralls.io/r/martin68/apt-smart?branch=master
 
+`简体中文 <README-zh-cn.rst>`_
+
 The `apt-smart` package automates robust apt-get_ mirror (a.k.a Repositories, Sources) selection for
 Debian_ and Ubuntu_ by enabling smart discovery of available mirrors, smart ranking of
 available mirrors, automatic switching between mirrors and robust package list
