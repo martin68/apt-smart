@@ -55,16 +55,6 @@ Supported options:
     a shell pattern (containing wild cards like `?' and `*') that is matched
     against the full URL of each mirror.
 
-  -m, --max=COUNT
-
-    Don't query more than COUNT mirrors for their connection status
-    (defaults to 50). If you give the number 0 no limit will be applied.
-
-    Because Ubuntu mirror discovery can report more than 300 mirrors it's
-    useful to limit the number of mirrors that are queried, otherwise the
-    ranking of mirrors will take a long time (because over 300 connections
-    need to be established).
-
   -v, --verbose
 
     Increase logging verbosity (can be repeated).

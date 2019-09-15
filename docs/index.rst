@@ -1,4 +1,4 @@
-apt-smart: Automated Debian/Ubuntu mirror selection
+apt-smart: Smart, automated Debian/Ubuntu mirror selection
 ============================================================
 
 Welcome to the documentation of `apt-smart` version |release|!

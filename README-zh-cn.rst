@@ -1,4 +1,4 @@
-apt-smart: Smart, automated Debian/Ubuntu mirror selection
+apt-smart: 智能的 Debian/Ubuntu 镜像源自动选择工具
 ============================================================
 
 .. image:: https://travis-ci.org/martin68/apt-smart.svg?branch=master
@@ -7,11 +7,9 @@ apt-smart: Smart, automated Debian/Ubuntu mirror selection
 .. image:: https://coveralls.io/repos/martin68/apt-smart/badge.svg?branch=master
    :target: https://coveralls.io/r/martin68/apt-smart?branch=master
 
-The `apt-smart` package automates robust apt-get_ mirror (a.k.a Repositories, Sources) selection for
-Debian_ and Ubuntu_ by enabling smart discovery of available mirrors, smart ranking of
-available mirrors, automatic switching between mirrors and robust package list
-updating (see features_). It's currently tested on Python 2.7, 3.4, 3.5,
-3.6, 3.7 and PyPy (although test coverage is still rather low, see status_).
+`apt-smart` 提供健壮的 Debian_ 和 Ubuntu_  apt-get_ 镜像源 (也称软件源) 自动选择。
+它能智能发现镜像源、排序镜像源并且自动切换，以及实现健壮的包列表更新 (参见 features_). 目前在 Python 2.7, 3.4, 3.5,
+3.6, 3.7 和 PyPy 测试通过 (尽管test coverage目前还很低，参见 status_).
 
 .. contents::
    :local:
@@ -19,27 +17,25 @@ updating (see features_). It's currently tested on Python 2.7, 3.4, 3.5,
 Why?
 --------
 
-As a successor of `apt-mirror-updater <https://github.com/xolox/python-apt-mirror-updater>`_,
-`apt-smart` has many improvements in intelligence, speed, accuracy and robustness (see changelog_) when offering the best mirror for you.
-It has a plan to optionally be a set-and-forget smart daemon: running in the background as a reverse proxy
-always redirecting to the best mirror without root privilege. It also has a plan to support other distros like: Linux Mint , ROS...
+作为 `apt-mirror-updater <https://github.com/xolox/python-apt-mirror-updater>`_ 的继承者,
+为你寻找最好镜像源的过程中 `apt-smart` 的智能、速度、准确性和健壮性方面都有提升和改进 (参见 changelog_)。
+并且有计划增加反向代理模式——在设置好之后你就可以忘掉它，它在后台运行不需要root权限，在任何时候都指向最好的镜像源。
+其他发行版如 Linux Mint， ROS等的支持也在计划之中。
 
 .. _features:
 
 Features
 --------
 
-**Smart discovery of available mirrors**
- Debian_ and Ubuntu_ mirrors are discovered automatically by querying the
- `Debian mirror list <https://www.debian.org/mirror/list>`_ or the `Ubuntu
- mirror list1 <http://mirrors.ubuntu.com/mirrors.txt>`_  or the `Ubuntu
- mirror list2 <https://launchpad.net/ubuntu/+archivemirrors>`_ (the applicable
- mirror list is automatically selected based on the current platform).
- It can smartly get mirrors within the country which the user is in.
+**智能发现可用的镜像源**
+ 通过查询 `Debian mirror list <https://www.debian.org/mirror/list>`_ 或 `Ubuntu
+ mirror list1 <http://mirrors.ubuntu.com/mirrors.txt>`_  或 `Ubuntu
+ mirror list2 <https://launchpad.net/ubuntu/+archivemirrors>`_ (自动选择镜像源列表)来
+ 自动查找 Debian_ 和 Ubuntu_ 镜像源。它能够智能地获取用户所在国家的镜像源。
 
-**Smart ranking of available mirrors**
- Discovered mirrors are ranked by bandwidth (to pick the fastest mirror) and whether they're up-to-date and
- excluded if they're being updated (see `issues with mirror updates`_). e.g. with `--list-mirrors` flag it would output like this:
+**智能排序可用的镜像源**
+ 可用镜像源按照如下方式排序：带宽、是否更新及时（up-to-date），并且排除了正在更新的镜像源 (参见 `issues with mirror updates`_)。
+ 例如使用 `--list-mirrors` 参数将会有类似输出：
 
 .. code-block:: sh
 
@@ -62,68 +58,46 @@ Features
     -------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-**Automatic switching between mirrors**
- The main mirror configured in ``/etc/apt/sources.list`` can be changed with a
- single command. The new (to be configured) mirror can be selected
- automatically or configured explicitly by the user.
+**自动切换镜像源**
+ 设置在 ``/etc/apt/sources.list`` 的镜像源可以用一条很简单的命令更改。你可以让它自动选择镜像源或者由你指定。
 
-**Robust package list updating**
- Several apt-get_ subcommands can fail if the current mirror is being updated
- (see `issues with mirror updates`_) and `apt-smart` tries to work
- around this by wrapping ``apt-get update`` to retry on failures and
- automatically switch to a different mirror when it looks like the current
- mirror is being updated (because I've seen such updates take more than 15
- minutes and it's not always acceptable to wait for so long, especially in
- automated solutions).
+**健壮的包列表更新**
+ 好几个 apt-get_ 的子命令在更新的过程中可能会失败 (参见 `issues with mirror updates`_) ，而`apt-smart` 通过
+ wrap ``apt-get update`` 可以在检测到错误时重试，并且在检测到当前镜像源在“更新中“时自动切换至另一个镜像
+ (因为曾经出现过“更新中“的状态持续很长时间，这有时是不可接受的，特别是在自动化维护的时候)
 
 .. _status:
 
 Status
 ------
 
-On the one hand the `apt-smart` package was developed based on quite a
-few years of experience in using apt-get_ on Debian_ and Ubuntu_ systems. On the
-other hand the Python package itself is relatively new: it was developed and
-published in Sep 2019. As such:
+尽管设置了自动测试，但项目还处于早期状态，所以:
 
-.. warning:: Until `apt-smart` has been rigorously tested I consider
-             it a proof of concept (beta software) so if it corrupts your
-             system you can't complain that you weren't warned! The worst that can happen
-             (assuming you trust my judgement ;-) is that
-             ``/etc/apt/sources.list`` is corrupted however a backup copy is
-             made before any changes are applied, so I don't see how this can
-             result in irreversible corruption.
+.. warning:: `apt-smart` 弄坏你的系统可别怪我没警告过你哦! 但碰上最糟糕的情况恐怕也只有
+             ``/etc/apt/sources.list`` 损坏了吧。程序在做任何更改前都会自动备份一次，
+             所以应该能手动恢复。
 
-I'm working on an automated test suite but at the moment I'm still a bit fuzzy
-on how to create representative tests for the error handling code paths (also,
-writing a decent test suite requires a significant chunk of time :-).
 
 Installation
 ------------
 
-The `apt-smart` package is available on PyPI_ which means installation
-should be as simple as:
+`apt-smart` 可以在 PyPI_ 上找到，所以安装应该很简单:
 
 .. code-block:: sh
 
-   $ pip install --user apt-smart  # --user flag means install to per user site-packages directory(see below)
+   $ pip install --user apt-smart # --user参数表示安装到per user site-packages directory
    $ echo "export PATH=\$(python -c 'import site; print(site.USER_BASE + \"/bin\")'):\$PATH" >> ~/.bashrc
-   $ source ~/.bashrc  # set per user site-packages directory to PATH
+   $ source ~/.bashrc  # 设置per user site-packages directory到PATH
 
-
-There's actually a multitude of ways to install Python packages (e.g. the `per
-user site-packages directory`_, `virtual environments`_ or just installing
-system wide) and I have no intention of getting into that discussion here, so
-if this intimidates you then read up on your options before returning to these
-instructions ;-).
+安装 Python 包有几种方法 (例如 `per user site-packages directory`_, 或 `virtual environments`_ 或 安装到系统全局)
+在这里不详细展开叙述。
 
 Usage
 -----
 
-There are two ways to use the `apt-smart` package: As the command line
-program ``apt-smart`` and as a Python API. For details about the
-Python API please refer to the API documentation available on `Read the Docs`_.
-The command line interface is described below.
+使用 `apt-smart` 有两种方法: 作为命令行工具 ``apt-smart`` 以及作为 Python API.
+作为 Python API 的详细信息请参考文档—— `Read the Docs`_.
+其命令行接口如下所示：
 
 .. contents::
    :local:
@@ -178,11 +152,9 @@ updating.
 Issues with mirror updates
 --------------------------
 
-The most frequent failure that we run into is ``apt-get update`` crapping out
-with 'hash sum mismatch' errors (see also `Debian bug #624122`_). When this
-happens a file called ``Archive-Update-in-Progress-*`` can sometimes be found
-on the index page of the mirror that is being used (see also `Debian bug
-#110837`_). I've seen these situations last for more than 15 minutes.
+最常见的 ``apt-get update`` 错误是 'hash sum mismatch' (参见 `Debian bug #624122`_)。
+当错误产生的时候，一个名为 ``Archive-Update-in-Progress-*`` 的文件有时会出现
+该镜像源的首页 (参见 `Debian bug #110837`_). 这个状态有时会持续很长时间。
 
 My working theory about these 'hash sum mismatch' errors is that they are
 caused by the fact that mirror updates aren't atomic, apparently causing
