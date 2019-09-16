@@ -85,9 +85,10 @@ Installation
 
 .. code-block:: sh
 
-   $ pip install --user apt-smart # --user参数表示安装到per user site-packages directory
-   $ echo "export PATH=\$(python -c 'import site; print(site.USER_BASE + \"/bin\")'):\$PATH" >> ~/.bashrc
-   $ source ~/.bashrc  # 设置per user site-packages directory到PATH
+   sudo apt install python-pip -y  # 不询问直接安装python-pip
+   pip install --user apt-smart # --user参数表示安装到per user site-packages directory
+   echo "export PATH=\$(python -c 'import site; print(site.USER_BASE + \"/bin\")'):\$PATH" >> ~/.bashrc
+   source ~/.bashrc  # 设置per user site-packages directory到PATH
 
 安装 Python 包有几种方法 (例如 `per user site-packages directory`_, 或 `virtual environments`_ 或 安装到系统全局)
 在这里不详细展开叙述。
@@ -192,7 +193,7 @@ This software is licensed under the `MIT license`_.
 .. External references:
 .. _apt-get: https://en.wikipedia.org/wiki/Advanced_Packaging_Tool
 .. _at work: http://www.paylogic.com/
-.. _changelog: https://apt-smart.readthedocs.io/changelog.html
+.. _changelog: https://apt-smart.readthedocs.io/en/latest/changelog.html
 .. _Debian bug #110837: https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=110837
 .. _Debian bug #624122: https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=624122
 .. _Debian: https://en.wikipedia.org/wiki/Debian

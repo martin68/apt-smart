@@ -2,7 +2,9 @@ apt-smart: Smart, automated Debian/Ubuntu mirror selection
 ============================================================
 
 Welcome to the documentation of `apt-smart` version |release|!
+
 Source code: https://github.com/martin68/apt-smart
+
 The following sections are available:
 
 .. contents::

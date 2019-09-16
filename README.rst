@@ -108,9 +108,10 @@ should be as simple as:
 
 .. code-block:: sh
 
-   $ pip install --user apt-smart  # --user flag means install to per user site-packages directory(see below)
-   $ echo "export PATH=\$(python -c 'import site; print(site.USER_BASE + \"/bin\")'):\$PATH" >> ~/.bashrc
-   $ source ~/.bashrc  # set per user site-packages directory to PATH
+   sudo apt install python-pip -y  # install python-pip without asking
+   pip install --user apt-smart  # --user flag means install to per user site-packages directory(see below)
+   echo "export PATH=\$(python -c 'import site; print(site.USER_BASE + \"/bin\")'):\$PATH" >> ~/.bashrc
+   source ~/.bashrc  # set per user site-packages directory to PATH
 
 
 There's actually a multitude of ways to install Python packages (e.g. the `per
@@ -222,7 +223,7 @@ This software is licensed under the `MIT license`_.
 .. External references:
 .. _apt-get: https://en.wikipedia.org/wiki/Advanced_Packaging_Tool
 .. _at work: http://www.paylogic.com/
-.. _changelog: https://apt-smart.readthedocs.io/#change-log
+.. _changelog: https://apt-smart.readthedocs.io/en/latest/changelog.html
 .. _Debian bug #110837: https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=110837
 .. _Debian bug #624122: https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=624122
 .. _Debian: https://en.wikipedia.org/wiki/Debian
