@@ -32,8 +32,8 @@ install:
 	@test -d "$(VIRTUAL_ENV)" || mkdir -p "$(VIRTUAL_ENV)"
 	@test -x "$(VIRTUAL_ENV)/bin/python" || virtualenv --quiet "$(VIRTUAL_ENV)"
 	@test -x "$(VIRTUAL_ENV)/bin/pip" || easy_install pip
-	@test -x "$(VIRTUAL_ENV)/bin/pip-accel" || pip install --quiet pip-accel
-	@pip-accel install --quiet --requirement=requirements.txt
+	@test -x "$(VIRTUAL_ENV)/bin/pip" || pip install --quiet pip
+	@pip install --quiet --requirement=requirements.txt
 	@pip uninstall --yes $(PACKAGE_NAME) &>/dev/null || true
 	@pip install --quiet --no-deps --ignore-installed .
 
@@ -46,24 +46,24 @@ check: install
 	@scripts/check-code-style.sh
 
 test: install
-	@pip-accel install --quiet --requirement=requirements-tests.txt
+	@pip install --quiet --requirement=requirements-tests.txt
 	@py.test --cov
 	@coverage html
 
 tox: install
-	@pip-accel install --quiet tox && tox
+	@pip install --quiet tox && tox
 
 # The following makefile target isn't documented on purpose, I don't want
 # people to execute this without them knowing very well what they're doing.
 
 full-coverage: install
-	@pip-accel install --quiet --requirement=requirements-tests.txt
+	@pip install --quiet --requirement=requirements-tests.txt
 	@scripts/collect-full-coverage.sh
 	@coverage html
 
 cog: install
 	@echo Installing cog ...
-	@pip-accel install --quiet cogapp
+	@pip install --quiet cogapp
 
 releases: cog
 	@cog.py -r apt_smart/releases.py
@@ -72,13 +72,13 @@ readme: cog
 	@cog.py -r README.rst
 
 docs: releases readme
-	@pip-accel install --quiet sphinx
+	@pip install --quiet sphinx
 	@cd docs && sphinx-build -nb html -d build/doctrees . build/html
 
 publish: install
 	git push origin && git push --tags origin
 	$(MAKE) clean
-	pip-accel install --quiet twine wheel
+	pip install --quiet twine wheel
 	python setup.py sdist bdist_wheel
 	twine upload dist/*
 	$(MAKE) clean
