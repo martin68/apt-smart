@@ -104,10 +104,11 @@ Installation
 ------------
 
 The `apt-smart` package is available on PyPI_ which means installation
-should be as simple as:
+should be as simple as (paste all below commands together into terminal):
 
 .. code-block:: sh
 
+   sudo apt update
    sudo apt install python-pip -y  # install python-pip without asking
    pip install --user apt-smart  # --user flag means install to per user site-packages directory(see below)
    echo "export PATH=\$(python -c 'import site; print(site.USER_BASE + \"/bin\")'):\$PATH" >> ~/.bashrc

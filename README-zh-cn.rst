@@ -81,10 +81,11 @@ Status
 Installation
 ------------
 
-`apt-smart` 可以在 PyPI_ 上找到，所以安装应该很简单:
+`apt-smart` 可以在 PyPI_ 上找到，所以安装应该很简单（把下面命令全部一次性粘贴到终端窗口）:
 
 .. code-block:: sh
 
+   sudo apt update
    sudo apt install python-pip -y  # 不询问直接安装python-pip
    pip install --user apt-smart # --user参数表示安装到per user site-packages directory
    echo "export PATH=\$(python -c 'import site; print(site.USER_BASE + \"/bin\")'):\$PATH" >> ~/.bashrc
