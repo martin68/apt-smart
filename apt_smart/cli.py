@@ -188,7 +188,8 @@ def report_available_mirrors(updater):
             if len(candidate.mirror_url) <= limit:
                 stripped_mirror_url = candidate.mirror_url
             else:  # the mirror_url is too long, strip it
-                stripped_mirror_url = candidate.mirror_url[:limit]
+                stripped_mirror_url = candidate.mirror_url[:limit-3]
+                stripped_mirror_url = stripped_mirror_url + "..."
                 long_mirror_urls[str(i)] = candidate.mirror_url  # store it, output as full afterwards
             row = [i, stripped_mirror_url,
                    "Yes" if candidate.is_available else "No",
