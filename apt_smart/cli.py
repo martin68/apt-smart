@@ -34,6 +34,11 @@ Supported options:
 
     List available (ranked) mirrors on the terminal in a human readable format.
 
+  -L, --url-char-len=int
+
+    An integer to specify the length of chars in mirrors' URL to display when
+    using --list-mirrors, default is 34
+
   -c, --change-mirror=MIRROR_URL
 
     Update /etc/apt/sources.list to use the given MIRROR_URL.
@@ -85,7 +90,7 @@ from humanfriendly import format_size, format_table, format_timespan
 from humanfriendly.terminal import connected_to_terminal, output, usage, warning
 
 # Modules included in our package.
-from apt_smart import MAX_MIRRORS, AptMirrorUpdater
+from apt_smart import MAX_MIRRORS, URL_CHAR_LEN, AptMirrorUpdater
 from apt_smart import __version__ as updater_version
 
 # Initialize a logger for this module.
@@ -100,10 +105,11 @@ def main():
     context = LocalContext()
     updater = AptMirrorUpdater(context=context)
     limit = MAX_MIRRORS
+    url_char_len = URL_CHAR_LEN
     actions = []
     # Parse the command line arguments.
     try:
-        options, arguments = getopt.getopt(sys.argv[1:], 'r:fblc:aux:m:vVqh', [
+        options, arguments = getopt.getopt(sys.argv[1:], 'r:fblL:c:aux:m:vVqh', [
             'remote-host=', 'find-current-mirror', 'find-best-mirror',
             'list-mirrors', 'change-mirror', 'auto-change-mirror', 'update',
             'update-package-lists', 'exclude=', 'max=', 'verbose', 'version',
@@ -122,6 +128,8 @@ def main():
                 actions.append(functools.partial(report_best_mirror, updater))
             elif option in ('-l', '--list-mirrors'):
                 actions.append(functools.partial(report_available_mirrors, updater))
+            elif option in ('-L', '--url-char-len'):
+                url_char_len = int(value)
             elif option in ('-c', '--change-mirror'):
                 actions.append(functools.partial(updater.change_mirror, value))
             elif option in ('-a', '--auto-change-mirror'):
@@ -149,6 +157,7 @@ def main():
             return
         # Propagate options to the Python API.
         updater.max_mirrors = limit
+        updater.url_char_len = url_char_len
     except Exception as e:
         warning("Error: Failed to parse command line arguments! (%s)" % e)
         sys.exit(1)
@@ -183,12 +192,11 @@ def report_available_mirrors(updater):
             column_names.append("Bandwidth")
         data = []
         long_mirror_urls = {}
-        limit = 34
         for i, candidate in enumerate(updater.ranked_mirrors, start=1):
-            if len(candidate.mirror_url) <= limit:
+            if len(candidate.mirror_url) <= updater.url_char_len:
                 stripped_mirror_url = candidate.mirror_url
             else:  # the mirror_url is too long, strip it
-                stripped_mirror_url = candidate.mirror_url[:limit - 3]
+                stripped_mirror_url = candidate.mirror_url[:updater.url_char_len - 3]
                 stripped_mirror_url = stripped_mirror_url + "..."
                 long_mirror_urls[str(i)] = candidate.mirror_url  # store it, output as full afterwards
             row = [i, stripped_mirror_url,

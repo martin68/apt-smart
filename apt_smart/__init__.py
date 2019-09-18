@@ -59,6 +59,9 @@ SOURCES_LIST_ENCODING = 'UTF-8'
 MAX_MIRRORS = 50
 """A sane default value for :attr:`AptMirrorUpdater.max_mirrors`."""
 
+URL_CHAR_LEN = 34
+"""A default value for :attr:`AptMirrorUpdater.url_char_len`."""
+
 LAST_UPDATED_DEFAULT = 60 * 60 * 24 * 7 * 4
 """A default, pessimistic :attr:`~CandidateMirror.last_updated` value (a number)."""
 
@@ -288,6 +291,15 @@ class AptMirrorUpdater(PropertyManager):
     def max_mirrors(self):
         """Limits the number of mirrors to rank (a number, defaults to :data:`MAX_MIRRORS`)."""
         return MAX_MIRRORS
+
+    @mutable_property
+    def url_char_len(self):
+        """
+        The length of chars in mirrors' URL to display(a number, defaults to :data:`URL_CHAR_LEN`)
+
+        Specify the length of chars in mirrors' URL to display when using --list-mirrors
+        """
+        return URL_CHAR_LEN
 
     @mutable_property
     def old_releases_url(self):
