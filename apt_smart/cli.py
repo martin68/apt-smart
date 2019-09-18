@@ -182,20 +182,31 @@ def report_available_mirrors(updater):
         if have_bandwidth:
             column_names.append("Bandwidth")
         data = []
+        long_mirror_urls = {}
+        limit = 34
         for i, candidate in enumerate(updater.ranked_mirrors, start=1):
-            row = [i, candidate.mirror_url,
+            if len(candidate.mirror_url) <= limit:
+                stripped_mirror_url = candidate.mirror_url
+            else:  # the mirror_url is too long, strip it
+                stripped_mirror_url = candidate.mirror_url[:limit]
+                long_mirror_urls[str(i)] = candidate.mirror_url  # store it, output as full afterwards
+            row = [i, stripped_mirror_url,
                    "Yes" if candidate.is_available else "No",
                    "Yes" if candidate.is_updating else "No"]
             if have_last_updated:
                 row.append("Up to date" if candidate.last_updated == 0 else (
-                    "%s behind" % format_timespan(candidate.last_updated)
+                    "%s behind" % format_timespan(candidate.last_updated, max_units=1)
                     if candidate.last_updated else "Unknown"
                 ))
             if have_bandwidth:
-                row.append("%s/s" % format_size(round(candidate.bandwidth, 2))
+                row.append("%s/s" % format_size(round(candidate.bandwidth, 0))
                            if candidate.bandwidth else "Unknown")
             data.append(row)
         output(format_table(data, column_names=column_names))
+        if long_mirror_urls:
+            output(u"Full URLs which are too long to be shown in above table:")
+            for key, value in long_mirror_urls.items():
+                output(u"%s: %s", key, value)
     else:
         output(u"\n".join(
             candidate.mirror_url for candidate in updater.ranked_mirrors
