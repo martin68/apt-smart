@@ -160,6 +160,7 @@ updating.
    "``-b``, ``--find-best-mirror``","Discover available mirrors, rank them, select the best one and report its
    URL on standard output."
    "``-l``, ``--list-mirrors``",List available (ranked) mirrors on the terminal in a human readable format.
+   "``-L``, ``--url-char-len``",An integer to specify the length of chars in mirrors' URL to display when using --list-mirrors
    "``-c``, ``--change-mirror=MIRROR_URL``",Update /etc/apt/sources.list to use the given ``MIRROR_URL``.
    "``-a``, ``--auto-change-mirror``","Discover available mirrors, rank the mirrors by connection speed and update
    status and update /etc/apt/sources.list to use the best available mirror."
