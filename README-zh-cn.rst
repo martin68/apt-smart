@@ -39,23 +39,23 @@ Features
 
 .. code-block:: sh
 
-    -------------------------------------------------------------------------------------------------------------------------------------------------
-    | Rank | Mirror URL                                       | Available? | Updating? | Last updated                               | Bandwidth     |
-    -------------------------------------------------------------------------------------------------------------------------------------------------
-    |    1 | http://archive.ubuntu.com/ubuntu                 | Yes        | No        | Up to date                                 | 16.95 KB/s    |
-    |    2 | http://mirrors.cqu.edu.cn/ubuntu                 | Yes        | No        | 3 hours and 41 seconds behind              | 427.43 KB/s   |
-    |    3 | http://mirrors.nju.edu.cn/ubuntu                 | Yes        | No        | 5 hours, 59 minutes and 5 seconds behind   | 643.27 KB/s   |
-    |    4 | http://mirrors.tuna.tsinghua.edu.cn/ubuntu       | Yes        | No        | 5 hours, 59 minutes and 5 seconds behind   | 440.09 KB/s   |
-    |    5 | http://mirrors.cn99.com/ubuntu                   | Yes        | No        | 13 hours, 36 minutes and 37 seconds behind | 2.64 MB/s     |
-    |    6 | http://mirrors.huaweicloud.com/repository/ubuntu | Yes        | No        | 13 hours, 36 minutes and 37 seconds behind | 532.01 KB/s   |
-    |    7 | http://mirrors.dgut.edu.cn/ubuntu                | Yes        | No        | 13 hours, 36 minutes and 37 seconds behind | 328.25 KB/s   |
-    |    8 | http://mirrors.aliyun.com/ubuntu                 | Yes        | No        | 23 hours and 14 seconds behind             | 1.06 MB/s     |
-    |    9 | http://ftp.sjtu.edu.cn/ubuntu                    | Yes        | No        | 23 hours and 14 seconds behind             | 647.2 KB/s    |
-    |   10 | http://mirrors.yun-idc.com/ubuntu                | Yes        | No        | 23 hours and 14 seconds behind             | 526.6 KB/s    |
-    |   11 | http://mirror.lzu.edu.cn/ubuntu                  | Yes        | No        | 23 hours and 14 seconds behind             | 210.99 KB/s   |
-    |   12 | http://mirrors.ustc.edu.cn/ubuntu                | Yes        | Yes       | 8 hours, 59 minutes and 10 seconds behind  | 455.02 KB/s   |
-    |   13 | http://mirrors.sohu.com/ubuntu                   | No         | No        | Unknown                                    | 90.28 bytes/s |
-    -------------------------------------------------------------------------------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------------
+    | Rank | Mirror URL                       | Available? | Updating? | Last updated    | Bandwidth     |
+    -----------------------------------------------------------------------------------------------------
+    |    1 | http://archive.ubuntu.com/ubuntu | Yes        | No        | Up to date      | 16.95 KB/s    |
+    |    2 | http://mirrors.cqu.edu.cn/ubuntu | Yes        | No        | 3 hours behind  | 427.43 KB/s   |
+    |    3 | http://mirrors.nju.edu.cn/ubuntu | Yes        | No        | 5 hours behind  | 643.27 KB/s   |
+    |    4 | http://mirrors.tuna.tsinghua.e...| Yes        | No        | 5 hours behind  | 440.09 KB/s   |
+    |    5 | http://mirrors.cn99.com/ubuntu   | Yes        | No        | 13 hours behind | 2.64 MB/s     |
+    |    6 | http://mirrors.huaweicloud.com...| Yes        | No        | 13 hours behind | 532.01 KB/s   |
+    |    7 | http://mirrors.dgut.edu.cn/ubuntu| Yes        | No        | 13 hours behind | 328.25 KB/s   |
+    |    8 | http://mirrors.aliyun.com/ubuntu | Yes        | No        | 23 hours behind | 1.06 MB/s     |
+    |    9 | http://ftp.sjtu.edu.cn/ubuntu    | Yes        | No        | 23 hours behind | 647.2 KB/s    |
+    |   10 | http://mirrors.yun-idc.com/ubuntu| Yes        | No        | 23 hours behind | 526.6 KB/s    |
+    |   11 | http://mirror.lzu.edu.cn/ubuntu  | Yes        | No        | 23 hours behind | 210.99 KB/s   |
+    |   12 | http://mirrors.ustc.edu.cn/ubuntu| Yes        | Yes       | 8 hours behind  | 455.02 KB/s   |
+    |   13 | http://mirrors.sohu.com/ubuntu   | No         | No        | Unknown         | 90.28 bytes/s |
+    -----------------------------------------------------------------------------------------------------
 
 
 **自动切换镜像源**
