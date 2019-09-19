@@ -111,7 +111,7 @@ def main():
     try:
         options, arguments = getopt.getopt(sys.argv[1:], 'r:fblL:c:aux:m:vVqh', [
             'remote-host=', 'find-current-mirror', 'find-best-mirror',
-            'list-mirrors', 'change-mirror', 'auto-change-mirror', 'update',
+            'list-mirrors', 'url-char-len=', 'change-mirror', 'auto-change-mirror', 'update',
             'update-package-lists', 'exclude=', 'max=', 'verbose', 'version',
             'quiet', 'help',
         ])
