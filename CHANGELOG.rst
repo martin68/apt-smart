@@ -11,12 +11,21 @@ to `semantic versioning`_.
 .. _Keep a Changelog: http://keepachangelog.com/
 .. _semantic versioning: http://semver.org/
 
+`Release 7.0.3`_ (2019-9-19)
+----------------------------
+
+- Fix `--url-char-len` option to specify the length of chars in mirrors' URL to display when using `--list-mirrors`,
+  so that now you can use e.g. `-l -L 29` options to narrow down the table of ranked mirrors when you want to paste it to somewhere the table displayed badly.
+
+.. _Release 7.0.3: https://github.com/martin68/apt-smart/compare/7.0.2...7.0.3
+
 `Release 7.0.2`_ (2019-9-19)
 ----------------------------
 
-- Add :attr:`url_char_len` to specify the length of chars in mirrors' URL to display when using `--list-mirrors`
+- Add :attr:url_char_len to specify the length of chars in mirrors' URL to display when using `--list-mirrors`,
+  so that now you can use e.g. `-l -L 29` options to narrow down the table of ranked mirrors when you want to paste it to somewhere the table displayed badly.
 
-.. _Release 7.0.2: https://github.com/martin68/apt-smart/compare/7.01...7.0.2
+.. _Release 7.0.2: https://github.com/martin68/apt-smart/compare/7.0,1...7.0.2
 
 `Release 7.0.1`_ (2019-9-18)
 ----------------------------
