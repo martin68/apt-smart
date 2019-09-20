@@ -437,6 +437,12 @@ class AptMirrorUpdater(PropertyManager):
         if release_is_eol is None:
             release_is_eol = (self.validate_mirror(self.security_url) == MirrorStatus.MAYBE_EOL)
             source = "security mirror"
+        if release_is_eol:  # Still need to check due to
+            # https://github.com/xolox/python-apt-mirror-updater/issues/9
+            logger.info("%s seems EOL, checking %s MirrorStatus to confirm.", self.release, self.old_releases_url)
+            release_is_eol = (self.validate_mirror(self.old_releases_url) == MirrorStatus.AVAILABLE)
+            if not release_is_eol:
+                source = "%s is not available" % self.old_releases_url
         logger.debug(
             "%s is %s (based on %s).", self.release,
             "EOL" if release_is_eol else "supported", source,
@@ -783,35 +789,31 @@ class AptMirrorUpdater(PropertyManager):
         :param mirror_url: The base URL of the mirror (a string).
         :returns: One of the values in the :class:`MirrorStatus` enumeration.
 
-        This method assumes that :attr:`old_releases_url` is always valid.
         """
-        if mirrors_are_equal(mirror_url, self.old_releases_url):
-            return MirrorStatus.AVAILABLE
-        else:
-            mirror_url = normalize_mirror_url(mirror_url)
-            key = (mirror_url, self.distribution_codename)
-            value = self.validated_mirrors.get(key)
-            if value is None:
-                logger.info("Checking if %s is available on %s ..", self.release, mirror_url)
-                # Try to download the Release.gpg file, in the assumption that
-                # this file should always exist and is more or less guaranteed
-                # to be relatively small.
-                try:
-                    mirror = CandidateMirror(mirror_url=mirror_url, updater=self)
-                    mirror.release_gpg_contents = fetch_url(mirror.release_gpg_url, retry=False)
-                    value = (MirrorStatus.AVAILABLE if mirror.is_available else MirrorStatus.UNAVAILABLE)
-                except NotFoundError:
-                    # When the mirror is serving 404 responses it can be an
-                    # indication that the release has gone end of life. In any
-                    # case the mirror is unavailable.
-                    value = MirrorStatus.MAYBE_EOL
-                except Exception:
-                    # When we get an unspecified error that is not a 404
-                    # response we conclude that the mirror is unavailable.
-                    value = MirrorStatus.UNAVAILABLE
-                # Cache the mirror status that we just determined.
-                self.validated_mirrors[key] = value
-            return value
+        mirror_url = normalize_mirror_url(mirror_url)
+        key = (mirror_url, self.distribution_codename)
+        value = self.validated_mirrors.get(key)
+        if value is None:
+            logger.info("Checking if %s is available on %s ..", self.release, mirror_url)
+            # Try to download the Release.gpg file, in the assumption that
+            # this file should always exist and is more or less guaranteed
+            # to be relatively small.
+            try:
+                mirror = CandidateMirror(mirror_url=mirror_url, updater=self)
+                mirror.release_gpg_contents = fetch_url(mirror.release_gpg_url, retry=False)
+                value = (MirrorStatus.AVAILABLE if mirror.is_available else MirrorStatus.UNAVAILABLE)
+            except NotFoundError:
+                # When the mirror is serving 404 responses it can be an
+                # indication that the release has gone end of life. In any
+                # case the mirror is unavailable.
+                value = MirrorStatus.MAYBE_EOL
+            except Exception:
+                # When we get an unspecified error that is not a 404
+                # response we conclude that the mirror is unavailable.
+                value = MirrorStatus.UNAVAILABLE
+            # Cache the mirror status that we just determined.
+            self.validated_mirrors[key] = value
+        return value
 
 
 class CandidateMirror(PropertyManager):
