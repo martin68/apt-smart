@@ -11,6 +11,14 @@ to `semantic versioning`_.
 .. _Keep a Changelog: http://keepachangelog.com/
 .. _semantic versioning: http://semver.org/
 
+`Release 7.0.4`_ (2019-9-20)
+----------------------------
+
+- Fix error on EOL release
+- Check OLD_RELEASES_URL's MirrorStatus to confirm if it is EOL, to fix https://github.com/xolox/python-apt-mirror-updater/issues/9
+
+.. _Release 7.0.4: https://github.com/martin68/apt-smart/compare/7.0.3...7.0.4
+
 `Release 7.0.3`_ (2019-9-19)
 ----------------------------
 
