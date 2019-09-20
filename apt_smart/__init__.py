@@ -122,7 +122,7 @@ class AptMirrorUpdater(PropertyManager):
         """A list of :class:`CandidateMirror` objects (ordered from best to worst)"""
         mirrors = set()
         if self.release_is_eol:
-            logger.debug("Skipping mirror discovery because %s is EOL.", self.release)
+            logger.warning("Skipping mirror discovery because %s is EOL.", self.release)
         else:
             logger.info("Adding BASE_URL mirror:")
             if self.distributor_id == 'debian':  # For Debian, base_url typically is not in MIRRORS_URL,
@@ -360,7 +360,11 @@ class AptMirrorUpdater(PropertyManager):
 
         logger.info("Start retrieving :attr:`base_last_updated` using is_available")
         self.base_last_updated = 0
-        if mapping[self.base_url].is_available:
+        if self.release_is_eol:
+            self.base_last_updated = int(time.time())
+            logger.warning("%s is EOL, so using time.time() as :attr:`base_last_updated`: %i",
+                           self.release, self.base_last_updated)
+        elif mapping[self.base_url].is_available:
             logger.debug(":attr:`base_last_updated`: %i", self.base_last_updated)
             # base_url 's contents are up-to-date naturally,so set its last_updated 0
             mapping[self.base_url].last_updated = 0
