@@ -129,7 +129,7 @@ def main():
                 updater = AptMirrorUpdater(context=context)
             elif option in ('-f', '--find-current-mirror'):
                 actions.append(functools.partial(report_current_mirror, updater))
-            elif option in ('-F', '--file-to-read='):
+            elif option in ('-F', '--file-to-read'):
                 updater.custom_mirror_file_path = value
             elif option in ('-b', '--find-best-mirror'):
                 actions.append(functools.partial(report_best_mirror, updater))
