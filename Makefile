@@ -34,6 +34,7 @@ install:
 	@test -x "$(VIRTUAL_ENV)/bin/pip" || easy_install pip
 	@test -x "$(VIRTUAL_ENV)/bin/pip" || pip install --quiet pip
 	@pip install --quiet --requirement=requirements.txt
+	@pip install --quiet flufl.enum
 	@pip uninstall --yes $(PACKAGE_NAME) &>/dev/null || true
 	@pip install --quiet --no-deps --ignore-installed .
 
