@@ -11,6 +11,15 @@ to `semantic versioning`_.
 .. _Keep a Changelog: http://keepachangelog.com/
 .. _semantic versioning: http://semver.org/
 
+`Release 7.0.5`_ (2019-9-21)
+----------------------------
+
+- Add -F, --file-to-read=local_file_absolute_path to read a local absolute path file containing custom mirror URLs (one URL per line) to add custom mirrors to rank.
+  So now you can use e.g. `-l -F ~/mirrors.txt` options to add some custom mirrors to rank with mirrors in official mirror list.
+- Updated BUNDLED_RELEASES in releases.py
+
+.. _Release 7.0.5: https://github.com/martin68/apt-smart/compare/7.0.4...7.0.5
+
 `Release 7.0.4`_ (2019-9-20)
 ----------------------------
 
