@@ -124,6 +124,11 @@ class AptMirrorUpdater(PropertyManager):
         if self.release_is_eol:
             logger.warning("Skipping mirror discovery because %s is EOL.", self.release)
         else:
+            if self.read_custom_mirror_file:
+                mirrors.update(self.read_custom_mirror_file)
+                logger.info("Custom mirrors added from file:")
+                for mirror in mirrors:
+                    logger.info(mirror.mirror_url)
             logger.info("Adding BASE_URL mirror:")
             if self.distributor_id == 'debian':  # For Debian, base_url typically is not in MIRRORS_URL,
                 # add it explicitly
@@ -484,6 +489,31 @@ class AptMirrorUpdater(PropertyManager):
     def validated_mirrors(self):
         """Dictionary of validated mirrors (used by :func:`validate_mirror()`)."""
         return {}
+
+    @mutable_property
+    def custom_mirror_file_path(self):
+        """The local custom mirror file's absolute path, can be set by `-F` flag"""
+        return None
+
+    @cached_property
+    def read_custom_mirror_file(self):
+        """
+        Read a file containing custom mirror URLs  (one URL per line) to add custom mirrors to rank.
+
+        :param file_to_read: The local file's absolute path
+        :returns: A set of mirrors read from file
+        """
+        logger.info("The file path you input is %s", self.custom_mirror_file_path)
+        if self.custom_mirror_file_path is None:
+            return {}
+        else:
+            mirrors = set()
+            with open(self.custom_mirror_file_path) as f:
+                for line in f:
+                    if line.strip().startswith(('http://', 'https://', 'ftp://')):
+                        mirrors.add(CandidateMirror(mirror_url=line.strip(), updater=self))
+
+            return mirrors
 
     def change_mirror(self, new_mirror=None, update=True):
         """

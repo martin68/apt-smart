@@ -25,6 +25,11 @@ Supported options:
     Determine the main mirror that is currently configured in
     /etc/apt/sources.list and report its URL on standard output.
 
+  -F, --file-to-read=local_file_absolute_path
+
+    Read a local absolute path file containing custom mirror URLs (one URL per line)
+    to add custom mirrors to rank.
+
   -b, --find-best-mirror
 
     Discover available mirrors, rank them, select the best one and report its
@@ -109,8 +114,8 @@ def main():
     actions = []
     # Parse the command line arguments.
     try:
-        options, arguments = getopt.getopt(sys.argv[1:], 'r:fblL:c:aux:m:vVqh', [
-            'remote-host=', 'find-current-mirror', 'find-best-mirror',
+        options, arguments = getopt.getopt(sys.argv[1:], 'r:fF:blL:c:aux:m:vVqh', [
+            'remote-host=', 'find-current-mirror', 'find-best-mirror', 'file-to-read=',
             'list-mirrors', 'url-char-len=', 'change-mirror', 'auto-change-mirror', 'update',
             'update-package-lists', 'exclude=', 'max=', 'verbose', 'version',
             'quiet', 'help',
@@ -124,6 +129,8 @@ def main():
                 updater = AptMirrorUpdater(context=context)
             elif option in ('-f', '--find-current-mirror'):
                 actions.append(functools.partial(report_current_mirror, updater))
+            elif option in ('-F', '--file-to-read='):
+                updater.custom_mirror_file_path = value
             elif option in ('-b', '--find-best-mirror'):
                 actions.append(functools.partial(report_best_mirror, updater))
             elif option in ('-l', '--list-mirrors'):
