@@ -157,8 +157,8 @@ updating.
    remote account has root privileges or password-less sudo access."
    "``-f``, ``--find-current-mirror``","Determine the main mirror that is currently configured in
    /etc/apt/sources.list and report its URL on standard output."
-   "``-F``, ``--file-to-read=local_file_absolute_path``","Read a local absolute path file containing custom mirror URLs (one URL per line)
-   to add custom mirrors to rank."
+   "``-F``, ``--file-to-read=local_file_absolute_path``","Read a local absolute path (path and filename must NOT contain whitespace) file
+   containing custom mirror URLs (one URL per line) to add custom mirrors to rank."
    "``-b``, ``--find-best-mirror``","Discover available mirrors, rank them, select the best one and report its
    URL on standard output."
    "``-l``, ``--list-mirrors``",List available (ranked) mirrors on the terminal in a human readable format.

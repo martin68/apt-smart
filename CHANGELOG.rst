@@ -14,7 +14,7 @@ to `semantic versioning`_.
 `Release 7.0.5`_ (2019-9-21)
 ----------------------------
 
-- Add -F, --file-to-read=local_file_absolute_path to read a local absolute path file containing custom mirror URLs (one URL per line) to add custom mirrors to rank.
+- Add -F, --file-to-read=local_file_absolute_path (path and filename must NOT contain whitespace) to read a local absolute path file containing custom mirror URLs (one URL per line) to add custom mirrors to rank.
   So now you can use e.g. `-l -F ~/mirrors.txt` options to add some custom mirrors to rank with mirrors in official mirror list.
 - Updated BUNDLED_RELEASES in releases.py
 

@@ -70,7 +70,7 @@ releases: cog
 	@cog.py -r apt_smart/releases.py
 
 readme: cog
-	@cog.py -r README.rst
+	@cog.py -r README*.rst
 
 docs: releases readme
 	@pip install --quiet sphinx

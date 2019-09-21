@@ -130,10 +130,13 @@ updating.
    remote account has root privileges or password-less sudo access."
    "``-f``, ``--find-current-mirror``","Determine the main mirror that is currently configured in
    /etc/apt/sources.list and report its URL on standard output."
+   "``-F``, ``--file-to-read=local_file_absolute_path``","Read a local absolute path (path and filename must NOT contain whitespace) file
+   containing custom mirror URLs (one URL per line) to add custom mirrors to rank."
    "``-b``, ``--find-best-mirror``","Discover available mirrors, rank them, select the best one and report its
    URL on standard output."
    "``-l``, ``--list-mirrors``",List available (ranked) mirrors on the terminal in a human readable format.
-   "``-L``, ``--url-char-len``",An integer to specify the length of chars in mirrors' URL to display when using --list-mirrors
+   "``-L``, ``--url-char-len=int``","An integer to specify the length of chars in mirrors' URL to display when
+   using ``--list-mirrors``, default is 34"
    "``-c``, ``--change-mirror=MIRROR_URL``",Update /etc/apt/sources.list to use the given ``MIRROR_URL``.
    "``-a``, ``--auto-change-mirror``","Discover available mirrors, rank the mirrors by connection speed and update
    status and update /etc/apt/sources.list to use the best available mirror."

@@ -27,8 +27,8 @@ Supported options:
 
   -F, --file-to-read=local_file_absolute_path
 
-    Read a local absolute path file containing custom mirror URLs (one URL per line)
-    to add custom mirrors to rank.
+    Read a local absolute path (path and filename must NOT contain whitespace) file
+    containing custom mirror URLs (one URL per line) to add custom mirrors to rank.
 
   -b, --find-best-mirror
 
