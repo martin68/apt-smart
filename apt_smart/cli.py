@@ -138,7 +138,10 @@ def main():
             elif option in ('-L', '--url-char-len'):
                 url_char_len = int(value)
             elif option in ('-c', '--change-mirror'):
-                actions.append(functools.partial(updater.change_mirror, value))
+                if value.strip().startswith(('http://', 'https://', 'ftp://')):
+                    actions.append(functools.partial(updater.change_mirror, value))
+                else:
+                    raise Exception("\'%s\' is not a valid mirror URL" % value)
             elif option in ('-a', '--auto-change-mirror'):
                 actions.append(updater.change_mirror)
             elif option in ('-u', '--update', '--update-package-lists'):
