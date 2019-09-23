@@ -208,7 +208,7 @@ def report_available_mirrors(updater):
             else:  # the mirror_url is too long, strip it
                 stripped_mirror_url = candidate.mirror_url[:updater.url_char_len - 3]
                 stripped_mirror_url = stripped_mirror_url + "..."
-                long_mirror_urls[str(i)] = candidate.mirror_url  # store it, output as full afterwards
+                long_mirror_urls[i] = candidate.mirror_url  # store it, output as full afterwards
             row = [i, stripped_mirror_url,
                    "Yes" if candidate.is_available else "No",
                    "Yes" if candidate.is_updating else "No"]
@@ -224,8 +224,8 @@ def report_available_mirrors(updater):
         output(format_table(data, column_names=column_names))
         if long_mirror_urls:
             output(u"Full URLs which are too long to be shown in above table:")
-            for key, value in long_mirror_urls.items():
-                output(u"%s: %s", key, value)
+            for key in long_mirror_urls:
+                output(u"%i: %s", key, long_mirror_urls[key])
     else:
         output(u"\n".join(
             candidate.mirror_url for candidate in updater.ranked_mirrors
