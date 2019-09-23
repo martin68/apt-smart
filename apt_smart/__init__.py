@@ -544,6 +544,7 @@ class AptMirrorUpdater(PropertyManager):
         else:
             logger.debug("Not replacing %s URLs.", self.security_url)
         lines = sources_list.splitlines()
+        sources_list_options = self.get_sources_list_options
         for i, line in enumerate(lines):
             # The first token should be `deb' or `deb-src', the second token is
             # the mirror's URL, the third token is the `distribution' and any
@@ -553,6 +554,8 @@ class AptMirrorUpdater(PropertyManager):
                     and tokens[0] in ('deb', 'deb-src')
                     and normalize_mirror_url(tokens[1]) in mirrors_to_replace):
                 tokens[1] = new_mirror
+                if i in sources_list_options:
+                    tokens.insert(1, '[' + sources_list_options[i] + ']')  # Get the [options] back
                 lines[i] = u' '.join(tokens)
         # Install the modified package resource list.
         self.install_sources_list(u'\n'.join(lines))
@@ -674,6 +677,21 @@ class AptMirrorUpdater(PropertyManager):
         options.setdefault('codename', self.distribution_codename)
         return self.backend.generate_sources_list(**options)
 
+    @mutable_property
+    def get_sources_list_options(self):
+        """
+        Get the contents of [options] in :data:`MAIN_SOURCES_LIST`.
+
+        [options] can be set into sources.list, e.g.
+        deb [arch=amd64] http://mymirror/ubuntu bionic main restricted
+        see details at
+        https://manpages.debian.org/jessie/apt/sources.list.5.en.html
+        The [options] is often not considered and breaks parsing in many projects, see
+        https://github.com/jblakeman/apt-select/issues/54
+        We begin to deal with the [options] by stripping it from sources.list,
+        and then get it back when generating new sources.list
+        """
+
     def get_sources_list(self):
         """
         Get the contents of :data:`MAIN_SOURCES_LIST`.
@@ -684,9 +702,23 @@ class AptMirrorUpdater(PropertyManager):
         using :data:`SOURCES_LIST_ENCODING`. I'm not actually sure if this is
         correct because I haven't been able to find a formal specification!
         Feedback is welcome :-).
+        This code strips [options] from sources.list, stores it in :attr:`get_sources_list_options`
         """
         contents = self.context.read_file(MAIN_SOURCES_LIST)
-        return contents.decode(SOURCES_LIST_ENCODING)
+        contents = contents.decode(SOURCES_LIST_ENCODING)
+        sources_list_options = {}
+        contents_raw = []  # stripped contents without options
+        for i, line in enumerate(contents.splitlines()):
+            if line.find('[') > 0:  # found '[' and not starts with '['
+                startswith_deb = line.split('[')[0]
+                temp = line.split('[')[1]
+                sources_list_options[i] = temp.split(']')[0]
+                startswith_http = temp.split(']')[1]
+                contents_raw.append(startswith_deb + startswith_http)
+            elif line.find('[') == -1:  # not found
+                contents_raw.append(line)
+        self.get_sources_list_options = sources_list_options
+        return '\n'.join(contents_raw)
 
     def ignore_mirror(self, pattern):
         """
