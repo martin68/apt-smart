@@ -138,8 +138,7 @@ class AptMirrorUpdater(PropertyManager):
                 # some countries e.g. US (found it in Travis CI), add it explicitly
                 base_url_prefix = self.backend.BASE_URL.split('dists/codename-security/InRelease')[0]
                 mirrors.add(CandidateMirror(mirror_url=base_url_prefix, updater=self))
-            for mirror in mirrors:
-                logger.info(mirror.mirror_url)
+            logger.info(base_url_prefix)
             for candidate in self.backend.discover_mirrors():
                 if any(fnmatch.fnmatch(candidate.mirror_url, pattern) for pattern in self.blacklist):
                     logger.warning("Ignoring blacklisted mirror %s.", candidate.mirror_url)
@@ -503,10 +502,10 @@ class AptMirrorUpdater(PropertyManager):
         :param file_to_read: The local file's absolute path
         :returns: A set of mirrors read from file
         """
-        logger.info("The file path you input is %s", self.custom_mirror_file_path)
         if self.custom_mirror_file_path is None:
             return {}
         else:
+            logger.info("The file path you input is %s", self.custom_mirror_file_path)
             mirrors = set()
             with open(self.custom_mirror_file_path) as f:
                 for line in f:
