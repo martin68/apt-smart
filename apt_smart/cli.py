@@ -73,6 +73,10 @@ Supported options:
 
     Show version number and Python version.
 
+  -R, --create-chroot=local_dir_absolute_path
+
+    Create chroot with the best mirror in a local directory with absolute_path
+
   -q, --quiet
 
     Decrease logging verbosity (can be repeated).
@@ -121,10 +125,10 @@ def main():
     actions = []
     # Parse the command line arguments.
     try:
-        options, arguments = getopt.getopt(sys.argv[1:], 'r:fF:blL:c:aux:m:vVqh', [
+        options, arguments = getopt.getopt(sys.argv[1:], 'r:fF:blL:c:aux:m:vVR:qh', [
             'remote-host=', 'find-current-mirror', 'find-best-mirror', 'file-to-read=',
             'list-mirrors', 'url-char-len=', 'change-mirror', 'auto-change-mirror', 'update',
-            'update-package-lists', 'exclude=', 'max=', 'verbose', 'version',
+            'update-package-lists', 'exclude=', 'max=', 'verbose', 'version', 'create-chroot=',
             'quiet', 'help',
         ])
         for option, value in options:
@@ -162,6 +166,8 @@ def main():
             elif option in ('-V', '--version'):
                 output("Version: %s on Python %i.%i", updater_version, sys.version_info[0], sys.version_info[1])
                 return
+            elif option in ('-R', '--create-chroot'):
+                actions.append(functools.partial(updater.create_chroot, value))
             elif option in ('-q', '--quiet'):
                 coloredlogs.decrease_verbosity()
             elif option in ('-h', '--help'):

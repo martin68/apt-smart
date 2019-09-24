@@ -77,6 +77,11 @@ class AptMirrorUpdaterTestCase(TestCase):
         assert exit_code == 0
         check_mirror_url(output.strip())
 
+    def test_create_chroot(self):
+        """Test create chroot"""
+        exit_code, output = run_cli(main, '--create-chroot /test_chroot')
+        assert exit_code == 0
+
     def test_report_available_mirrors(self):
         """Test that print the available mirrors to the terminal."""
         exit_code, output = run_cli(main, '--list-mirrors')
