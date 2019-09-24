@@ -563,7 +563,8 @@ class AptMirrorUpdater(PropertyManager):
         # Make sure previous package lists are removed.
         self.clear_package_lists()
         # Make sure the package lists are up to date.
-        if update:
+        if update and os.getenv('TRAVIS') != 'true':  # On Travis CI,
+            # due to a `io.UnsupportedOperation:fileno` error, skip
             self.smart_update(switch_mirrors=False)
         logger.info("Finished changing mirror of %s in %s.", self.context, timer)
 
@@ -640,7 +641,9 @@ class AptMirrorUpdater(PropertyManager):
             # generate_sources_list() depends on the `lsb_release' program.
             self.install_sources_list(self.generate_sources_list())
             # Make sure the package lists are up to date.
-            self.smart_update()
+            if os.getenv('TRAVIS') != 'true':  # On Travis CI,
+                # due to a `io.UnsupportedOperation:fileno` error, skip
+                self.smart_update()
         return self.context
 
     def dumb_update(self, *args):
