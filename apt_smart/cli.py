@@ -217,7 +217,7 @@ def report_available_mirrors(updater):
         data = []
         long_mirror_urls = {}
         if os.getenv('TRAVIS') == 'true':
-            updater.url_char_len = 37
+            updater.url_char_len = 50
         for i, candidate in enumerate(updater.ranked_mirrors, start=1):
             if len(candidate.mirror_url) <= updater.url_char_len:
                 stripped_mirror_url = candidate.mirror_url
