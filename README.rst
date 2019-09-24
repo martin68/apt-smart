@@ -176,7 +176,13 @@ updating.
    "``-v``, ``--verbose``",Increase logging verbosity (can be repeated).
    "``-V``, ``--version``",Show version number and Python version.
    "``-q``, ``--quiet``",Decrease logging verbosity (can be repeated).
-   "``-h``, ``--help``",Show this message and exit.
+   "``-h``, ``--help``","  Show this message and exit.
+   
+   Note: since apt-smart uses `urlopen` method in The Python Standard Library,
+         you can set Environment Variables to make apt-smart connect via HTTP proxy, e.g. in terminal type:
+         export {http,https,ftp}_proxy='http://user:password@myproxy.com:1080'
+         These will not persist however (no longer active after you close the terminal),
+         so you may wish to add the line to your ~/.bashrc"
 
 .. [[[end]]]
 
