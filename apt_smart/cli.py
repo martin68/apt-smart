@@ -93,6 +93,7 @@ import functools
 import getopt
 import logging
 import sys
+import os
 
 # External dependencies.
 import coloredlogs
@@ -198,7 +199,8 @@ def report_best_mirror(updater):
 
 def report_available_mirrors(updater):
     """Print the available mirrors to the terminal (in a human friendly format)."""
-    if connected_to_terminal():
+    if connected_to_terminal() or os.getenv('TRAVIS') == 'true':  # make Travis CI test this code
+        # https://docs.travis-ci.com/user/environment-variables/#default-environment-variables
         have_bandwidth = any(c.bandwidth for c in updater.ranked_mirrors)
         have_last_updated = any(c.last_updated is not None for c in updater.ranked_mirrors)
         column_names = ["Rank", "Mirror URL", "Available?", "Updating?"]
@@ -208,6 +210,8 @@ def report_available_mirrors(updater):
             column_names.append("Bandwidth")
         data = []
         long_mirror_urls = {}
+        if os.getenv('TRAVIS') == 'true':
+            updater.url_char_len = 27
         for i, candidate in enumerate(updater.ranked_mirrors, start=1):
             if len(candidate.mirror_url) <= updater.url_char_len:
                 stripped_mirror_url = candidate.mirror_url
