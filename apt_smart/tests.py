@@ -53,6 +53,14 @@ class AptMirrorUpdaterTestCase(TestCase):
         for candidate in mirrors:
             check_ubuntu_mirror(candidate.mirror_url)
 
+    def test_ubuntu_mirror_discovery_old(self):
+        """Test fallback the discovery of Ubuntu mirror URLs using launchpad.net."""
+        from apt_smart.backends.ubuntu import discover_mirrors_old
+        mirrors = discover_mirrors_old()
+        assert len(mirrors) > 10
+        for candidate in mirrors:
+            check_ubuntu_mirror(candidate.mirror_url)
+
     def test_adaptive_mirror_discovery(self):
         """Test the discovery of mirrors for the current type of system."""
         updater = AptMirrorUpdater()
@@ -77,14 +85,14 @@ class AptMirrorUpdaterTestCase(TestCase):
         assert exit_code == 0
         check_mirror_url(output.strip())
 
-    def test_change_mirror(self):
-        """Test change mirror"""
-        exit_code, output = run_cli(main, '--auto-change-mirror')
-        assert exit_code == 0
-
     def test_create_chroot(self):
         """Test create chroot"""
         exit_code, output = run_cli(main, '--create-chroot', '/test_chroot')
+        assert exit_code == 0
+
+    def test_change_mirror(self):
+        """Test change mirror"""
+        exit_code, output = run_cli(main, '--auto-change-mirror')
         assert exit_code == 0
 
     def test_report_available_mirrors(self):
