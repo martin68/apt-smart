@@ -56,39 +56,6 @@ suites available: ``xenial`` (this is the release suite), ``xenial-security``,
 ``xenial-updates``, ``xenial-backports`` and ``xenial-proposed``.
 """
 
-MIRROR_STATUSES = (
-    ('Up to date', 0),
-    ('One hour behind', 60 * 60),
-    ('Two hours behind', 60 * 60 * 2),
-    ('Four hours behind', 60 * 60 * 4),
-    ('Six hours behind', 60 * 60 * 6),
-    ('One day behind', 60 * 60 * 24),
-    ('Two days behind', 60 * 60 * 24 * 2),
-    ('One week behind', 60 * 60 * 24 * 7),
-    ('Unknown', None),
-)
-r"""
-A tuple of tuples with Launchpad mirror statuses. Each tuple consists of two values:
-
-1. The human readable mirror latency (a string) as used on :data:`MIRRORS_URL`.
-2. The mirror latency expressed in seconds (a number).
-
-The 'known statuses' used by Launchpad were checked as follows:
-
-.. code-block:: sh
-
-   $ curl -s https://launchpad.net/+icing/rev18391/combo.css | tr '{},.' '\n' | grep distromirrorstatus
-   distromirrorstatusUP
-   distromirrorstatusONEHOURBEHIND
-   distromirrorstatusTWOHOURSBEHIND
-   distromirrorstatusFOURHOURSBEHIND
-   distromirrorstatusSIXHOURSBEHIND
-   distromirrorstatusONEDAYBEHIND
-   distromirrorstatusTWODAYSBEHIND
-   distromirrorstatusONEWEEKBEHIND
-   distromirrorstatusUNKNOWN
-"""
-
 # Initialize a logger for this module.
 logger = logging.getLogger(__name__)
 
