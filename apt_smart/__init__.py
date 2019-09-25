@@ -760,7 +760,7 @@ class AptMirrorUpdater(PropertyManager):
             # the file always ends in a newline to adhere to UNIX conventions.
             temporary_file = '/tmp/apt-smart-sources-list-%i.txt' % os.getpid()
             contents_to_write = '%s\n' % contents.rstrip()
-            self.context.write_file(temporary_file, bytes(contents_to_write, 'utf-8'))
+            self.context.write_file(temporary_file, contents_to_write.encode())
             # Make sure the temporary file is cleaned up when we're done with it.
             self.context.cleanup('rm', '--force', temporary_file)
             # Make a backup copy of /etc/apt/sources.list in case shit hits the fan?
