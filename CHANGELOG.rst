@@ -11,6 +11,18 @@ to `semantic versioning`_.
 .. _Keep a Changelog: http://keepachangelog.com/
 .. _semantic versioning: http://semver.org/
 
+`Release 7.0.6`_ (2019-9-25)
+----------------------------
+
+- Readme & help about proxy setting
+- Deal with the [options] in sources.list by stripping it from sources.list, and then get it back when generating new sources.list ,
+  fix https://github.com/jblakeman/apt-select/issues/54
+- Add a warning: custom mirror file's path and filename must NOT contain whitespace
+- Add -R, --create-chroot=local_dir_absolute_path to create chroot with the best mirror in a local directory with absolute_path
+- More test cases
+
+.. _Release 7.0.6: https://github.com/martin68/apt-smart/compare/7.0.5...7.0.6
+
 `Release 7.0.5`_ (2019-9-21)
 ----------------------------
 

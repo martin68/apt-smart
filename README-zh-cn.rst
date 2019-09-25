@@ -148,6 +148,7 @@ updating.
    against the full URL of each mirror."
    "``-v``, ``--verbose``",Increase logging verbosity (can be repeated).
    "``-V``, ``--version``",Show version number and Python version.
+   "``-R``, ``--create-chroot=local_dir_absolute_path``",Create chroot with the best mirror in a local directory with absolute_path
    "``-q``, ``--quiet``",Decrease logging verbosity (can be repeated).
    "``-h``, ``--help``","  Show this message and exit.
    

@@ -48,7 +48,7 @@ from apt_smart.releases import coerce_release
 from apt_smart.releases import discover_releases
 
 # Semi-standard module versioning.
-__version__ = '7.0.5'
+__version__ = '7.0.6'
 
 MAIN_SOURCES_LIST = '/etc/apt/sources.list'
 """The absolute pathname of the list of configured APT data sources (a string)."""
