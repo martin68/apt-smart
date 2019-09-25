@@ -90,7 +90,7 @@ class AptMirrorUpdaterTestCase(TestCase):
         exit_code, output = run_cli(main, '--create-chroot', '/test_chroot')
         assert exit_code == 0
 
-    def test_change_mirror(self):
+    def test_z_change_mirror(self):  # add 'z' to its name to make it execute last
         """Test change mirror"""
         exit_code, output = run_cli(main, '--auto-change-mirror')
         assert exit_code == 0
