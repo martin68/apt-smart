@@ -771,6 +771,10 @@ class AptMirrorUpdater(PropertyManager):
                 temporary_file, MAIN_SOURCES_LIST,
                 sudo=True,
             )
+            logger.info("Installed sources.list:")
+            contents = self.context.read_file(MAIN_SOURCES_LIST)
+            logger.info(contents.decode(SOURCES_LIST_ENCODING))
+            logger.info("Finished installing sources.list")
 
     def smart_update(self, *args, **kw):
         """
@@ -796,6 +800,7 @@ class AptMirrorUpdater(PropertyManager):
           current mirror is faulty and switch to another one.
         - Failing ``apt-get update`` runs are retried up to `max_attempts`.
         """
+        logger.info("Starting smart update...")
         backoff_time = 10
         max_attempts = kw.get('max_attempts', 10)
         switch_mirrors = kw.get('switch_mirrors', True)
