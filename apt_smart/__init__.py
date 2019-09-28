@@ -764,20 +764,16 @@ class AptMirrorUpdater(PropertyManager):
             # Make sure the temporary file is cleaned up when we're done with it.
             self.context.cleanup('rm', '--force', temporary_file)
             # Make a backup copy of /etc/apt/sources.list in case shit hits the fan?
-            if os.getenv('TRAVIS') == 'true':
-                logger.info("On Travis CI, due to a `io.UnsupportedOperation:fileno` error, skip dealing with %s",
-                            MAIN_SOURCES_LIST)
-            else:
-                if self.context.exists(MAIN_SOURCES_LIST):
-                    backup_copy = '%s.save.%i' % (MAIN_SOURCES_LIST, time.time())
-                    logger.info("Backing up contents of %s to %s ..", MAIN_SOURCES_LIST, backup_copy)
-                    self.context.execute('cp', MAIN_SOURCES_LIST, backup_copy, sudo=True)
-                # Move the temporary file into place without changing ownership and permissions.
-                self.context.execute(
-                    'cp', '--no-preserve=mode,ownership',
-                    temporary_file, MAIN_SOURCES_LIST,
-                    sudo=True,
-                )
+            if self.context.exists(MAIN_SOURCES_LIST):
+                backup_copy = '%s.save.%i' % (MAIN_SOURCES_LIST, time.time())
+                logger.info("Backing up contents of %s to %s ..", MAIN_SOURCES_LIST, backup_copy)
+                self.context.execute('cp', MAIN_SOURCES_LIST, backup_copy, sudo=True)
+            # Move the temporary file into place without changing ownership and permissions.
+            self.context.execute(
+                'cp', '--no-preserve=mode,ownership',
+                temporary_file, MAIN_SOURCES_LIST,
+                sudo=True,
+            )
 
     def smart_update(self, *args, **kw):
         """
