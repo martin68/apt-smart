@@ -87,13 +87,20 @@ class AptMirrorUpdaterTestCase(TestCase):
 
     def test_create_chroot(self):
         """Test create chroot"""
-        exit_code, output = run_cli(main, '--create-chroot', '/test_chroot')
-        assert exit_code == 0
+        if os.getuid() != 0:
+            return self.skipTest("root privileges required to opt in")
+        updater = AptMirrorUpdater()
+        updater.create_chroot('/test_chroot')
+        assert 'Filename:' in updater.context.execute('apt-cache', 'show', 'python',
+                                      check=False, capture=True)
 
     def test_change_mirror(self):
         """Test change mirror"""
-        exit_code, output = run_cli(main, '--auto-change-mirror')
-        assert exit_code == 0
+        if os.getuid() != 0:
+            return self.skipTest("root privileges required to opt in")
+        updater = AptMirrorUpdater()
+        updater.change_mirror()
+        assert have_package_lists()
 
     def test_report_available_mirrors(self):
         """Test that print the available mirrors to the terminal."""
