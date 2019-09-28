@@ -805,6 +805,7 @@ class AptMirrorUpdater(PropertyManager):
         max_attempts = kw.get('max_attempts', 10)
         switch_mirrors = kw.get('switch_mirrors', True)
         for i in range(1, max_attempts + 1):
+            logger.info("sys.stdout: %s" % sys.stdout)
             with CaptureOutput() as session:
                 try:
                     self.dumb_update(*args)
