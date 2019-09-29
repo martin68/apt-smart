@@ -91,8 +91,7 @@ class AptMirrorUpdaterTestCase(TestCase):
             return self.skipTest("root privileges required to opt in")
         updater = AptMirrorUpdater()
         updater.create_chroot('/test_chroot')
-        assert 'Filename:' in updater.context.execute('apt-cache', 'show', 'python',
-                                      check=False, capture=True)
+        assert 'Filename:' in updater.context.capture('apt-cache', 'show', 'python')
 
     def test_change_mirror(self):
         """Test change mirror"""
