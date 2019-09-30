@@ -106,6 +106,13 @@ class AptMirrorUpdaterTestCase(TestCase):
         exit_code, output = run_cli(main, '--list-mirrors')
         assert exit_code == 0
 
+    def test_report_available_mirrors_more(self):
+        """Test that print the available mirrors to the terminal."""
+        test_custom_mirrors = os.path.join(os.getcwd(), 'test_custom_mirrors.txt')
+        exit_code, output = run_cli(main, '--list-mirrors', '--file-to-read', test_custom_mirrors,
+                                    '--exclude', '*edu*', '--url-char-len', '51')
+        assert exit_code == 0
+
     def test_dumb_update(self):
         """Test that our dumb ``apt-get update`` wrapper works."""
         if os.getuid() != 0:

@@ -216,7 +216,7 @@ def report_available_mirrors(updater):
             column_names.append("Bandwidth")
         data = []
         long_mirror_urls = {}
-        if os.getenv('TRAVIS') == 'true':
+        if os.getenv('TRAVIS') == 'true' and updater.url_char_len < 50:
             updater.url_char_len = 50
         for i, candidate in enumerate(updater.ranked_mirrors, start=1):
             if len(candidate.mirror_url) <= updater.url_char_len:

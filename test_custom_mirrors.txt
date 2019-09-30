@@ -1,0 +1,3 @@
+http://mirrors.layeronline.com/ubuntu/
+http://mirror.csclub.uwaterloo.ca/ubuntu/
+http://muug.ca/mirror/ubuntu/
