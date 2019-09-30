@@ -18,7 +18,7 @@ from humanfriendly.testing import TestCase, run_cli
 # from humanfriendly.text import split
 
 # Modules included in our package.
-from apt_smart import AptMirrorUpdater, normalize_mirror_url
+from apt_smart import AptMirrorUpdater, normalize_mirror_url, MirrorStatus
 from apt_smart.cli import main
 from apt_smart.releases import (
     DEBIAN_KEYRING_CURRENT,
@@ -198,6 +198,19 @@ class AptMirrorUpdaterTestCase(TestCase):
         )
         eol_expected = (time.time() >= 1593468000)
         assert updater.release_is_eol == eol_expected
+
+    def test_trusty_eol(self):
+        """
+        Test 'trusty' for `issue #9`_.
+
+        .. _issue #9: https://github.com/xolox/python-apt-mirror-updater/issues/9
+        """
+        updater = AptMirrorUpdater(
+            distributor_id='ubuntu',
+            distribution_codename='trusty',
+            architecture='amd64',
+        )
+        assert updater.release_is_eol == (updater.validate_mirror(updater.old_releases_url) == MirrorStatus.AVAILABLE)
 
 
 def have_package_lists():
