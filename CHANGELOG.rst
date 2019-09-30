@@ -11,6 +11,16 @@ to `semantic versioning`_.
 .. _Keep a Changelog: http://keepachangelog.com/
 .. _semantic versioning: http://semver.org/
 
+`Release 7.0.7`_ (2019-9-30)
+----------------------------
+
+- Fix install_sources_list() for Python 3
+- Fix --change-mirror
+- fix Travis CI  `io.UnsupportedOperation:fileno` error by changing the way to run test cases containing smart_update()
+- More test cases
+
+.. _Release 7.0.7: https://github.com/martin68/apt-smart/compare/7.0.6...7.0.7
+
 `Release 7.0.6`_ (2019-9-25)
 ----------------------------
 
