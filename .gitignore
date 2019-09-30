@@ -1,5 +1,6 @@
 .cache/
 .coverage
+.coverage*
 .directory
 *.egg-info/
 *.pyc

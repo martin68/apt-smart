@@ -41,7 +41,7 @@ class AptMirrorUpdaterTestCase(TestCase):
         """Test the discovery of Debian mirror URLs."""
         from apt_smart.backends.debian import discover_mirrors
         mirrors = discover_mirrors()
-        assert len(mirrors) > 10
+        assert len(mirrors) > 6
         for candidate in mirrors:
             check_debian_mirror(candidate.mirror_url)
 
