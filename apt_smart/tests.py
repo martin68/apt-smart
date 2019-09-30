@@ -72,7 +72,7 @@ class AptMirrorUpdaterTestCase(TestCase):
         """Test the ranking of discovered mirrors."""
         updater = AptMirrorUpdater()
         # Make sure that multiple discovered mirrors are available.
-        assert sum(m.is_available for m in updater.ranked_mirrors) > 10
+        assert sum(m.is_available for m in updater.ranked_mirrors) > 9
 
     def test_best_mirror_selection(self):
         """Test the selection of a "best" mirror."""
