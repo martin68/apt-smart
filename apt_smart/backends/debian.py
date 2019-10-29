@@ -57,9 +57,9 @@ SECURITY_URL = 'http://security.debian.org/'
 OLD_RELEASES_URL = 'http://archive.debian.org/debian-archive/debian/'
 """The URL where EOL (end of life) Debian releases are hosted (a string)."""
 
-BASE_URL = 'http://ftp.debian.org/debian/dists/codename-updates/InRelease'
+BASE_URL = 'http://ftp.debian.org/debian/dists/codename-updates/Release'
 """The URL where official repo treated as base are hosted (a string).
-The InRelease file contains `Date:` which can be gotten as :attr:`.base_last_updated`
+The Release file contains `Date:` which can be gotten as :attr:`.base_last_updated`
 to determine which mirrors are up-to-date"""
 
 DEFAULT_SUITES = 'release', 'security', 'updates'

@@ -31,9 +31,9 @@ OLD_RELEASES_URL = 'http://old-releases.ubuntu.com/ubuntu/'
 SECURITY_URL = 'http://security.ubuntu.com/ubuntu'
 """The URL where Ubuntu security updates are hosted (a string)."""
 
-BASE_URL = 'http://archive.ubuntu.com/ubuntu/dists/codename-security/InRelease'
+BASE_URL = 'http://archive.ubuntu.com/ubuntu/dists/codename-security/Release'
 """The URL where official repo treated as base are hosted (a string).
-The InRelease file contains `Date:` which can be gotten as :attr:`.base_last_updated`
+The Release file contains `Date:` which can be gotten as :attr:`.base_last_updated`
 to determine which mirrors are up-to-date"""
 
 DEFAULT_SUITES = 'release', 'updates', 'backports', 'security'

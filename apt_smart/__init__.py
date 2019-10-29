@@ -129,11 +129,11 @@ class AptMirrorUpdater(PropertyManager):
             logger.info("Adding BASE_URL mirror:")
             if self.distributor_id == 'debian':  # For Debian, base_url typically is not in MIRRORS_URL,
                 # add it explicitly
-                base_url_prefix = self.backend.BASE_URL.split('dists/codename-updates/InRelease')[0]
+                base_url_prefix = self.backend.BASE_URL.split('dists/codename-updates/Release')[0]
                 mirrors.add(CandidateMirror(mirror_url=base_url_prefix, updater=self))
             elif self.distributor_id == 'ubuntu':  # For Ubuntu, base_url is not in MIRRORS_URL for
                 # some countries e.g. US (found it in Travis CI), add it explicitly
-                base_url_prefix = self.backend.BASE_URL.split('dists/codename-security/InRelease')[0]
+                base_url_prefix = self.backend.BASE_URL.split('dists/codename-security/Release')[0]
                 mirrors.add(CandidateMirror(mirror_url=base_url_prefix, updater=self))
             logger.info(base_url_prefix)
             for candidate in self.backend.discover_mirrors():
@@ -929,11 +929,11 @@ class CandidateMirror(PropertyManager):
     @mutable_property
     def is_available(self):
         """
-        :data:`True` if :attr:`release_gpg_contents` contains the expected header, :data:`False` otherwise.
+        :data:`True` if :attr:`release_gpg_contents` contains the expected data, :data:`False` otherwise.
 
         The value of this property is computed by checking whether
-        :attr:`release_gpg_contents` contains the expected ``BEGIN PGP
-        MESSAGE`` header. This may seem like a rather obscure way of
+        :attr:`release_gpg_contents` contains the expected data.
+        This may seem like a rather obscure way of
         validating a mirror, but it was specifically chosen to detect
         all sorts of ways in which mirrors can be broken:
 
@@ -946,9 +946,9 @@ class CandidateMirror(PropertyManager):
         """
         value = False
         if self.release_gpg_contents:
-            value = b'BEGIN PGP SIGNED MESSAGE' in self.release_gpg_contents
+            value = b'Date:' in self.release_gpg_contents
             if not value:
-                logger.debug("Missing GPG header, considering mirror unavailable (%s).", self.release_gpg_url)
+                logger.debug("Missing data, considering mirror unavailable (%s).", self.release_gpg_url)
             else:
                 # Get all data following "Date: "
                 date_string_raw = self.release_gpg_contents.decode().split("Date: ", 1)
@@ -1007,7 +1007,7 @@ class CandidateMirror(PropertyManager):
     @mutable_property
     def release_gpg_url(self):
         """
-        The URL of the ``InRelease`` file that will be used to test the mirror (a string or :data:`None`).
+        The URL of the ``Release`` file that will be used to test the mirror (a string or :data:`None`).
 
         The value of this property is based on :attr:`mirror_url` and the
         :attr:`~AptMirrorUpdater.distribution_codename` property of the
@@ -1015,11 +1015,11 @@ class CandidateMirror(PropertyManager):
         """
         if self.updater and self.updater.distribution_codename:
             if self.updater.distributor_id == 'ubuntu':
-                return '%s/dists/%s-security/InRelease' % (
+                return '%s/dists/%s-security/Release' % (
                     self.mirror_url, self.updater.distribution_codename,
                 )
             elif self.updater.distributor_id == 'debian':
-                return '%s/dists/%s-updates/InRelease' % (
+                return '%s/dists/%s-updates/Release' % (
                     self.mirror_url, self.updater.distribution_codename,
                 )
 
