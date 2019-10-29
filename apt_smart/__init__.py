@@ -50,11 +50,8 @@ from apt_smart.releases import discover_releases
 # Semi-standard module versioning.
 __version__ = '7.0.7'
 
-MAIN_SOURCES_LIST = '/etc/apt/sources.list'
-"""The absolute pathname of the list of configured APT data sources (a string)."""
-
 SOURCES_LIST_ENCODING = 'UTF-8'
-"""The text encoding of :data:`MAIN_SOURCES_LIST` (a string)."""
+"""The text encoding of :attr:`main_sources_list` (a string)."""
 
 MAX_MIRRORS = 50
 """A sane default value for :attr:`AptMirrorUpdater.max_mirrors`."""
@@ -228,12 +225,12 @@ class AptMirrorUpdater(PropertyManager):
     @cached_property
     def current_mirror(self):
         """
-        The URL of the main mirror in use in :data:`MAIN_SOURCES_LIST` (a string).
+        The URL of the main mirror in use in :attr:`main_sources_list` (a string).
 
         The :attr:`current_mirror` property's value is computed using
         :func:`find_current_mirror()`.
         """
-        logger.debug("Parsing %s to find current mirror of %s ..", MAIN_SOURCES_LIST, self.context)
+        logger.debug("Parsing %s to find current mirror of %s ..", self.main_sources_list, self.context)
         return find_current_mirror(self.get_sources_list())
 
     @mutable_property
@@ -290,6 +287,21 @@ class AptMirrorUpdater(PropertyManager):
         omit :attr:`distributor_id` and everything should be fine.
         """
         return self.release.distributor_id
+
+    @cached_property
+    def main_sources_list(self):
+        """
+        The absolute pathname of the list of configured APT data sources (a string).
+
+        For new version of Linux Mint, main_sources_list is:
+        /etc/apt/sources.list.d/official-package-repositories.list
+        """
+        if os.path.isfile('/etc/apt/sources.list.d/official-package-repositories.list'):
+            logger.debug("/etc/apt/sources.list.d/official-package-repositories.list exists,\
+                         use it as main_sources_list instead of /etc/apt/sources.list")
+            return '/etc/apt/sources.list.d/official-package-repositories.list'
+        else:
+            return '/etc/apt/sources.list'
 
     @mutable_property
     def max_mirrors(self):
@@ -516,7 +528,7 @@ class AptMirrorUpdater(PropertyManager):
 
     def change_mirror(self, new_mirror=None, update=True):
         """
-        Change the main mirror in use in :data:`MAIN_SOURCES_LIST`.
+        Change the main mirror in use in :attr:`main_sources_list`.
 
         :param new_mirror: The URL of the new mirror (a string, defaults to
                            :attr:`best_mirror`).
@@ -679,7 +691,7 @@ class AptMirrorUpdater(PropertyManager):
     @mutable_property
     def get_sources_list_options(self):
         """
-        Get the contents of [options] in :data:`MAIN_SOURCES_LIST`.
+        Get the contents of [options] in :attr:`main_sources_list`.
 
         [options] can be set into sources.list, e.g.
         deb [arch=amd64] http://mymirror/ubuntu bionic main restricted
@@ -693,7 +705,7 @@ class AptMirrorUpdater(PropertyManager):
 
     def get_sources_list(self):
         """
-        Get the contents of :data:`MAIN_SOURCES_LIST`.
+        Get the contents of :attr:`main_sources_list`.
 
         :returns: A Unicode string.
 
@@ -703,7 +715,7 @@ class AptMirrorUpdater(PropertyManager):
         Feedback is welcome :-).
         This code strips [options] from sources.list, stores it in :attr:`get_sources_list_options`
         """
-        contents = self.context.read_file(MAIN_SOURCES_LIST)
+        contents = self.context.read_file(self.main_sources_list)
         contents = contents.decode(SOURCES_LIST_ENCODING)
         sources_list_options = {}
         contents_raw = []  # stripped contents without options
@@ -751,7 +763,7 @@ class AptMirrorUpdater(PropertyManager):
         """
         if isinstance(contents, text_type):
             contents = contents.encode(SOURCES_LIST_ENCODING)
-        logger.info("Installing new %s ..", MAIN_SOURCES_LIST)
+        logger.info("Installing new %s ..", self.main_sources_list)
         with self.context:
             # Write the sources.list contents to a temporary file. We make sure
             # the file always ends in a newline to adhere to UNIX conventions.
@@ -761,14 +773,14 @@ class AptMirrorUpdater(PropertyManager):
             # Make sure the temporary file is cleaned up when we're done with it.
             self.context.cleanup('rm', '--force', temporary_file)
             # Make a backup copy of /etc/apt/sources.list in case shit hits the fan?
-            if self.context.exists(MAIN_SOURCES_LIST):
-                backup_copy = '%s.save.%i' % (MAIN_SOURCES_LIST, time.time())
-                logger.info("Backing up contents of %s to %s ..", MAIN_SOURCES_LIST, backup_copy)
-                self.context.execute('cp', MAIN_SOURCES_LIST, backup_copy, sudo=True)
+            if self.context.exists(self.main_sources_list):
+                backup_copy = '%s.save.%i' % (self.main_sources_list, time.time())
+                logger.info("Backing up contents of %s to %s ..", self.main_sources_list, backup_copy)
+                self.context.execute('cp', self.main_sources_list, backup_copy, sudo=True)
             # Move the temporary file into place without changing ownership and permissions.
             self.context.execute(
                 'cp', '--no-preserve=mode,ownership',
-                temporary_file, MAIN_SOURCES_LIST,
+                temporary_file, self.main_sources_list,
                 sudo=True,
             )
 
@@ -1063,7 +1075,7 @@ def find_current_mirror(sources_list):
     Find the URL of the main mirror that is currently in use by ``apt-get``.
 
     :param sources_list: The contents of apt's package resource list, e.g. the
-                         contents of :data:`MAIN_SOURCES_LIST` (a string).
+                         contents of :attr:`main_sources_list` (a string).
     :returns: The URL of the main mirror in use (a string).
     :raises: If the main mirror can't be determined
              :exc:`~exceptions.EnvironmentError` is raised.
