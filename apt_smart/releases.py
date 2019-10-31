@@ -46,10 +46,13 @@ import numbers
 import os
 
 # External dependencies.
+import six
 from executor import execute
 from humanfriendly.decorators import cached
 from property_manager import PropertyManager, key_property, lazy_property, required_property, writable_property
 from six import string_types
+from itertools import product
+
 
 DISTRO_INFO_DIRECTORY = '/usr/share/distro-info'
 """The pathname of the directory with CSV files containing release metadata (a string)."""
@@ -147,6 +150,94 @@ def discover_releases():
     return sorted(result, key=lambda r: (r.distributor_id, r.version or 0, r.series))
 
 
+def table_to_2d(table_tag):  # https://stackoverflow.com/a/48451104
+    rowspans = []  # track pending rowspans
+    rows = table_tag.find_all('tr')
+
+    # first scan, see how many columns we need
+    colcount = 0
+    for r, row in enumerate(rows):
+        cells = row.find_all(['td', 'th'], recursive=False)
+        # count columns (including spanned).
+        # add active rowspans from preceding rows
+        # we *ignore* the colspan value on the last cell, to prevent
+        # creating 'phantom' columns with no actual cells, only extended
+        # colspans. This is achieved by hardcoding the last cell width as 1.
+        # a colspan of 0 means "fill until the end" but can really only apply
+        # to the last cell; ignore it elsewhere.
+        colcount = max(
+            colcount,
+            sum(int(c.get('colspan', 1)) or 1 for c in cells[:-1]) + len(cells[-1:]) + len(rowspans))
+        # update rowspan bookkeeping; 0 is a span to the bottom.
+        rowspans += [int(c.get('rowspan', 1)) or len(rows) - r for c in cells]
+        rowspans = [s - 1 for s in rowspans if s > 1]
+
+    # it doesn't matter if there are still rowspan numbers 'active'; no extra
+    # rows to show in the table means the larger than 1 rowspan numbers in the
+    # last table row are ignored.
+
+    # build an empty matrix for all possible cells
+    table = [[None] * colcount for row in rows]
+
+    # fill matrix from row data
+    rowspans = {}  # track pending rowspans, column number mapping to count
+    for row, row_elem in enumerate(rows):
+        span_offset = 0  # how many columns are skipped due to row and colspans
+        for col, cell in enumerate(row_elem.find_all(['td', 'th'], recursive=False)):
+            # adjust for preceding row and colspans
+            col += span_offset
+            while rowspans.get(col, 0):
+                span_offset += 1
+                col += 1
+
+            # fill table data
+            rowspan = rowspans[col] = int(cell.get('rowspan', 1)) or len(rows) - row
+            colspan = int(cell.get('colspan', 1)) or colcount - col
+            # next column is offset by the colspan
+            span_offset += colspan - 1
+            value = cell.get_text()
+            for drow, dcol in product(range(rowspan), range(colspan)):
+                try:
+                    table[row + drow][col + dcol] = value
+                    rowspans[col + dcol] = rowspan
+                except IndexError:
+                    # rowspan or colspan outside the confines of the table
+                    pass
+
+        # update rowspan bookkeeping
+        rowspans = {c: s - 1 for c, s in rowspans.items() if s > 1}
+
+    return table
+
+
+def discover_linuxmint_releases(array_2d):
+    d = {}  # a dict to map table head to column number
+    head = array_2d[0]
+    for i, data in enumerate(head):
+        d[data] = i
+    last = None
+    for entry in array_2d[1:-1]:
+        if entry[d['Codename\n']] == last:
+            continue  # skip same codename entry
+        last = entry[d['Codename\n']]
+
+        yield Release(
+            codename=parse_data_wiki(entry[d['Codename\n']]),
+            is_lts=('Yes' in entry[d['LTS?\n']]),
+            created_date=parse_date_wiki(entry[d['Release date\n']]),
+            distributor_id='linuxmint',
+            eol_date=parse_date_wiki(entry[d['Support End\n']]),
+            extended_eol_date=parse_date_wiki(entry[d['Support End\n']]),
+            release_date=parse_date_wiki(entry[d['Release date\n']]),
+            series=(
+                parse_data_wiki(entry[d['Compatible repository\n']]).split('(')[1].split(' ')[0].lower()
+                if entry[d['Compatible repository\n']].find('(') > 0
+                else parse_data_wiki(entry[d['Compatible repository\n']])
+            ),
+            version=parse_version_wiki(entry[d['Version\n']]) if entry[d['Version\n']] else None,
+        )
+
+
 def is_version_string(value):
     """Check whether the given value is a string containing a positive number."""
     try:
@@ -194,13 +285,50 @@ def parse_csv_file(filename):
             )
 
 
+def parse_data_wiki(value):
+    r"""Strip a string such as ``19 December 2018 [18]\n`` to ``19 December 2018``"""
+    if six.PY2:
+        return value.encode("utf8").split('[')[0].strip()
+    else:
+        return value.split('[')[0].strip()
+
+
 def parse_date(value):
     """Convert a ``YYYY-MM-DD`` string to a :class:`datetime.date` object."""
     return datetime.datetime.strptime(value, '%Y-%m-%d').date() if value else None
 
 
+def parse_date_wiki(value):
+    r"""Convert a string such as ``19 December 2018`` ``August 02, 2019\n`` to a :class:`datetime.date` object."""
+    value = parse_data_wiki(value)
+    if value == 'Unknown':
+        value = '30 April 2008'
+    if len(value) < 15:
+        if not value[:1].isdigit():  # Only Month Year
+            value = '30 ' + value
+        if len(value) < 5:  # Only Year
+            value = '30 April ' + value
+    try:
+        return datetime.datetime.strptime(value, '%d %B %Y').date() if value else None
+    except ValueError:
+        return datetime.datetime.strptime(value, '%B %d, %Y').date() if value else None
+
+
 def parse_version(value):
     """Convert a version string to a floating point number."""
+    for token in value.split():
+        try:
+            return decimal.Decimal(token)
+        except ValueError:
+            pass
+    msg = "Failed to convert version string to number! (%r)"
+    raise ValueError(msg % value)
+
+
+def parse_version_wiki(value):
+    """Convert a version string (got from wiki page) to a floating point number."""
+    value = parse_data_wiki(value)
+    value = value.split(": ")[1]
     for token in value.split():
         try:
             return decimal.Decimal(token)
@@ -339,11 +467,32 @@ class Release(PropertyManager):
 #
 # import cog
 # import decimal
-# from apt_smart.releases import discover_releases
+# from bs4 import BeautifulSoup
+# from apt_smart.releases import discover_releases, discover_linuxmint_releases, table_to_2d
+# from apt_smart.http import fetch_url
 #
 # indent = " " * 4
 # cog.out("\nBUNDLED_RELEASES = [\n")
 # for release in discover_releases():
+#     cog.out(indent + "Release(\n")
+#     for name in release.find_properties(cached=False):
+#         value = getattr(release, name)
+#         if value is not None:
+#             if isinstance(value, decimal.Decimal):
+#                 # It seems weirdly inconsistency to me that this is needed
+#                 # for decimal.Decimal() but not for datetime.date() but I
+#                 # guess the simple explanation is that repr() output simply
+#                 # isn't guaranteed to be accepted by eval().
+#                 value = "decimal." + repr(value)
+#             else:
+#                 value = repr(value)
+#             cog.out(indent * 2 + name + "=" + value + ",\n")
+#     cog.out(indent + "),\n")
+# url = 'https://en.wikipedia.org/wiki/Linux_Mint_version_history'
+# response = fetch_url(url, timeout=15, retry=True)
+# soup = BeautifulSoup(response, 'html.parser')
+# tables = soup.findAll('table')
+# for release in discover_linuxmint_releases(table_to_2d(tables[1])):
 #     cog.out(indent + "Release(\n")
 #     for name in release.find_properties(cached=False):
 #         value = getattr(release, name)
@@ -858,6 +1007,347 @@ BUNDLED_RELEASES = [
         release_date=datetime.date(2019, 10, 17),
         series='eoan',
         version=decimal.Decimal('19.10'),
+    ),
+    Release(
+        codename='Focal Fossa',
+        created_date=datetime.date(2019, 10, 17),
+        distributor_id='ubuntu',
+        eol_date=datetime.date(2025, 4, 23),
+        extended_eol_date=datetime.date(2025, 4, 23),
+        is_lts=True,
+        release_date=datetime.date(2020, 4, 23),
+        series='focal',
+        version=decimal.Decimal('20.04'),
+    ),
+    Release(
+        codename='Ada',
+        created_date=datetime.date(2006, 8, 27),
+        distributor_id='linuxmint',
+        eol_date=datetime.date(2008, 4, 30),
+        extended_eol_date=datetime.date(2008, 4, 30),
+        is_lts=False,
+        release_date=datetime.date(2006, 8, 27),
+        series='Kubuntu 6.06',
+        version=decimal.Decimal('1.0'),
+    ),
+    Release(
+        codename='Barbara',
+        created_date=datetime.date(2006, 11, 13),
+        distributor_id='linuxmint',
+        eol_date=datetime.date(2008, 4, 30),
+        extended_eol_date=datetime.date(2008, 4, 30),
+        is_lts=False,
+        release_date=datetime.date(2006, 11, 13),
+        series='edgy',
+        version=decimal.Decimal('2.0'),
+    ),
+    Release(
+        codename='Bea',
+        created_date=datetime.date(2006, 12, 20),
+        distributor_id='linuxmint',
+        eol_date=datetime.date(2008, 4, 30),
+        extended_eol_date=datetime.date(2008, 4, 30),
+        is_lts=False,
+        release_date=datetime.date(2006, 12, 20),
+        series='edgy',
+        version=decimal.Decimal('2.1'),
+    ),
+    Release(
+        codename='Bianca',
+        created_date=datetime.date(2007, 2, 20),
+        distributor_id='linuxmint',
+        eol_date=datetime.date(2008, 4, 30),
+        extended_eol_date=datetime.date(2008, 4, 30),
+        is_lts=False,
+        release_date=datetime.date(2007, 2, 20),
+        series='edgy',
+        version=decimal.Decimal('2.2'),
+    ),
+    Release(
+        codename='Cassandra',
+        created_date=datetime.date(2007, 5, 30),
+        distributor_id='linuxmint',
+        eol_date=datetime.date(2008, 10, 30),
+        extended_eol_date=datetime.date(2008, 10, 30),
+        is_lts=False,
+        release_date=datetime.date(2007, 5, 30),
+        series='feisty',
+        version=decimal.Decimal('3.0'),
+    ),
+    Release(
+        codename='Celena',
+        created_date=datetime.date(2007, 9, 24),
+        distributor_id='linuxmint',
+        eol_date=datetime.date(2008, 10, 30),
+        extended_eol_date=datetime.date(2008, 10, 30),
+        is_lts=False,
+        release_date=datetime.date(2007, 9, 24),
+        series='feisty',
+        version=decimal.Decimal('3.1'),
+    ),
+    Release(
+        codename='Daryna',
+        created_date=datetime.date(2007, 10, 15),
+        distributor_id='linuxmint',
+        eol_date=datetime.date(2009, 4, 30),
+        extended_eol_date=datetime.date(2009, 4, 30),
+        is_lts=False,
+        release_date=datetime.date(2007, 10, 15),
+        series='gutsy',
+        version=decimal.Decimal('4.0'),
+    ),
+    Release(
+        codename='Elyssa',
+        created_date=datetime.date(2008, 6, 8),
+        distributor_id='linuxmint',
+        eol_date=datetime.date(2011, 4, 30),
+        extended_eol_date=datetime.date(2011, 4, 30),
+        is_lts=True,
+        release_date=datetime.date(2008, 6, 8),
+        series='hardy',
+        version=decimal.Decimal('5'),
+    ),
+    Release(
+        codename='Felicia',
+        created_date=datetime.date(2008, 12, 15),
+        distributor_id='linuxmint',
+        eol_date=datetime.date(2010, 4, 30),
+        extended_eol_date=datetime.date(2010, 4, 30),
+        is_lts=False,
+        release_date=datetime.date(2008, 12, 15),
+        series='intrepid',
+        version=decimal.Decimal('6'),
+    ),
+    Release(
+        codename='Gloria',
+        created_date=datetime.date(2009, 5, 26),
+        distributor_id='linuxmint',
+        eol_date=datetime.date(2010, 10, 30),
+        extended_eol_date=datetime.date(2010, 10, 30),
+        is_lts=False,
+        release_date=datetime.date(2009, 5, 26),
+        series='jaunty',
+        version=decimal.Decimal('7'),
+    ),
+    Release(
+        codename='Helena',
+        created_date=datetime.date(2009, 11, 28),
+        distributor_id='linuxmint',
+        eol_date=datetime.date(2011, 4, 30),
+        extended_eol_date=datetime.date(2011, 4, 30),
+        is_lts=False,
+        release_date=datetime.date(2009, 11, 28),
+        series='karmic',
+        version=decimal.Decimal('8'),
+    ),
+    Release(
+        codename='Isadora',
+        created_date=datetime.date(2010, 5, 18),
+        distributor_id='linuxmint',
+        eol_date=datetime.date(2013, 4, 30),
+        extended_eol_date=datetime.date(2013, 4, 30),
+        is_lts=True,
+        release_date=datetime.date(2010, 5, 18),
+        series='lucid',
+        version=decimal.Decimal('9'),
+    ),
+    Release(
+        codename='Julia',
+        created_date=datetime.date(2010, 11, 12),
+        distributor_id='linuxmint',
+        eol_date=datetime.date(2012, 4, 30),
+        extended_eol_date=datetime.date(2012, 4, 30),
+        is_lts=False,
+        release_date=datetime.date(2010, 11, 12),
+        series='maverick',
+        version=decimal.Decimal('10'),
+    ),
+    Release(
+        codename='Katya',
+        created_date=datetime.date(2011, 5, 26),
+        distributor_id='linuxmint',
+        eol_date=datetime.date(2012, 10, 30),
+        extended_eol_date=datetime.date(2012, 10, 30),
+        is_lts=False,
+        release_date=datetime.date(2011, 5, 26),
+        series='natty',
+        version=decimal.Decimal('11'),
+    ),
+    Release(
+        codename='Lisa',
+        created_date=datetime.date(2011, 11, 26),
+        distributor_id='linuxmint',
+        eol_date=datetime.date(2013, 4, 30),
+        extended_eol_date=datetime.date(2013, 4, 30),
+        is_lts=False,
+        release_date=datetime.date(2011, 11, 26),
+        series='oneiric',
+        version=decimal.Decimal('12'),
+    ),
+    Release(
+        codename='Maya',
+        created_date=datetime.date(2012, 5, 23),
+        distributor_id='linuxmint',
+        eol_date=datetime.date(2017, 4, 30),
+        extended_eol_date=datetime.date(2017, 4, 30),
+        is_lts=True,
+        release_date=datetime.date(2012, 5, 23),
+        series='precise',
+        version=decimal.Decimal('13'),
+    ),
+    Release(
+        codename='Nadia',
+        created_date=datetime.date(2012, 11, 20),
+        distributor_id='linuxmint',
+        eol_date=datetime.date(2014, 5, 30),
+        extended_eol_date=datetime.date(2014, 5, 30),
+        is_lts=False,
+        release_date=datetime.date(2012, 11, 20),
+        series='quantal',
+        version=decimal.Decimal('14'),
+    ),
+    Release(
+        codename='Olivia',
+        created_date=datetime.date(2013, 5, 29),
+        distributor_id='linuxmint',
+        eol_date=datetime.date(2014, 1, 30),
+        extended_eol_date=datetime.date(2014, 1, 30),
+        is_lts=False,
+        release_date=datetime.date(2013, 5, 29),
+        series='raring',
+        version=decimal.Decimal('15'),
+    ),
+    Release(
+        codename='Petra',
+        created_date=datetime.date(2013, 11, 30),
+        distributor_id='linuxmint',
+        eol_date=datetime.date(2014, 7, 30),
+        extended_eol_date=datetime.date(2014, 7, 30),
+        is_lts=False,
+        release_date=datetime.date(2013, 11, 30),
+        series='saucy',
+        version=decimal.Decimal('16'),
+    ),
+    Release(
+        codename='Qiana',
+        created_date=datetime.date(2014, 5, 31),
+        distributor_id='linuxmint',
+        eol_date=datetime.date(2019, 4, 30),
+        extended_eol_date=datetime.date(2019, 4, 30),
+        is_lts=True,
+        release_date=datetime.date(2014, 5, 31),
+        series='trusty',
+        version=decimal.Decimal('17'),
+    ),
+    Release(
+        codename='Rebecca',
+        created_date=datetime.date(2014, 11, 29),
+        distributor_id='linuxmint',
+        eol_date=datetime.date(2019, 4, 30),
+        extended_eol_date=datetime.date(2019, 4, 30),
+        is_lts=True,
+        release_date=datetime.date(2014, 11, 29),
+        series='trusty',
+        version=decimal.Decimal('17.1'),
+    ),
+    Release(
+        codename='Rafaela',
+        created_date=datetime.date(2015, 6, 30),
+        distributor_id='linuxmint',
+        eol_date=datetime.date(2019, 4, 30),
+        extended_eol_date=datetime.date(2019, 4, 30),
+        is_lts=True,
+        release_date=datetime.date(2015, 6, 30),
+        series='trusty',
+        version=decimal.Decimal('17.2'),
+    ),
+    Release(
+        codename='Rosa',
+        created_date=datetime.date(2015, 12, 4),
+        distributor_id='linuxmint',
+        eol_date=datetime.date(2019, 4, 30),
+        extended_eol_date=datetime.date(2019, 4, 30),
+        is_lts=True,
+        release_date=datetime.date(2015, 12, 4),
+        series='trusty',
+        version=decimal.Decimal('17.3'),
+    ),
+    Release(
+        codename='Sarah',
+        created_date=datetime.date(2016, 6, 30),
+        distributor_id='linuxmint',
+        eol_date=datetime.date(2021, 4, 30),
+        extended_eol_date=datetime.date(2021, 4, 30),
+        is_lts=True,
+        release_date=datetime.date(2016, 6, 30),
+        series='xenial',
+        version=decimal.Decimal('18'),
+    ),
+    Release(
+        codename='Serena',
+        created_date=datetime.date(2016, 12, 16),
+        distributor_id='linuxmint',
+        eol_date=datetime.date(2021, 4, 30),
+        extended_eol_date=datetime.date(2021, 4, 30),
+        is_lts=True,
+        release_date=datetime.date(2016, 12, 16),
+        series='xenial',
+        version=decimal.Decimal('18.1'),
+    ),
+    Release(
+        codename='Sonya',
+        created_date=datetime.date(2017, 7, 2),
+        distributor_id='linuxmint',
+        eol_date=datetime.date(2021, 4, 30),
+        extended_eol_date=datetime.date(2021, 4, 30),
+        is_lts=True,
+        release_date=datetime.date(2017, 7, 2),
+        series='xenial',
+        version=decimal.Decimal('18.2'),
+    ),
+    Release(
+        codename='Sylvia',
+        created_date=datetime.date(2017, 11, 27),
+        distributor_id='linuxmint',
+        eol_date=datetime.date(2021, 4, 30),
+        extended_eol_date=datetime.date(2021, 4, 30),
+        is_lts=True,
+        release_date=datetime.date(2017, 11, 27),
+        series='xenial',
+        version=decimal.Decimal('18.3'),
+    ),
+    Release(
+        codename='Tara',
+        created_date=datetime.date(2018, 6, 29),
+        distributor_id='linuxmint',
+        eol_date=datetime.date(2023, 4, 30),
+        extended_eol_date=datetime.date(2023, 4, 30),
+        is_lts=True,
+        release_date=datetime.date(2018, 6, 29),
+        series='bionic',
+        version=decimal.Decimal('19'),
+    ),
+    Release(
+        codename='Tessa',
+        created_date=datetime.date(2018, 12, 19),
+        distributor_id='linuxmint',
+        eol_date=datetime.date(2023, 4, 30),
+        extended_eol_date=datetime.date(2023, 4, 30),
+        is_lts=True,
+        release_date=datetime.date(2018, 12, 19),
+        series='bionic',
+        version=decimal.Decimal('19.1'),
+    ),
+    Release(
+        codename='Tina',
+        created_date=datetime.date(2019, 8, 2),
+        distributor_id='linuxmint',
+        eol_date=datetime.date(2023, 4, 30),
+        extended_eol_date=datetime.date(2023, 4, 30),
+        is_lts=True,
+        release_date=datetime.date(2019, 8, 2),
+        series='bionic',
+        version=decimal.Decimal('19.2'),
     ),
 ]
 
