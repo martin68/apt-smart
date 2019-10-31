@@ -232,7 +232,8 @@ class AptMirrorUpdater(PropertyManager):
         The URL of the main mirror in use in :attr:`main_sources_list` (a string).
 
         The :attr:`current_mirror` property's value is computed using
-        :func:`find_current_mirror()`.
+        :func:`find_current_mirror()`, but can be changed and cached by :func:`distribution_codename`
+        for Linux Mint's Ubuntu Mode.
         """
         logger.debug("Parsing %s to find current mirror of %s ..", self.main_sources_list, self.context)
         return find_current_mirror(self.get_sources_list())
@@ -277,6 +278,8 @@ class AptMirrorUpdater(PropertyManager):
                 if self.ubuntu_mode and matches[0].distributor_id == 'linuxmint':
                     continue
                 self.current_mirror = tokens[1]
+                if self.ubuntu_mode:
+                    logging.info("In Ubuntu Mode, pretend to be Ubuntu %s" % tokens[2])
                 return tokens[2]
         raise EnvironmentError("Failed to determine the distribution codename using apt's package resource list!")
 
