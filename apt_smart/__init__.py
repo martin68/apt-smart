@@ -137,7 +137,7 @@ class AptMirrorUpdater(PropertyManager):
                 mirrors.add(CandidateMirror(mirror_url=base_url_prefix, updater=self))
             elif self.distributor_id == 'linuxmint':  # For Linux Mint, base_url typically is not in MIRRORS_URL,
                 # add it explicitly
-                base_url_prefix = self.backend.BASE_URL.split('dists/coadename/Release')[0]
+                base_url_prefix = self.backend.BASE_URL.split('dists/codename/Release')[0]
                 mirrors.add(CandidateMirror(mirror_url=base_url_prefix, updater=self))
             logger.info(base_url_prefix)
             for candidate in self.backend.discover_mirrors():

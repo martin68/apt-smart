@@ -107,13 +107,13 @@ def coerce_release(value):
         typed_value = decimal.Decimal(value)
         matches = [release for release in discover_releases() if release.version == typed_value]
         if len(matches) != 1:
-            msg = "The number %s doesn't match a known Debian or Ubuntu release!"
+            msg = "The number %s doesn't match a known Debian or Ubuntu or Linux Mint release!"
             raise ValueError(msg % value)
         return matches[0]
     # Other strings are matched against release code names.
     matches = [release for release in discover_releases() if value.lower() in release.codename.lower()]
     if len(matches) != 1:
-        msg = "The string %r doesn't match a known Debian or Ubuntu release!"
+        msg = "The string %r doesn't match a known Debian or Ubuntu or Linux Mint release!"
         raise ValueError(msg % value)
     return matches[0]
 

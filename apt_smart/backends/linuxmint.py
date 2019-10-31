@@ -25,7 +25,7 @@ MIRRORS_URL = 'https://linuxmint.com/mirrors.php'
 SECURITY_URL = 'http://security.ubuntu.com/ubuntu'
 """The URL where Ubuntu ( Linux Mint's codebase )security updates are hosted (a string)."""
 
-BASE_URL = 'http://packages.linuxmint.com/dists/coadename/Release'
+BASE_URL = 'http://packages.linuxmint.com/dists/codename/Release'
 """The URL where official repo treated as base are hosted (a string).
 The Release file contains `Date:` which can be gotten as :attr:`.base_last_updated`
 to determine which mirrors are up-to-date"""
