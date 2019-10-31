@@ -562,7 +562,7 @@ class AptMirrorUpdater(PropertyManager):
             logger.info("Selected mirror: %s", new_mirror)
         # Parse /etc/apt/sources.list to replace the old mirror with the new one.
         sources_list = self.get_sources_list()
-        mirrors_to_replace = [normalize_mirror_url(find_current_mirror(sources_list))]
+        mirrors_to_replace = [normalize_mirror_url(self.current_mirror)]
         if self.release_is_eol:
             # When a release goes EOL the security updates mirrors stop
             # serving that release as well, so we need to remove them.
