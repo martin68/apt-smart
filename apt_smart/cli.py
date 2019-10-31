@@ -127,6 +127,7 @@ def main():
     updater = AptMirrorUpdater(context=context)
     limit = MAX_MIRRORS
     url_char_len = URL_CHAR_LEN
+    ubuntu_mode = False
     actions = []
     # Parse the command line arguments.
     try:
