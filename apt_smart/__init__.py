@@ -135,6 +135,10 @@ class AptMirrorUpdater(PropertyManager):
                 # some countries e.g. US (found it in Travis CI), add it explicitly
                 base_url_prefix = self.backend.BASE_URL.split('dists/codename-security/Release')[0]
                 mirrors.add(CandidateMirror(mirror_url=base_url_prefix, updater=self))
+            elif self.distributor_id == 'linuxmint':  # For Linux Mint, base_url typically is not in MIRRORS_URL,
+                # add it explicitly
+                base_url_prefix = self.backend.BASE_URL.split('dists/coadename/Release')[0]
+                mirrors.add(CandidateMirror(mirror_url=base_url_prefix, updater=self))
             logger.info(base_url_prefix)
             for candidate in self.backend.discover_mirrors():
                 if any(fnmatch.fnmatch(candidate.mirror_url, pattern) for pattern in self.blacklist):
