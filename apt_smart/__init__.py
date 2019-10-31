@@ -226,7 +226,7 @@ class AptMirrorUpdater(PropertyManager):
         """
         return LocalContext()
 
-    @cached_property
+    @mutable_property(cached=True)
     def current_mirror(self):
         """
         The URL of the main mirror in use in :attr:`main_sources_list` (a string).
@@ -274,6 +274,9 @@ class AptMirrorUpdater(PropertyManager):
                 matches = [release for release in discover_releases() if tokens[2].lower() in release.codename.lower()]
                 if len(matches) != 1:
                     continue
+                if self.ubuntu_mode and matches[0].distributor_id == 'linuxmint':
+                    continue
+                self.current_mirror = tokens[1]
                 return tokens[2]
         raise EnvironmentError("Failed to determine the distribution codename using apt's package resource list!")
 
@@ -320,6 +323,15 @@ class AptMirrorUpdater(PropertyManager):
         Specify the length of chars in mirrors' URL to display when using --list-mirrors
         """
         return URL_CHAR_LEN
+
+    @mutable_property
+    def ubuntu_mode(self):
+        """
+        For Linux Mint, deal with upstream Ubuntu mirror instead of Linux Mint mirror if True
+
+        Default is False, can be set True via -U, --ubuntu flag
+        """
+        return False
 
     @mutable_property
     def old_releases_url(self):

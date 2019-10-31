@@ -59,6 +59,11 @@ Supported options:
     automatically switch to a different mirror when it looks like the current
     mirror is being updated.
 
+  -U, --ubuntu
+
+    Ubuntu mode for Linux Mint to deal with upstream Ubuntu mirror instead of Linux Mint mirror.
+    e.g. --auto-change-mirror --ubuntu will auto-change Linux Mint's upstream Ubuntu mirror
+
   -x, --exclude=PATTERN
 
     Add a pattern to the mirror selection blacklist. PATTERN is expected to be
@@ -125,10 +130,10 @@ def main():
     actions = []
     # Parse the command line arguments.
     try:
-        options, arguments = getopt.getopt(sys.argv[1:], 'r:fF:blL:c:aux:m:vVR:qh', [
+        options, arguments = getopt.getopt(sys.argv[1:], 'r:fF:blL:c:auUx:m:vVR:qh', [
             'remote-host=', 'find-current-mirror', 'find-best-mirror', 'file-to-read=',
             'list-mirrors', 'url-char-len=', 'change-mirror=', 'auto-change-mirror', 'update',
-            'update-package-lists', 'exclude=', 'max=', 'verbose', 'version', 'create-chroot=',
+            'update-package-lists', 'ubuntu', 'exclude=', 'max=', 'verbose', 'version', 'create-chroot=',
             'quiet', 'help',
         ])
         for option, value in options:
@@ -157,6 +162,8 @@ def main():
                 actions.append(updater.change_mirror)
             elif option in ('-u', '--update', '--update-package-lists'):
                 actions.append(updater.smart_update)
+            elif option in ('-U', '--ubuntu'):
+                ubuntu_mode = True
             elif option in ('-x', '--exclude'):
                 actions.insert(0, functools.partial(updater.ignore_mirror, value))
             elif option in ('-m', '--max'):
@@ -181,6 +188,7 @@ def main():
         # Propagate options to the Python API.
         updater.max_mirrors = limit
         updater.url_char_len = url_char_len
+        updater.ubuntu_mode = ubuntu_mode
     except Exception as e:
         warning("Error: Failed to parse command line arguments! (%s)" % e)
         sys.exit(1)

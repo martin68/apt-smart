@@ -143,6 +143,8 @@ updating.
    "``-u``, ``--update``, ``--update-package-lists``","Update the package lists using ""apt-get update"", retrying on failure and
    automatically switch to a different mirror when it looks like the current
    mirror is being updated."
+   "``-U``, ``--ubuntu``","Ubuntu mode for Linux Mint to deal with upstream Ubuntu mirror instead of Linux Mint mirror.
+   e.g. ``--auto-change-mirror`` ``--ubuntu`` will auto-change Linux Mint's upstream Ubuntu mirror"
    "``-x``, ``--exclude=PATTERN``","Add a pattern to the mirror selection blacklist. ``PATTERN`` is expected to be
    a shell pattern (containing wild cards like ""?"" and ""\*"") that is matched
    against the full URL of each mirror."
