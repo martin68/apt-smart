@@ -1026,6 +1026,10 @@ class CandidateMirror(PropertyManager):
                 return '%s/dists/%s-updates/Release' % (
                     self.mirror_url, self.updater.distribution_codename,
                 )
+            elif self.updater.distributor_id == 'linuxmint':
+                return '%s/dists/%s/Release' % (
+                    self.mirror_url, self.updater.distribution_codename,
+                )
 
     @mutable_property
     def sort_key(self):
