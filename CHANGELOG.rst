@@ -11,6 +11,14 @@ to `semantic versioning`_.
 .. _Keep a Changelog: http://keepachangelog.com/
 .. _semantic versioning: http://semver.org/
 
+`Release 7.1.0`_ (2019-11-01)
+-----------------------------
+
+- Add support for Linux Mint
+- Add -U, --ubuntu to opt in Ubuntu mode for Linux Mint to deal with upstream Ubuntu mirror instead of Linux Mint mirror. e.g. --auto-change-mirror --ubuntu will auto-change Linux Mint's upstream Ubuntu mirror
+
+.. _Release 7.1.0: https://github.com/martin68/apt-smart/compare/7.0.7...7.1.0
+
 `Release 7.0.7`_ (2019-9-30)
 ----------------------------
 
