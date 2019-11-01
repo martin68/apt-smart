@@ -99,7 +99,8 @@ def discover_mirrors():
         data = json.loads(response)
         country = data['country']
         logger.info("Found your location: %s by %s", country, url)
-
+    if country == 'United States':
+        country = 'USA'
     try:
         data = fetch_url(MIRRORS_URL, timeout=15)
     except Exception:
