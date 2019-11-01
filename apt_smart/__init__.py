@@ -485,7 +485,7 @@ class AptMirrorUpdater(PropertyManager):
             release_is_eol = (self.validate_mirror(self.old_releases_url) == MirrorStatus.AVAILABLE)
             if not release_is_eol:
                 source = "%s is not available" % self.old_releases_url
-        logger.debug(
+        logger.info(
             "%s is %s (based on %s).", self.release,
             "EOL" if release_is_eol else "supported", source,
         )

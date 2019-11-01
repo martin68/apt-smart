@@ -61,6 +61,14 @@ class AptMirrorUpdaterTestCase(TestCase):
         for candidate in mirrors:
             check_ubuntu_mirror(candidate.mirror_url)
 
+    def test_linuxmint_mirror_discovery(self):
+        """Test the discovery of Linux Mint mirror URLs."""
+        from apt_smart.backends.linuxmint import discover_mirrors
+        mirrors = discover_mirrors()
+        assert len(mirrors) > 10
+        for candidate in mirrors:
+            check_ubuntu_mirror(candidate.mirror_url)
+
     def test_adaptive_mirror_discovery(self):
         """Test the discovery of mirrors for the current type of system."""
         updater = AptMirrorUpdater()
@@ -152,23 +160,30 @@ class AptMirrorUpdaterTestCase(TestCase):
         # Check that a reasonable number of Debian and Ubuntu releases was discovered.
         assert len([r for r in releases if r.distributor_id == 'debian']) > 10
         assert len([r for r in releases if r.distributor_id == 'ubuntu']) > 10
+        assert len([r for r in releases if r.distributor_id == 'linuxmint']) > 10
         # Check that LTS releases of Debian as well as Ubuntu were discovered.
         assert any(r.distributor_id == 'debian' and r.is_lts for r in releases)
         assert any(r.distributor_id == 'ubuntu' and r.is_lts for r in releases)
+        assert any(r.distributor_id == 'linuxmint' and r.is_lts for r in releases)
         # Sanity check against duplicate releases.
         assert sum(r.series == 'bionic' for r in releases) == 1
         assert sum(r.series == 'jessie' for r in releases) == 1
+        assert sum(r.series == 'tina' for r in releases) == 1
         # Sanity check some known LTS releases.
         assert any(r.series == 'bionic' and r.is_lts for r in releases)
         assert any(r.series == 'stretch' and r.is_lts for r in releases)
+        assert any(r.series == 'tina' and r.is_lts for r in releases)
 
     def test_coerce_release(self):
         """Test the coercion of release objects."""
         # Test coercion of short code names.
         assert coerce_release('lucid').version == decimal.Decimal('10.04')
+        assert coerce_release('tina').version == decimal.Decimal('19.2')
         assert coerce_release('woody').distributor_id == 'debian'
+        assert coerce_release('tina').distributor_id == 'linuxmint'
         # Test coercion of version numbers.
         assert coerce_release('10.04').series == 'lucid'
+        assert coerce_release('19.2').series == 'tina'
 
     def test_keyring_selection(self):
         """Make sure keyring selection works as intended."""
