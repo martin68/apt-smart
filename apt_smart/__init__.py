@@ -279,7 +279,7 @@ class AptMirrorUpdater(PropertyManager):
                     continue
                 self.current_mirror = tokens[1]
                 if self.ubuntu_mode:
-                    logging.info("In Ubuntu Mode, pretend to be Ubuntu %s" % tokens[2])
+                    logging.info("In Ubuntu Mode, pretend to be %s" % coerce_release(tokens[2]))
                 return tokens[2]
         raise EnvironmentError("Failed to determine the distribution codename using apt's package resource list!")
 
@@ -472,6 +472,13 @@ class AptMirrorUpdater(PropertyManager):
         if release_is_eol is None:
             release_is_eol = (self.validate_mirror(self.security_url) == MirrorStatus.MAYBE_EOL)
             source = "security mirror"
+        if release_is_eol and self.distributor_id == 'linuxmint':
+            logger.info(
+                "%s seems EOL (based on %s), but for Linux Mint no OLD_RELEASES_URL, so act as not EOL.",
+                self.release, source,
+            )
+            release_is_eol = False
+            return release_is_eol
         if release_is_eol:  # Still need to check due to
             # https://github.com/xolox/python-apt-mirror-updater/issues/9
             logger.info("%s seems EOL, checking %s MirrorStatus to confirm.", self.release, self.old_releases_url)
