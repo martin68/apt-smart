@@ -174,6 +174,52 @@ class AptMirrorUpdaterTestCase(TestCase):
         assert any(r.series == 'stretch' and r.is_lts for r in releases)
         assert any(r.series == 'tina' and r.is_lts for r in releases)
 
+    def test_discover_linuxmint_releases(self):
+        """Test that release discovery works properly."""
+        import decimal
+        from bs4 import BeautifulSoup
+        from apt_smart.releases import discover_linuxmint_releases, table_to_2d
+        from apt_smart.http import fetch_url
+        from humanfriendly.terminal import output
+
+        url = 'https://en.wikipedia.org/wiki/Linux_Mint_version_history'
+        response = fetch_url(url, timeout=15, retry=True)
+        soup = BeautifulSoup(response, 'html.parser')
+        indent = " " * 4
+        releases = set()
+        tables = soup.findAll('table')
+        if not tables:
+            raise Exception("Failed to locate <table> element in page %s" % url)
+        else:
+            output("\nBUNDLED_RELEASES = [\n")
+            for release in discover_linuxmint_releases(table_to_2d(tables[1])):
+                releases.add(release)
+                output(indent + "Release(\n")
+                for name in release.find_properties(cached=False):
+                    value = getattr(release, name)
+                    if value is not None:
+                        if isinstance(value, decimal.Decimal):
+                            # It seems weirdly inconsistency to me that this is needed
+                            # for decimal.Decimal() but not for datetime.date() but I
+                            # guess the simple explanation is that repr() output simply
+                            # isn't guaranteed to be accepted by eval().
+                            value = "decimal." + repr(value)
+                        else:
+                            value = repr(value)
+                        output(indent * 2 + name + "=" + value + ",\n")
+                output(indent + "),\n")
+            output("]\n\n")
+
+            # Check that a reasonable number of Debian and Ubuntu releases was discovered.
+            assert len(releases) > 10
+            assert len([r for r in releases if r.distributor_id == 'linuxmint']) > 10
+            # Check that LTS releases of Debian as well as Ubuntu were discovered.
+            assert any(r.distributor_id == 'linuxmint' and r.is_lts for r in releases)
+            # Sanity check against duplicate releases.
+            assert sum(r.series == 'tina' for r in releases) == 1
+            # Sanity check some known LTS releases.
+            assert any(r.series == 'tina' and r.is_lts for r in releases)
+
     def test_coerce_release(self):
         """Test the coercion of release objects."""
         # Test coercion of short code names.
