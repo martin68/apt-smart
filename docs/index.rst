@@ -1,5 +1,5 @@
-apt-smart: Smart, automated Debian/Ubuntu mirror selection
-============================================================
+apt-smart: Smart, automated Debian/Ubuntu/Linux Mint mirror selection
+========================================================================
 
 Welcome to the documentation of `apt-smart` version |release|!
 

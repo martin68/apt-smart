@@ -1,4 +1,4 @@
-apt-smart: Smart, automated Debian/Ubuntu mirror selection
+apt-smart: Smart, automated Debian/Ubuntu/Linux Mint mirror selection
 ============================================================
 
 .. image:: https://travis-ci.org/martin68/apt-smart.svg?branch=master
@@ -10,7 +10,7 @@ apt-smart: Smart, automated Debian/Ubuntu mirror selection
 `简体中文 <https://github.com/martin68/apt-smart/blob/master/README-zh-cn.rst>`_
 
 The `apt-smart` package automates robust apt-get_ mirror (a.k.a Repositories, Sources) selection for
-Debian_ and Ubuntu_ by enabling smart discovery of available mirrors, smart ranking of
+Debian_ , Ubuntu_ and `Linux Mint`_ by enabling smart discovery of available mirrors, smart ranking of
 available mirrors, automatic switching between mirrors and robust package list
 updating (see features_). It's currently tested on Python 2.7, 3.4, 3.5,
 3.6, 3.7 and PyPy (although test coverage is still rather low, see status_).
@@ -24,7 +24,7 @@ Why?
 As a successor of `apt-mirror-updater <https://github.com/xolox/python-apt-mirror-updater>`_,
 `apt-smart` has many improvements in intelligence, speed, accuracy and robustness (see changelog_) when offering the best mirror for you.
 It has a plan to optionally be a set-and-forget smart daemon: running in the background as a reverse proxy
-always redirecting to the best mirror without root privilege. It also has a plan to support other distros like: Linux Mint , ROS...
+always redirecting to the best mirror without root privilege. It also has a plan to support other distros like: Linux Mint (Done!) , ROS...
 
 .. _features:
 
@@ -32,10 +32,10 @@ Features
 --------
 
 **Smart discovery of available mirrors**
- Debian_ and Ubuntu_ mirrors are discovered automatically by querying the
+ Debian_ , Ubuntu_ and `Linux Mint`_ mirrors are discovered automatically by querying the
  `Debian mirror list <https://www.debian.org/mirror/list>`_ or the `Ubuntu
  mirror list1 <http://mirrors.ubuntu.com/mirrors.txt>`_  or the `Ubuntu
- mirror list2 <https://launchpad.net/ubuntu/+archivemirrors>`_ (the applicable
+ mirror list2 <https://launchpad.net/ubuntu/+archivemirrors>`_ or the `Linux Mint mirror list <https://linuxmint.com/mirrors.php>`_ (the applicable
  mirror list is automatically selected based on the current platform).
  It can smartly get mirrors within the country which the user is in.
 
@@ -242,6 +242,7 @@ This software is licensed under the `MIT license`_.
 .. _Debian: https://en.wikipedia.org/wiki/Debian
 .. _documentation: https://apt-smart.readthedocs.io
 .. _GitHub: https://github.com/martin68/apt-smart
+.. _Linux Mint: https://linuxmint.com
 .. _MIT license: http://en.wikipedia.org/wiki/MIT_License
 .. _per user site-packages directory: https://www.python.org/dev/peps/pep-0370/
 .. _PyPI: https://pypi.python.org/pypi/apt-smart

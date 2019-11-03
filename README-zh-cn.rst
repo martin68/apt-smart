@@ -1,5 +1,5 @@
-apt-smart: 智能的 Debian/Ubuntu 镜像源自动选择工具
-============================================================
+apt-smart: 智能的 Debian/Ubuntu/Linux Mint 镜像源自动选择工具
+=================================================================
 
 .. image:: https://travis-ci.org/martin68/apt-smart.svg?branch=master
    :target: https://travis-ci.org/martin68/apt-smart
@@ -7,7 +7,7 @@ apt-smart: 智能的 Debian/Ubuntu 镜像源自动选择工具
 .. image:: https://coveralls.io/repos/martin68/apt-smart/badge.svg?branch=master
    :target: https://coveralls.io/r/martin68/apt-smart?branch=master
 
-`apt-smart` 提供健壮的 Debian_ 和 Ubuntu_  apt-get_ 镜像源 (也称软件源) 自动选择。
+`apt-smart` 提供健壮的 Debian_ 、 Ubuntu_ 和  `Linux Mint`_  apt-get_ 镜像源 (也称软件源) 自动选择。
 它能智能发现镜像源、排序镜像源并且自动切换，以及实现健壮的包列表更新 (参见 features_). 目前在 Python 2.7, 3.4, 3.5,
 3.6, 3.7 和 PyPy 测试通过 (尽管test coverage目前还很低，参见 status_).
 
@@ -20,7 +20,7 @@ Why?
 作为 `apt-mirror-updater <https://github.com/xolox/python-apt-mirror-updater>`_ 的继承者,
 为你寻找最好镜像源的过程中 `apt-smart` 的智能、速度、准确性和健壮性方面都有提升和改进 (参见 changelog_)。
 并且有计划增加反向代理模式——在设置好之后你就可以忘掉它，它在后台运行不需要root权限，在任何时候都指向最好的镜像源。
-其他发行版如 Linux Mint， ROS等的支持也在计划之中。
+其他发行版如 Linux Mint（已完成！）， ROS等的支持也在计划之中。
 
 .. _features:
 
@@ -30,8 +30,8 @@ Features
 **智能发现可用的镜像源**
  通过查询 `Debian mirror list <https://www.debian.org/mirror/list>`_ 或 `Ubuntu
  mirror list1 <http://mirrors.ubuntu.com/mirrors.txt>`_  或 `Ubuntu
- mirror list2 <https://launchpad.net/ubuntu/+archivemirrors>`_ (自动选择镜像源列表)来
- 自动查找 Debian_ 和 Ubuntu_ 镜像源。它能够智能地获取用户所在国家的镜像源。
+ mirror list2 <https://launchpad.net/ubuntu/+archivemirrors>`_ 或 `Linux Mint mirror list <https://linuxmint.com/mirrors.php>`_ (自动选择镜像源列表)来
+ 自动查找 Debian_ 、 Ubuntu_ 和 `Linux Mint`_ 镜像源。它能够智能地获取用户所在国家的镜像源。
 
 **智能排序可用的镜像源**
  可用镜像源按照如下方式排序：带宽、是否更新及时（up-to-date），并且排除了正在更新的镜像源 (参见 `issues with mirror updates`_)。
@@ -213,6 +213,7 @@ This software is licensed under the `MIT license`_.
 .. _Debian: https://en.wikipedia.org/wiki/Debian
 .. _documentation: https://apt-smart.readthedocs.io
 .. _GitHub: https://github.com/martin68/apt-smart
+.. _Linux Mint: https://linuxmint.com
 .. _MIT license: http://en.wikipedia.org/wiki/MIT_License
 .. _per user site-packages directory: https://www.python.org/dev/peps/pep-0370/
 .. _PyPI: https://pypi.python.org/pypi/apt-smart
