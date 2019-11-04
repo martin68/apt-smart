@@ -1,5 +1,5 @@
 apt-smart: Smart, automated Debian/Ubuntu/Linux Mint mirror selection
-============================================================
+=====================================================================
 
 .. image:: https://travis-ci.org/martin68/apt-smart.svg?branch=master
    :target: https://travis-ci.org/martin68/apt-smart
