@@ -306,7 +306,7 @@ class AptMirrorUpdater(PropertyManager):
         For new version of Linux Mint, main_sources_list is:
         /etc/apt/sources.list.d/official-package-repositories.list
         """
-        if os.path.isfile('/etc/apt/sources.list.d/official-package-repositories.list'):
+        if self.context.exists('/etc/apt/sources.list.d/official-package-repositories.list'):
             logger.debug("/etc/apt/sources.list.d/official-package-repositories.list exists,\
                          use it as main_sources_list instead of /etc/apt/sources.list")
             return '/etc/apt/sources.list.d/official-package-repositories.list'
@@ -800,7 +800,14 @@ class AptMirrorUpdater(PropertyManager):
             self.context.cleanup('rm', '--force', temporary_file)
             # Make a backup copy of /etc/apt/sources.list in case shit hits the fan?
             if self.context.exists(self.main_sources_list):
-                backup_copy = '%s.save.%i' % (self.main_sources_list, time.time())
+                dirname, basename = os.path.split(self.main_sources_list)
+                if basename == 'official-package-repositories.list':
+                    backup_dir = os.path.join(dirname, 'backup_by_apt-smart')  # Backup to dir for Linux Mint
+                    if not self.context.exists(backup_dir):
+                        self.context.execute('mkdir', backup_dir)
+                    backup_copy = '%s.backup.%i' % (os.path.join(backup_dir, basename), time.time())
+                else:
+                    backup_copy = '%s.backup.%i' % (self.main_sources_list, time.time())
                 logger.info("Backing up contents of %s to %s ..", self.main_sources_list, backup_copy)
                 self.context.execute('cp', self.main_sources_list, backup_copy, sudo=True)
             # Move the temporary file into place without changing ownership and permissions.
