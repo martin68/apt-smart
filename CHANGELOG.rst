@@ -11,6 +11,14 @@ to `semantic versioning`_.
 .. _Keep a Changelog: http://keepachangelog.com/
 .. _semantic versioning: http://semver.org/
 
+`Release 7.1.1`_ (2019-11-04)
+-----------------------------
+
+- For Linux Mint, backup official-package-repositories.list to backup_dir: backup_by_apt
+- In Readme, add install commands for Linux Mint and a note about run with sudo
+
+.. _Release 7.1.1: https://github.com/martin68/apt-smart/compare/7.1.0...7.1.1
+
 `Release 7.1.0`_ (2019-11-01)
 -----------------------------
 
