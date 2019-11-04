@@ -804,7 +804,7 @@ class AptMirrorUpdater(PropertyManager):
                 if basename == 'official-package-repositories.list':
                     backup_dir = os.path.join(dirname, 'backup_by_apt-smart')  # Backup to dir for Linux Mint
                     if not self.context.exists(backup_dir):
-                        self.context.execute('mkdir', backup_dir)
+                        self.context.execute('mkdir', backup_dir, sudo=True)
                     backup_copy = '%s.backup.%i' % (os.path.join(backup_dir, basename), time.time())
                 else:
                     backup_copy = '%s.backup.%i' % (self.main_sources_list, time.time())
