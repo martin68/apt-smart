@@ -86,13 +86,16 @@ Installation
 .. code-block:: sh
 
    sudo apt update
-   sudo apt install python-pip -y  # 不询问直接安装python-pip
+   sudo apt install python-pip python-setuptools python-wheel -y  # 不询问直接安装python-pip等依赖
    pip install --user apt-smart # --user参数表示安装到per user site-packages directory
    echo "export PATH=\$(python -c 'import site; print(site.USER_BASE + \"/bin\")'):\$PATH" >> ~/.bashrc
    source ~/.bashrc  # 设置per user site-packages directory到PATH
 
 安装 Python 包有几种方法 (例如 `per user site-packages directory`_, 或 `virtual environments`_ 或 安装到系统全局)
 在这里不详细展开叙述。
+
+注意： apt-smart 是个 APT 的助手工具，而不是 apt/apt-get 命令的替代，所以通常 apt-smart 不应该用 `sudo` 或以 `su` 运行，
+      如果 apt-smart 需要 root 最高权限以继续（例如更改 sources.list），它会让用户输入密码。
 
 Usage
 -----

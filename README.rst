@@ -108,7 +108,7 @@ should be as simple as (paste all below commands together into terminal):
 .. code-block:: sh
 
    sudo apt update
-   sudo apt install python-pip -y  # install python-pip without asking
+   sudo apt install python-pip python-setuptools python-wheel -y  # install python-pip and so on without asking
    pip install --user apt-smart  # --user flag means install to per user site-packages directory(see below)
    echo "export PATH=\$(python -c 'import site; print(site.USER_BASE + \"/bin\")'):\$PATH" >> ~/.bashrc
    source ~/.bashrc  # set per user site-packages directory to PATH
@@ -119,6 +119,10 @@ user site-packages directory`_, `virtual environments`_ or just installing
 system wide) and I have no intention of getting into that discussion here, so
 if this intimidates you then read up on your options before returning to these
 instructions ;-).
+
+Note: apt-smart is an APT helper tool rather than a replacement of apt/apt-get command,
+      so in general apt-smart should not be run with `sudo` or as `su`. If apt-smart needs
+      root privilege to continue (e.g. change sources.list), it will ask user to enter password.
 
 Usage
 -----
