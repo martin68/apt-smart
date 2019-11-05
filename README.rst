@@ -120,6 +120,12 @@ system wide) and I have no intention of getting into that discussion here, so
 if this intimidates you then read up on your options before returning to these
 instructions ;-).
 
+If a new version of apt-smart has been released, you can upgrade it via:
+
+.. code-block:: sh
+
+  pip install --user apt-smart --upgrade
+
 **Note**. ``apt-smart`` is a *helper* for the ``apt`` tool. It is **NOT** a
 *replacement* for ``apt`` (or for ``apt-get``). So, ``apt-smart`` should
 *not* be run *instead* of either of those commands. Nor should
