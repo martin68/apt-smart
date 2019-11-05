@@ -120,9 +120,13 @@ system wide) and I have no intention of getting into that discussion here, so
 if this intimidates you then read up on your options before returning to these
 instructions ;-).
 
-Note: apt-smart is an APT helper tool rather than a replacement of apt/apt-get command,
-      so in general apt-smart should not be run with `sudo` or as `su`. If apt-smart needs
-      root privilege to continue (e.g. change sources.list), it will ask user to enter password.
+**Note**. ``apt-smart`` is a *helper* for the ``apt`` tool. It is **NOT** a
+*replacement* for ``apt`` (or for ``apt-get``). So, ``apt-smart`` should
+*not* be run *instead* of either of those commands. Nor should
+``apt-smart`` be run with ``sudo`` or via ``su``; if ``apt-smart``
+happens to need root privilege in order for it to continue (in order
+that it may, for example, change ``sources.list``), then it will prompt
+for a password.
 
 Usage
 -----
