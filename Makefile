@@ -85,7 +85,7 @@ publish: install
 	$(MAKE) clean
 
 clean:
-	@rm -Rf *.egg .cache .coverage .tox build dist docs/build htmlcov
+	@rm -Rf *.egg .cache .coverage .coverage.* .tox build dist docs/build htmlcov
 	@find -depth -type d -name __pycache__ -exec rm -Rf {} \;
 	@find -type f -name '*.pyc' -delete
 
