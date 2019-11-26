@@ -622,6 +622,7 @@ class AptMirrorUpdater(PropertyManager):
         Bootstrap a basic Debian or Ubuntu system using debootstrap_.
 
         :param directory: The pathname of the target directory (a string).
+        :param codename: The codename of the target (a string).
         :param arch: The target architecture (a string or :data:`None`).
         :returns: A :class:`~executor.contexts.ChangeRootContext` object.
 
@@ -633,7 +634,7 @@ class AptMirrorUpdater(PropertyManager):
         """
         logger.debug("Checking if chroot already exists (%s) ..", directory)
         if self.context.exists(directory) and self.context.list_entries(directory):
-            logger.debug("The chroot already exists, skipping initialization.")
+            logger.info("The chroot already exists, skipping initialization.")
             first_run = False
         else:
             # Ensure the `debootstrap' program is installed.
@@ -642,30 +643,48 @@ class AptMirrorUpdater(PropertyManager):
                 self.context.execute('apt-get', 'install', '--yes', 'debootstrap', sudo=True)
             # Use the `debootstrap' program to create the chroot.
             timer = Timer()
-            logger.info("Creating %s chroot in %s ..", self.release, directory)
             debootstrap_command = ['debootstrap']
             if arch:
                 debootstrap_command.append('--arch=%s' % arch)
-            debootstrap_command.append('--keyring=%s' % self.release.keyring_file)
-            if codename:
-                release_to_chroot = coerce_release(codename)
-                if release_to_chroot.distributor_id == 'linuxmint':
-                    msg = "It seems no sense to create chroot of Linux Mint," \
-                          "please specify a codename of Ubuntu or Debian" \
+            release_chroot = None
+            keyring_chroot = ''
+            codename_chroot = ''
+            best_mirror_chroot = None
+            if codename and codename != self.distribution_codename:
+                updater_chroot = AptMirrorUpdater()
+                updater_chroot.distribution_codename = codename
+                if updater_chroot.distributor_id == 'linuxmint':
+                    msg = "It seems no sense to create chroot of Linux Mint, " \
+                          "please specify a codename of Ubuntu or Debian " \
                           "to create chroot."
                     raise ValueError(msg)
-                debootstrap_command.append(codename)
+
+                if not self.context.exists(updater_chroot.release.keyring_file):
+                    if updater_chroot.distributor_id == 'ubuntu':
+                        self.context.execute('apt-get', 'install', '--yes', 'ubuntu-keyring', sudo=True)
+                    elif updater_chroot.distributor_id == 'debian':
+                        self.context.execute('apt-get', 'install', '--yes', 'debian-archive-keyring', sudo=True)
+                release_chroot = updater_chroot.release
+                keyring_chroot = updater_chroot.release.keyring_file
+                codename_chroot = codename
+                best_mirror_chroot = updater_chroot.best_mirror
             else:
                 if self.distributor_id == 'linuxmint':
-                    msg = "It seems no sense to create chroot of Linux Mint," \
-                          "please use -C to specify a codename of Ubuntu or Debian" \
+                    msg = "It seems no sense to create chroot of Linux Mint, " \
+                          "please use -C to specify a codename of Ubuntu or Debian " \
                           "to create chroot."
                     raise ValueError(msg)
-                debootstrap_command.append(self.distribution_codename)
+                release_chroot = self.release
+                keyring_chroot = self.release.keyring_file
+                codename_chroot = self.distribution_codename
+                best_mirror_chroot = self.best_mirror
+            logger.info("Creating %s chroot in %s ..", release_chroot, directory)
+            debootstrap_command.append('--keyring=%s' % keyring_chroot)
+            debootstrap_command.append(codename_chroot)
             debootstrap_command.append(directory)
-            debootstrap_command.append(self.best_mirror)
+            debootstrap_command.append(best_mirror_chroot)
             self.context.execute(*debootstrap_command, sudo=True)
-            logger.info("Took %s to create %s chroot.", timer, self.release)
+            logger.info("Took %s to create %s chroot.", timer, release_chroot)
             first_run = True
         # Switch the execution context to the chroot and reset the locale (to
         # avoid locale warnings emitted by post-installation scripts run by

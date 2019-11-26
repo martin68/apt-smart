@@ -191,13 +191,13 @@ def main():
                 return
             else:
                 assert False, "Unhandled option!"
-        if not actions:
-            usage(__doc__)
-            return
         if codename and not chroot_path:
             assert False, "--codename must be used with valid -R to specify chroot path"
         if chroot_path:
-            actions.append(functools.partial(updater.create_chroot, value, codename))
+            actions.append(functools.partial(updater.create_chroot, chroot_path, codename=codename))
+        if not actions:
+            usage(__doc__)
+            return
         # Propagate options to the Python API.
         updater.max_mirrors = limit
         updater.url_char_len = url_char_len

@@ -57,7 +57,7 @@ from itertools import product
 DISTRO_INFO_DIRECTORY = '/usr/share/distro-info'
 """The pathname of the directory with CSV files containing release metadata (a string)."""
 
-DEBIAN_KEYRING_CURRENT = '/usr/share/keyrings/debian-keyring.gpg'
+DEBIAN_KEYRING_CURRENT = '/usr/share/keyrings/debian-archive-keyring.gpg'
 """The pathname of the main Debian keyring file (a string)."""
 
 UBUNTU_KEYRING_CURRENT = '/usr/share/keyrings/ubuntu-archive-keyring.gpg'
