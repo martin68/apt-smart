@@ -9,7 +9,7 @@ apt-smart: 智能的 Debian/Ubuntu/Linux Mint 镜像源自动选择工具
 
 `apt-smart` 提供健壮的 Debian_ 、 Ubuntu_ 和  `Linux Mint`_  apt-get_ 镜像源 (也称软件源) 自动选择。
 它能智能发现镜像源、排序镜像源并且自动切换，以及实现健壮的包列表更新 (参见 features_). 目前在 Python 2.7, 3.4, 3.5,
-3.6, 3.7 和 PyPy 测试通过 (尽管test coverage目前还很低，参见 status_).
+3.6, 3.7, 3.8 和 PyPy 测试通过 (尽管test coverage目前还很低，参见 status_).
 
 .. contents::
    :local:

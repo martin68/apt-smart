@@ -13,7 +13,7 @@ The `apt-smart` package automates robust apt-get_ mirror (a.k.a Repositories, So
 Debian_ , Ubuntu_ and `Linux Mint`_ by enabling smart discovery of available mirrors, smart ranking of
 available mirrors, automatic switching between mirrors and robust package list
 updating (see features_). It's currently tested on Python 2.7, 3.4, 3.5,
-3.6, 3.7 and PyPy (although test coverage is still rather low, see status_).
+3.6, 3.7, 3.8 and PyPy (although test coverage is still rather low, see status_).
 
 .. contents::
    :local:
