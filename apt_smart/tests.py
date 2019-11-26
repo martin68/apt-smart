@@ -101,6 +101,14 @@ class AptMirrorUpdaterTestCase(TestCase):
         updater.create_chroot('/test_chroot')
         assert 'Filename:' in updater.context.capture('apt-cache', 'show', 'python')
 
+    def test_create_chroot_with_codename(self):
+        """Test create chroot with codename"""
+        if os.getuid() != 0:
+            return self.skipTest("root privileges required to opt in")
+        updater = AptMirrorUpdater()
+        updater.create_chroot('/test_chroot', 'buster')
+        assert 'Filename:' in updater.context.capture('apt-cache', 'show', 'python')
+
     def test_change_mirror(self):
         """Test change mirror"""
         if os.getuid() != 0:

@@ -617,7 +617,7 @@ class AptMirrorUpdater(PropertyManager):
         )
         logger.info("Successfully cleared package list cache of %s in %s.", self.context, timer)
 
-    def create_chroot(self, directory, arch=None):
+    def create_chroot(self, directory, codename=None, arch=None):
         """
         Bootstrap a basic Debian or Ubuntu system using debootstrap_.
 
@@ -647,7 +647,21 @@ class AptMirrorUpdater(PropertyManager):
             if arch:
                 debootstrap_command.append('--arch=%s' % arch)
             debootstrap_command.append('--keyring=%s' % self.release.keyring_file)
-            debootstrap_command.append(self.distribution_codename)
+            if codename:
+                release_to_chroot = coerce_release(codename)
+                if release_to_chroot.distributor_id == 'linuxmint':
+                    msg = "It seems no sense to create chroot of Linux Mint," \
+                          "please specify a codename of Ubuntu or Debian" \
+                          "to create chroot."
+                    raise ValueError(msg)
+                debootstrap_command.append(codename)
+            else:
+                if self.distributor_id == 'linuxmint':
+                    msg = "It seems no sense to create chroot of Linux Mint," \
+                          "please use -C to specify a codename of Ubuntu or Debian" \
+                          "to create chroot."
+                    raise ValueError(msg)
+                debootstrap_command.append(self.distribution_codename)
             debootstrap_command.append(directory)
             debootstrap_command.append(self.best_mirror)
             self.context.execute(*debootstrap_command, sudo=True)

@@ -82,6 +82,10 @@ Supported options:
 
     Create chroot with the best mirror in a local directory with absolute_path
 
+  -C, --codename=codename
+
+    Must use with -R , create chroot with a codename of Ubuntu or Debian, e.g. bionic, buster
+
   -q, --quiet
 
     Decrease logging verbosity (can be repeated).
@@ -128,14 +132,16 @@ def main():
     limit = MAX_MIRRORS
     url_char_len = URL_CHAR_LEN
     ubuntu_mode = False
+    chroot_path = ''
+    codename = ''
     actions = []
     # Parse the command line arguments.
     try:
-        options, arguments = getopt.getopt(sys.argv[1:], 'r:fF:blL:c:auUx:m:vVR:qh', [
+        options, arguments = getopt.getopt(sys.argv[1:], 'r:fF:blL:c:auUx:m:vVR:C:qh', [
             'remote-host=', 'find-current-mirror', 'find-best-mirror', 'file-to-read=',
             'list-mirrors', 'url-char-len=', 'change-mirror=', 'auto-change-mirror', 'update',
             'update-package-lists', 'ubuntu', 'exclude=', 'max=', 'verbose', 'version', 'create-chroot=',
-            'quiet', 'help',
+            'codename=', 'quiet', 'help',
         ])
         for option, value in options:
             if option in ('-r', '--remote-host'):
@@ -174,8 +180,10 @@ def main():
             elif option in ('-V', '--version'):
                 output("Version: %s on Python %i.%i", updater_version, sys.version_info[0], sys.version_info[1])
                 return
+            elif option in ('-C', '--codename'):
+                codename = value
             elif option in ('-R', '--create-chroot'):
-                actions.append(functools.partial(updater.create_chroot, value))
+                chroot_path = value
             elif option in ('-q', '--quiet'):
                 coloredlogs.decrease_verbosity()
             elif option in ('-h', '--help'):
@@ -186,6 +194,10 @@ def main():
         if not actions:
             usage(__doc__)
             return
+        if codename and not chroot_path:
+            assert False, "--codename must be used with valid -R to specify chroot path"
+        if chroot_path:
+            actions.append(functools.partial(updater.create_chroot, value, codename))
         # Propagate options to the Python API.
         updater.max_mirrors = limit
         updater.url_char_len = url_char_len

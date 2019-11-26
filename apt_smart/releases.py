@@ -380,7 +380,7 @@ class Release(PropertyManager):
 
     @key_property
     def distributor_id(self):
-        """The name of the distributor (a string like ``debian`` or ``ubuntu``)."""
+        """The name of the distributor (a string like ``debian`` or ``ubuntu`` or ``linuxmint``)."""
 
     @writable_property
     def eol_date(self):
