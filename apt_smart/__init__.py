@@ -679,7 +679,6 @@ class AptMirrorUpdater(PropertyManager):
                 keyring_chroot = self.release.keyring_file
                 codename_chroot = self.distribution_codename
                 best_mirror_chroot = self.best_mirror
-                generate_sources_list_chroot = self.get_sources_list()
             logger.info("Creating %s chroot in %s ..", release_chroot, directory)
             debootstrap_command.append('--keyring=%s' % keyring_chroot)
             debootstrap_command.append(codename_chroot)
@@ -703,9 +702,9 @@ class AptMirrorUpdater(PropertyManager):
             updater_chroot.context = self.context
             del updater_chroot.current_mirror
             del updater_chroot.stable_mirror
-            generate_sources_list_chroot = updater_chroot.get_sources_list()
+            generate_sources_list_chroot = updater_chroot.generate_sources_list()
         else:
-            generate_sources_list_chroot = self.get_sources_list()
+            generate_sources_list_chroot = self.generate_sources_list()
         # The following initialization only needs to happen on the first
         # run, but it requires the context to be set to the chroot.
         if first_run:
