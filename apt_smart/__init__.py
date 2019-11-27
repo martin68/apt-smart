@@ -650,6 +650,7 @@ class AptMirrorUpdater(PropertyManager):
             keyring_chroot = ''
             codename_chroot = ''
             best_mirror_chroot = None
+            generate_sources_list_chroot = None
             if codename and codename != self.distribution_codename:
                 updater_chroot = AptMirrorUpdater()
                 updater_chroot.distribution_codename = codename
@@ -668,6 +669,7 @@ class AptMirrorUpdater(PropertyManager):
                 keyring_chroot = updater_chroot.release.keyring_file
                 codename_chroot = codename
                 best_mirror_chroot = updater_chroot.best_mirror
+                generate_sources_list_chroot = updater_chroot.get_sources_list()
             else:
                 if self.distributor_id == 'linuxmint':
                     msg = "It seems no sense to create chroot of Linux Mint, " \
@@ -678,6 +680,7 @@ class AptMirrorUpdater(PropertyManager):
                 keyring_chroot = self.release.keyring_file
                 codename_chroot = self.distribution_codename
                 best_mirror_chroot = self.best_mirror
+                generate_sources_list_chroot = self.get_sources_list()
             logger.info("Creating %s chroot in %s ..", release_chroot, directory)
             debootstrap_command.append('--keyring=%s' % keyring_chroot)
             debootstrap_command.append(codename_chroot)
@@ -709,7 +712,7 @@ class AptMirrorUpdater(PropertyManager):
             self.context.execute('apt-get', 'clean', sudo=True)
             # Install a suitable /etc/apt/sources.list file. The logic behind
             # generate_sources_list() depends on the `lsb_release' program.
-            self.install_sources_list(self.generate_sources_list())
+            self.install_sources_list(generate_sources_list_chroot)
             # Make sure the package lists are up to date.
             self.smart_update()
         return self.context
