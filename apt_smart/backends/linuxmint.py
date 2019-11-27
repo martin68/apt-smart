@@ -13,7 +13,7 @@ import logging
 # External dependencies.
 import six
 from bs4 import BeautifulSoup
-from humanfriendly import Timer, format, pluralize
+from humanfriendly import Timer, pluralize
 
 # Modules included in our package.
 from apt_smart import CandidateMirror
