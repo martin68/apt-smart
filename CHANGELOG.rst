@@ -11,6 +11,15 @@ to `semantic versioning`_.
 .. _Keep a Changelog: http://keepachangelog.com/
 .. _semantic versioning: http://semver.org/
 
+`Release 7.1.2`_ (2019-11-28)
+-----------------------------
+
+- Support Python 3.8
+- Add `-C --codename` flag to create chroot with a distribution codename.
+- Blacklist BASE_URL mirror if matches blacklist pattern, this helps when BASE_URL (official) mirror is the only up-to-date one and you find it so slow that you'd like to blacklist it.
+
+.. _Release 7.1.2: https://github.com/martin68/apt-smart/compare/7.1.1...7.1.2
+
 `Release 7.1.1`_ (2019-11-04)
 -----------------------------
 

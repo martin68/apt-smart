@@ -58,7 +58,7 @@ from apt_smart.releases import coerce_release
 from apt_smart.releases import discover_releases
 
 # Semi-standard module versioning.
-__version__ = '7.1.1'
+__version__ = '7.1.2'
 
 SOURCES_LIST_ENCODING = 'UTF-8'
 """The text encoding of :attr:`main_sources_list` (a string)."""
