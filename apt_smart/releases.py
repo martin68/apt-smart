@@ -49,7 +49,10 @@ import os
 import six
 from executor import execute
 from humanfriendly.decorators import cached
-from property_manager import PropertyManager, key_property, lazy_property, required_property, writable_property
+try:
+    from property_manager3 import PropertyManager, key_property, lazy_property, required_property, writable_property
+except ImportError:
+    from property_manager import PropertyManager, key_property, lazy_property, required_property, writable_property
 from six import string_types
 from itertools import product
 

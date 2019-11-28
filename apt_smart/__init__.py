@@ -31,14 +31,24 @@ except ImportError:
 from capturer import CaptureOutput
 from executor.contexts import ChangeRootContext, LocalContext
 from humanfriendly import AutomaticSpinner, Timer, compact, format_timespan, pluralize
-from property_manager import (
-    PropertyManager,
-    cached_property,
-    key_property,
-    lazy_property,
-    mutable_property,
-    set_property,
-)
+try:
+    from property_manager3 import (
+        PropertyManager,
+        cached_property,
+        key_property,
+        lazy_property,
+        mutable_property,
+        set_property,
+    )
+except ImportError:
+    from property_manager import (
+        PropertyManager,
+        cached_property,
+        key_property,
+        lazy_property,
+        mutable_property,
+        set_property,
+    )
 from six import text_type
 from six.moves.urllib.parse import urlparse
 
