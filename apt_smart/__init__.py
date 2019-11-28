@@ -129,19 +129,20 @@ class AptMirrorUpdater(PropertyManager):
             logger.info("Adding BASE_URL mirror:")
             if self.distributor_id == 'debian':  # For Debian, base_url typically is not in MIRRORS_URL,
                 # add it explicitly
-                base_url_prefix = self.backend.BASE_URL.split('dists/codename-updates/Release')[0]
+                base_url_prefix = self.backend.BASE_URL.split('/dists/codename-updates/Release')[0]
                 mirrors.add(CandidateMirror(mirror_url=base_url_prefix, updater=self))
             elif self.distributor_id == 'ubuntu':  # For Ubuntu, base_url is not in MIRRORS_URL for
                 # some countries e.g. US (found it in Travis CI), add it explicitly
-                base_url_prefix = self.backend.BASE_URL.split('dists/codename-security/Release')[0]
+                base_url_prefix = self.backend.BASE_URL.split('/dists/codename-security/Release')[0]
                 mirrors.add(CandidateMirror(mirror_url=base_url_prefix, updater=self))
             elif self.distributor_id == 'linuxmint':  # For Linux Mint, base_url typically is not in MIRRORS_URL,
                 # add it explicitly
-                base_url_prefix = self.backend.BASE_URL.split('dists/codename/Release')[0]
+                base_url_prefix = self.backend.BASE_URL.split('/dists/codename/Release')[0]
                 mirrors.add(CandidateMirror(mirror_url=base_url_prefix, updater=self))
             logger.info(base_url_prefix)
             for candidate in self.backend.discover_mirrors():
-                if any(fnmatch.fnmatch(candidate.mirror_url, pattern) for pattern in self.blacklist):
+                if any(fnmatch.fnmatch(candidate.mirror_url, pattern) for pattern in self.blacklist)\
+                        and normalize_mirror_url(candidate.mirror_url) != base_url_prefix:
                     logger.warning("Ignoring blacklisted mirror %s.", candidate.mirror_url)
                 else:
                     candidate.updater = self
@@ -421,6 +422,10 @@ class AptMirrorUpdater(PropertyManager):
             raise Exception("It looks like all %s are unavailable!" % num_mirrors)
         if all(c.is_updating for c in mirrors):
             logger.warning("It looks like all %s are being updated?!", num_mirrors)
+        # blacklist BASE_URL mirror if matches blacklist pattern
+        if any(fnmatch.fnmatch(mapping[self.base_url].mirror_url, pattern) for pattern in self.blacklist):
+            logger.warning("Ignoring blacklisted BASE_URL mirror %s.", mapping[self.base_url].mirror_url)
+            mirrors.remove(mapping[self.base_url])
         return sorted(mirrors, key=lambda c: c.sort_key, reverse=True)
 
     @cached_property
