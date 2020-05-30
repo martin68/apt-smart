@@ -1045,7 +1045,7 @@ class CandidateMirror(PropertyManager):
                 logger.debug("Missing data, considering mirror unavailable (%s).", self.release_gpg_url)
             else:
                 # Get all data following "Date: "
-                date_string_raw = self.release_gpg_contents.decode().split("Date: ", 1)
+                date_string_raw = self.release_gpg_contents.decode('utf-8').split("Date: ", 1)
                 if len(date_string_raw) == 2:  # split succussfully using "Date: "
                     # Get only date string like "Sun, 25 Aug 2019 23:35:36 UTC", drop other data
                     date_string = date_string_raw[1].split("\n")[0]
