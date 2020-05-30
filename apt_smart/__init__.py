@@ -246,8 +246,11 @@ class AptMirrorUpdater(PropertyManager):
         :func:`find_current_mirror()`, but can be changed and cached by :func:`distribution_codename`
         for Linux Mint's Ubuntu Mode.
         """
-        logger.debug("Parsing %s to find current mirror of %s ..", self.main_sources_list, self.context)
-        return find_current_mirror(self.get_sources_list())
+        if self.ubuntu_mode and self.distribution_codename:  # :func:`distribution_codename` will set current_mirror
+            return self.current_mirror
+        else:
+            logger.debug("Parsing %s to find current mirror of %s ..", self.main_sources_list, self.context)
+            return find_current_mirror(self.get_sources_list())
 
     @mutable_property
     def distribution_codename_old(self):
@@ -287,8 +290,8 @@ class AptMirrorUpdater(PropertyManager):
                 if len(matches) != 1:
                     continue
                 if self.ubuntu_mode and matches[0].distributor_id == 'linuxmint':
+                    self.current_mirror = tokens[1]
                     continue
-                self.current_mirror = tokens[1]
                 if self.ubuntu_mode:
                     logging.info("In Ubuntu Mode, pretend to be %s" % coerce_release(tokens[2]))
                 return tokens[2]
