@@ -11,6 +11,16 @@ to `semantic versioning`_.
 .. _Keep a Changelog: http://keepachangelog.com/
 .. _semantic versioning: http://semver.org/
 
+`Release 7.1.3`_ (2020-5-31)
+-----------------------------
+
+- Support 'mirror://' scheme: https://github.com/martin68/apt-smart/issues/3
+- Update releases.py bundled Releases by running 'make releases', related https://github.com/martin68/apt-smart/issues/4
+- In python2 decode() default encoding is ascii, causing https://github.com/martin68/apt-smart/issues/5 , specify utf-8
+- Fix current_mirror in linuxmint's ubuntu mode, causing -U -c 'mirror_url' changed linuxmint's mirror_url instead of ubuntu's
+
+.. _Release 7.1.3: https://github.com/martin68/apt-smart/compare/7.1.3...7.1.3
+
 `Release 7.1.2`_ (2019-11-28)
 -----------------------------
 

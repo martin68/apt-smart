@@ -242,7 +242,7 @@ License
 
 This software is licensed under the `MIT license`_.
 
-© 2019 martin68
+© 2020 martin68
 
 © 2018 Peter Odding.
 
