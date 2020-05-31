@@ -161,7 +161,7 @@ def main():
             elif option in ('-L', '--url-char-len'):
                 url_char_len = int(value)
             elif option in ('-c', '--change-mirror'):
-                if value.strip().startswith(('http://', 'https://', 'ftp://')):
+                if value.strip().startswith(('http://', 'https://', 'ftp://', 'mirror://')):
                     actions.append(functools.partial(updater.change_mirror, value))
                 else:
                     raise Exception("\'%s\' is not a valid mirror URL" % value)
