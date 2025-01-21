@@ -3,3 +3,4 @@
 --requirement=requirements.txt
 coveralls
 virtualenv
+setuptools
