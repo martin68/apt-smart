@@ -2,3 +2,5 @@
 --requirement=requirements-tests.txt
 --requirement=requirements.txt
 coveralls
+virtualenv
+setuptools
