@@ -284,7 +284,7 @@ class AptMirrorUpdater(PropertyManager):
             tokens = line.split()
             if (len(tokens) >= 4
                     and tokens[0] in ('deb', 'deb-src')
-                    and tokens[1].startswith(('http://', 'https://', 'ftp://', 'mirror://'))
+                    and tokens[1].startswith(('http://', 'https://', 'ftp://', 'mirror://', 'mirror+file:/'))
                     and 'main' in tokens[3:]):
                 matches = [release for release in discover_releases() if tokens[2].lower() in release.codename.lower()]
                 if len(matches) != 1:
@@ -1189,7 +1189,7 @@ def find_current_mirror(sources_list):
         tokens = line.split()
         if (len(tokens) >= 4
                 and tokens[0] in ('deb', 'deb-src')
-                and tokens[1].startswith(('http://', 'https://', 'ftp://', 'mirror://'))
+                and tokens[1].startswith(('http://', 'https://', 'ftp://', 'mirror://', 'mirror+file:/'))
                 and 'main' in tokens[3:]):
             return tokens[1]
     raise EnvironmentError("Failed to determine current mirror in apt's package resource list!")
